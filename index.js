@@ -201,7 +201,7 @@ function findHero(heroName) {
 		return heroes[heroName.toLowerCase()];
 	} else {
 		for (i in heroes) {
-			if (heroes[i].name.split("-").join(" ") === heroName.split("-").join(" ")) {
+			if (heroes[i].name.toLowerCase().split("-").join(" ") === heroName.toLowerCase().split("-").join(" ")) {
 				console.log('Found hero by value ' + heroes[i].name);
 				return heroes[i];
 			}
