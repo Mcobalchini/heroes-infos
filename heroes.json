@@ -1,0 +1,542 @@
+{
+   "anubarak": {
+      "name": "anubarak",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "arthas": {
+      "name": "arthas",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "blaze": {
+      "name": "blaze",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "cho": {
+      "name": "cho",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "diablo": {
+      "name": "diablo",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "cte": {
+      "name": "e-t-c",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "garrosh": {
+      "name": "garrosh",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "johanna": {
+      "name": "johanna",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "malganis": {
+      "name": "malganis",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "mei": {
+      "name": "mei",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "muradin": {
+      "name": "muradin",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "suturino": {
+      "name": "stitches",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "tyrael": {
+      "name": "tyrael",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "artanis": {
+      "name": "artanis",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "chen": {
+      "name": "chen",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "asa da morte": {
+      "name": "deathwing",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "dehaka": {
+      "name": "dehaka",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "dva": {
+      "name": "dva",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "gasganete": {
+      "name": "gazlowe",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "hogger": {
+      "name": "hogger",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "imperius": {
+      "name": "imperius",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "leoric": {
+      "name": "leoric",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "malthael": {
+      "name": "malthael",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "ragnaros": {
+      "name": "ragnaros",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "rexxar": {
+      "name": "rexxar",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "sonya": {
+      "name": "sonya",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "thrall": {
+      "name": "thrall",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "varian": {
+      "name": "varian",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "xul": {
+      "name": "xul",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "yrel": {
+      "name": "yrel",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "azmodan": {
+      "name": "azmodan",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "cassia": {
+      "name": "cassia",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "crona": {
+      "name": "chromie",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "falstad": {
+      "name": "falstad",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "fenix": {
+      "name": "fenix",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "gall": {
+      "name": "gall",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "genji": {
+      "name": "genji",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "greymane": {
+      "name": "greymane",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "guldan": {
+      "name": "guldan",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "hanzo": {
+      "name": "hanzo",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "jaina": {
+      "name": "jaina",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "junkrat": {
+      "name": "junkrat",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "kaelthas": {
+      "name": "kaelthas",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "kelthuzad": {
+      "name": "kelthuzad",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "liming": {
+      "name": "li-ming",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "lunara": {
+      "name": "lunara",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "mefisto": {
+      "name": "mephisto",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "nazibo": {
+      "name": "nazeebo",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "nova": {
+      "name": "nova",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "orfea": {
+      "name": "orphea",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "probius": {
+      "name": "probius",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "raynor": {
+      "name": "raynor",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "marreta": {
+      "name": "sgt-hammer",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "sylvanas": {
+      "name": "sylvanas",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "tassadar": {
+      "name": "tassadar",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "tracer": {
+      "name": "tracer",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "tychus": {
+      "name": "tychus",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "valla": {
+      "name": "valla",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "zagara": {
+      "name": "zagara",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "zuljin": {
+      "name": "zuljin",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "alarak": {
+      "name": "alarak",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "illidan": {
+      "name": "illidan",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "kerrigan": {
+      "name": "kerrigan",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "maiev": {
+      "name": "maiev",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "murquinho": {
+      "name": "murky",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "qhira": {
+      "name": "qhira",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "samuro": {
+      "name": "samuro",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "açougueiro": {
+      "name": "the-butcher",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "valira": {
+      "name": "valeera",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "zeratul": {
+      "name": "zeratul",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "alexstrasza": {
+      "name": "alexstrasza",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "ana": {
+      "name": "ana",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "anduin": {
+      "name": "anduin",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "auriel": {
+      "name": "auriel",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "asaluz": {
+      "name": "brightwing",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "deckard": {
+      "name": "deckard",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "kharazim": {
+      "name": "kharazim",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "lili": {
+      "name": "li-li",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "morales": {
+      "name": "lt-morales",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "lucio": {
+      "name": "lucio",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "malfurion": {
+      "name": "malfurion",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "rehgar": {
+      "name": "rehgar",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "stukov": {
+      "name": "stukov",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "tyrande": {
+      "name": "tyrande",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "uther": {
+      "name": "uther",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "whitemane": {
+      "name": "whitemane",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "abathur": {
+      "name": "abathur",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "medivh": {
+      "name": "medivh",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "vikings": {
+      "name": "the-lost-vikings",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   },
+   "zarya": {
+      "name": "zarya",
+      "builds": [],
+      "counters": [],
+      "synergies": []
+   }
+}
