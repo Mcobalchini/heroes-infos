@@ -2,11 +2,12 @@ const fs = require('fs');
 const Discord = require("discord.js");
 const config = require("./config.json");
 const heroesJson = fs.readFileSync("./heroes.json");
-const heroes = JSON.parse(heroesJson)
+require('dotenv').config({path:'./variables.env'});
+const puppeteer = require('puppeteer')
+const heroes = JSON.parse(heroesJson);
 const prefix = config.prefix;
 const bot = new Discord.Client();
 
-const puppeteer = require('puppeteer')
 
 let msg = null;
 
@@ -15,7 +16,7 @@ const commands = new Map();
 
 commands['counters'] = 'Display who can counter the specified hero!';
 commands['synergies'] = 'Display who synergizes the specified hero!';
-commands['build'] = 'Display the known builds for the specified hero!';
+commands['builds'] = 'Display the known builds for the specified hero!';
 commands['banlist'] = 'Display suggested heroes to ban on ranked';
 
 bot.on("message", function (message) {
@@ -25,7 +26,7 @@ bot.on("message", function (message) {
 	let command = message.content.split(' ', 1)[0].substring(1);
 	let args = message.content.substring(command.length + 2);
 	try {
-		if (command === 'build' || command === 'counters' || command === 'synergies') {
+		if (command === 'builds' || command === 'counters' || command === 'synergies') {
 			getHeroInfos(command, args);
 		} else if (command === 'banlist') {
 			getTopHeroesBan();
@@ -63,7 +64,7 @@ async function accessSite(command, heroName) {
 
 			return bans;
 		});
-	} else if (command === 'build' || command === 'counters' || command === 'synergies') {
+	} else if (command === 'builds' || command === 'counters' || command === 'synergies') {
 
 		await page.goto(`http://www.icy-veins.com/heroes/${heroName}-build-guide`, { waitUntil: 'domcontentloaded' })
 		result = await page.evaluate(() => {
@@ -109,7 +110,7 @@ function getHeroInfos(command, heroName) {
 	if (hero != null) {
 		if ((command === 'counters' && hero.counters.length > 0)
 			|| (command == 'synergies' && hero.synergies.length > 0)
-			|| (command == 'build' && hero.builds.length > 0)) {
+			|| (command == 'builds' && hero.builds.length > 0)) {
 			assembleReturnMessage(command, hero);
 		} else {
 			accessSite(command, hero.name).then((value) => {
@@ -152,10 +153,9 @@ function getTopHeroesBan() {
 function assembleReturnMessage(command, args) {
 	let reply = "";
 
-	if (command === 'build') {
+	if (command === 'builds') {
 		reply = `Available build(s) for ${args.name} \n`;
-		for (i in args.builds) {
-			console.log(args.builds[i].name);
+		for (i in args.builds) {			
 			reply += args.builds[i].name + ':\n' + args.builds[i].skills + '\n\n';
 		}
 
