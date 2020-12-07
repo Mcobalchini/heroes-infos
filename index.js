@@ -219,4 +219,4 @@ bot.on("ready", function (message) {
 	channel.send("Father is on");
 });
 
-bot.login(config.BOT_TOKEN);
+bot.login(process.env.HEROES_INFOS_TOKEN);
