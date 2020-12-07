@@ -14,26 +14,27 @@ let msg = null;
 let cacheBans = [];
 const commands = new Map();
 
-commands['counters'] = 'Display who counters the specified hero! \nExample: <counters [hero name]';
-commands['synergies'] = 'Display who synergizes with the specified hero! \nExample: <synergies [hero name]';
-commands['builds'] = 'Display the known builds for the specified hero! \nExample: <builds [hero name]';
-commands['banlist'] = 'Display suggested heroes to ban on ranked\n Example: <banlist';
+commands['Counters'] = 'Display who counters the specified hero! \nExample: <counters [hero name]';
+commands['Synergies'] = 'Display who synergizes with the specified hero! \nExample: <synergies [hero name]';
+commands['Builds'] = 'Display the known builds for the specified hero! \nExample: <builds [hero name]';
+commands['Banlist'] = 'Display suggested heroes to ban on ranked\n Example: <banlist';
 
 bot.on("message", function (message) {
 	if (message.author.bot) return;
 	if (!message.content.startsWith(prefix)) return;
 	msg = message;
-	let command = message.content.split(' ', 1)[0].substring(1);
-	let args = message.content.substring(command.length + 2);
+	let receivedCommand = message.content.split(' ', 1)[0].substring(1);
+	let commAux = receivedCommand.toLowerCase()
+	let args = message.content.substring(commAux.length + 2);
 	try {
-		if (command === 'builds' || command === 'counters' || command === 'synergies') {
-			getHeroInfos(command, args);
-		} else if (command === 'banlist') {
+		if (commAux === 'builds' || commAux === 'counters' || commAux === 'synergies') {
+			getHeroInfos(commAux, args);
+		} else if (commAux === 'banlist') {
 			getTopHeroesBan();
-		} else if (command === 'help') {
+		} else if (commAux === 'help') {
 			help(args);
 		} else {
-			msg.reply(`The command ${command} does not exists!`);
+			msg.reply(`The command ${receivedCommand} does not exists!`);
 		}
 	} catch (e) {
 		msg.reply('An exception ocurred! ' + e)
@@ -64,7 +65,7 @@ async function accessSite(command, heroName) {
 
 			return bans;
 		});
-	} else if (command === 'builds' || command === 'counters' || command === 'synergies') {
+	} else {
 
 		await page.goto(`http://www.icy-veins.com/heroes/${heroName}-build-guide`, { waitUntil: 'domcontentloaded' })
 		result = await page.evaluate(() => {
@@ -181,6 +182,7 @@ function assembleReturnMessage(command, args) {
 			reply += '\nAll the commands above supports both english and portuguese names\n';
 			reply += 'All the data shown here is gathered from https://www.icy-veins.com/heroes/\n';
 			reply += 'If you want to know more about an specific command type <help [command]';
+			reply += `\nVersion: ${config.version}`;
 		}
 
 	} else if (command === 'synergies') {
