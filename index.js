@@ -14,10 +14,10 @@ let msg = null;
 let cacheBans = [];
 const commands = new Map();
 
-commands['counters'] = 'Display who can counter the specified hero!';
-commands['synergies'] = 'Display who synergizes the specified hero!';
-commands['builds'] = 'Display the known builds for the specified hero!';
-commands['banlist'] = 'Display suggested heroes to ban on ranked';
+commands['counters'] = 'Display who counters the specified hero! \nExample: <counters [hero name]';
+commands['synergies'] = 'Display who synergizes with the specified hero! \nExample: <synergies [hero name]';
+commands['builds'] = 'Display the known builds for the specified hero! \nExample: <builds [hero name]';
+commands['banlist'] = 'Display suggested heroes to ban on ranked\n Example: <banlist';
 
 bot.on("message", function (message) {
 	if (message.author.bot) return;
@@ -154,7 +154,7 @@ function assembleReturnMessage(command, args) {
 	let reply = "";
 
 	if (command === 'builds') {
-		reply = `Available build(s) for ${args.name} \n`;
+		reply = `Available build(s) for ${args.name.split("-").join(" ")} \n`;
 		for (i in args.builds) {			
 			reply += args.builds[i].name + ':\n' + args.builds[i].skills + '\n\n';
 		}
@@ -165,7 +165,7 @@ function assembleReturnMessage(command, args) {
 			reply += cacheBans[i] + '\n';
 		}
 	} else if (command === 'counters') {
-		reply = `${args.name} is countered by \n`;
+		reply = `${args.name.split("-").join(" ")} is countered by \n`;
 		for (i in args.counters) {
 			reply += args.counters[i] + '\n';
 		}
@@ -174,23 +174,25 @@ function assembleReturnMessage(command, args) {
 		if (args != null) {
 			reply = args;
 		} else {
-			reply = 'The possible commands are:\n'
+			reply = 'The available commands are:\n'
 			for (let key in commands) {
 				reply += key+"\n";
 			}
-			reply += 'If you want to know more about a specific command type <help command';
+			reply += '\nAll the commands above supports both english and portuguese names\n';
+			reply += 'All the data shown here is gathered from https://www.icy-veins.com/heroes/\n';
+			reply += 'If you want to know more about an specific command type <help [command]';
 		}
 
 	} else if (command === 'synergies') {
 
-		reply = `${args.name} synergizes with \n`;
+		reply = `${args.name.split("-").join(" ")} synergizes with \n`;
 		for (i in args.synergies) {
 			reply += args.synergies[i] + '\n';
 		}
 
 	}
 
-	msg.reply('\n' + reply);
+	msg.reply(reply);
 }
 
 function findHero(heroName) {
@@ -199,7 +201,7 @@ function findHero(heroName) {
 		return heroes[heroName.toLowerCase()];
 	} else {
 		for (i in heroes) {
-			if (heroes[i].name === heroName) {
+			if (heroes[i].name.split("-").join(" ") === heroName.split("-").join(" ")) {
 				console.log('Found hero by value ' + heroes[i].name);
 				return heroes[i];
 			}
@@ -213,7 +215,7 @@ function help(command) {
 	assembleReturnMessage('help', comando);
 }
 
-bot.on("ready", function (message) {
+bot.on("ready", function () {
 	console.log('Application ready!');
 	var channel = bot.channels.cache.get('745502745934561342');
 	channel.send("Father is on");
