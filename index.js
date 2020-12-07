@@ -218,7 +218,7 @@ function help(command) {
 bot.on("ready", function () {
 	console.log('Application ready!');
 	var channel = bot.channels.cache.get('745502745934561342');
-	channel.send("Father is on");
+	channel.send(`Father is on version (${config.version})`);
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN);
