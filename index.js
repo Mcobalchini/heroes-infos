@@ -1,10 +1,10 @@
 const fs = require('fs');
 const Discord = require("discord.js");
 const config = require("./config.json");
-const heroesJson = fs.readFileSync("./heroes.json");
-require('dotenv').config({path:'./variables.env'});
+require('dotenv').config({ path: './variables.env' });
 const puppeteer = require('puppeteer')
-const heroes = JSON.parse(heroesJson);
+const heroes = JSON.parse(fs.readFileSync("./heroes.json"));
+const maps = JSON.parse(fs.readFileSync("./maps.json"));
 const prefix = config.prefix;
 const bot = new Discord.Client();
 
@@ -14,10 +14,10 @@ let msg = null;
 let cacheBans = [];
 const commands = new Map();
 
-commands['Counters'] = 'Display who counters the specified hero! \nExample: <counters [hero name]';
-commands['Synergies'] = 'Display who synergizes with the specified hero! \nExample: <synergies [hero name]';
-commands['Builds'] = 'Display the known builds for the specified hero! \nExample: <builds [hero name]';
-commands['Banlist'] = 'Display suggested heroes to ban on ranked\n Example: <banlist';
+commands['Counters'] = `Display who counters the specified hero! \nExample: ${config.prefix}counters [hero name]`;
+commands['Synergies'] = `Display who synergizes with the specified hero! \nExample: ${config.prefix}synergies [hero name]`;
+commands['Builds'] = `Display the known builds for the specified hero! \nExample: ${config.prefix}builds [hero name]`;
+commands['Banlist'] = `Display suggested heroes to ban on ranked\n Example: ${config.prefix}banlist`;
 
 bot.on("message", function (message) {
 	if (message.author.bot) return;
@@ -33,8 +33,10 @@ bot.on("message", function (message) {
 			getTopHeroesBan();
 		} else if (commAux === 'help') {
 			help(args);
+		} else if (commAux === 'map') {
+			getMapInfos(args);
 		} else {
-			msg.reply(`The command ${receivedCommand} does not exists!`);
+			msg.reply(`The command ${receivedCommand} does not exists!\nType ${config.prefix}help to know more about commands`);
 		}
 	} catch (e) {
 		msg.reply('An exception ocurred! ' + e)
@@ -73,6 +75,7 @@ async function accessSite(command, heroName) {
 			const skills = [];
 			const counters = [];
 			const synergies = [];
+			const strongerMaps = [];
 
 			document.querySelectorAll('.toc_no_parsing').forEach(nameElements =>
 				names.push(nameElements.innerText)
@@ -90,11 +93,16 @@ async function accessSite(command, heroName) {
 				synergies.push(nameElements.title)
 			);
 
+			document.querySelectorAll('.heroes_maps_stronger .heroes_maps_content span img').forEach((i) => {
+				strongerMaps.push(i.title);
+			});
+
 			let retorno = {
 				names: names,
 				skills: skills,
 				counters: counters,
 				synergies: synergies,
+				strongerMaps: strongerMaps
 			}
 
 			return retorno;
@@ -119,22 +127,38 @@ function getHeroInfos(command, heroName) {
 				for (name in value.names) {
 					let obj = {
 						name: value.names[name],
-						skills: value.skills[name],
-						counters: value.counters[name],
-						synergies: value.synergies[name],
+						skills: value.skills[name]
 					};
 
 					heroBuilds.push(obj);
 				}
 				hero.builds = heroBuilds;
 				hero.synergies = value.synergies;
-				hero.counters = value.counters;			
-				assembleReturnMessage(command, hero);
+				hero.counters = value.counters;
+				hero.strongerMaps = value.strongerMaps,
+					assembleReturnMessage(command, hero);
 			});
 		}
 
 	} else {
-		msg.reply('The specified hero was not found :v');
+		msg.reply('The specified hero was not found');
+	}
+}
+
+function getMapInfos(mapName) {
+	let map = findMap();
+	let bestHeroes = [];
+	if (map != null) {
+		for (i in heroes) {
+			for (j in heroes[i].strongerMaps) {
+				if (heroes[i].strongerMaps[j] === map.name) {
+					bestHeroes.push(heroes[i].name)
+				}
+			}
+		}
+		assembleReturnMessage('map', bestHeroes);
+	} else {
+		msg.reply(`The specified map was not found\nType ${config.prefix}help map to get a list with the available maps`);
 	}
 }
 
@@ -156,7 +180,7 @@ function assembleReturnMessage(command, args) {
 
 	if (command === 'builds') {
 		reply = `Available build(s) for ${args.name.split("-").join(" ")} \n`;
-		for (i in args.builds) {			
+		for (i in args.builds) {
 			reply += args.builds[i].name + ':\n' + args.builds[i].skills + '\n\n';
 		}
 
@@ -177,11 +201,11 @@ function assembleReturnMessage(command, args) {
 		} else {
 			reply = 'The available commands are:\n'
 			for (let key in commands) {
-				reply += key+"\n";
+				reply += key + "\n";
 			}
 			reply += '\nAll the commands above supports both english and portuguese names\n';
 			reply += 'All the data shown here is gathered from https://www.icy-veins.com/heroes/\n';
-			reply += 'If you want to know more about an specific command type <help [command]';
+			reply += `If you want to know more about an specific command type ${config.prefix}help [command]`;
 			reply += `\nVersion: ${config.version}`;
 		}
 
@@ -192,6 +216,11 @@ function assembleReturnMessage(command, args) {
 			reply += args.synergies[i] + '\n';
 		}
 
+	} else if (command === 'map'){
+		reply = "The best heroes for this map are:\n";
+		for (i in args){
+			reply += args[i] + '\n';
+		}
 	}
 
 	msg.reply(reply);
@@ -210,6 +239,13 @@ function findHero(heroName) {
 		}
 	}
 	console.log(`Hero ${heroName} not found`);
+}
+
+function findMap(mapName) {
+	let mapLowerCase = mapName.toLowerCase().split("-").join(" ");
+	return maps.find(map =>
+		(map.name.toLowerCase().split("-").join(" ") === mapLowerCase ||
+			map.localizedName.toLowerCase().split("-").join(" ") === mapLowerCase));
 }
 
 function help(command) {
