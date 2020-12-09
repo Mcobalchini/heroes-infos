@@ -146,19 +146,23 @@ function getHeroInfos(command, heroName) {
 }
 
 function getMapInfos(mapName) {
-	let map = findMap();
-	let bestHeroes = [];
-	if (map != null) {
-		for (i in heroes) {
-			for (j in heroes[i].strongerMaps) {
-				if (heroes[i].strongerMaps[j] === map.name) {
-					bestHeroes.push(heroes[i].name)
+	if (mapName != null && mapName.trim().length > 0) {
+		let map = findMap(mapName);
+		let bestHeroes = [];
+		if (map != null) {
+			for (i in heroes) {
+				for (j in heroes[i].strongerMaps) {
+					if (heroes[i].strongerMaps[j] === map.name) {
+						bestHeroes.push(heroes[i].name)
+					}
 				}
 			}
+			assembleReturnMessage('map', bestHeroes);
+		} else {
+			msg.reply(`The specified map was not found\nType ${config.prefix}help map to get a list with the available maps`);
 		}
-		assembleReturnMessage('map', bestHeroes);
 	} else {
-		msg.reply(`The specified map was not found\nType ${config.prefix}help map to get a list with the available maps`);
+		assembleReturnMessage('map', maps.map(it => it.name +  ' ( '+ it.localizedName + ' )'))
 	}
 }
 
@@ -216,9 +220,9 @@ function assembleReturnMessage(command, args) {
 			reply += args.synergies[i] + '\n';
 		}
 
-	} else if (command === 'map'){
-		reply = "The best heroes for this map are:\n";
-		for (i in args){
+	} else if (command === 'map') {
+		reply = "\n";
+		for (i in args) {
 			reply += args[i] + '\n';
 		}
 	}
@@ -228,17 +232,17 @@ function assembleReturnMessage(command, args) {
 
 function findHero(heroName) {
 	if (heroes[heroName.toLowerCase()] != null) {
-		console.log('Found hero by key ' + heroes[heroName.toLowerCase()].name);
+		process.stdout.write('Found hero by key ' + heroes[heroName.toLowerCase()].name);
 		return heroes[heroName.toLowerCase()];
 	} else {
 		for (i in heroes) {
 			if (heroes[i].name.toLowerCase().split("-").join(" ") === heroName.toLowerCase().split("-").join(" ")) {
-				console.log('Found hero by value ' + heroes[i].name);
+				process.stdout.write('Found hero by value ' + heroes[i].name);
 				return heroes[i];
 			}
 		}
 	}
-	console.log(`Hero ${heroName} not found`);
+	process.stdout.write(`Hero ${heroName} not found`);
 }
 
 function findMap(mapName) {
@@ -254,9 +258,8 @@ function help(command) {
 }
 
 bot.on("ready", function () {
-	console.log('Application ready!');
-	var channel = bot.channels.cache.get('745502745934561342');
-	channel.send(`Father is on (version ${config.version})`);
+	process.stdout.write('Application ready!');
+
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN);
