@@ -223,7 +223,7 @@ function assembleBuildsReturnMessage(args) {
 	return reply
 }
 
-function assembleBanListReturnMessage(args) {
+function assembleBanListReturnMessage() {
 	let reply = `Suggested bans\n`;
 	for (i in cacheBans) {
 		reply += cacheBans[i] + '\n';
@@ -243,6 +243,15 @@ function assembleCountersReturnMessage(args) {
 	let reply = `${args.name.split("-").join(" ")} is countered by \n`;
 	for (i in args.counters) {
 		reply += args.counters[i] + '\n';
+	}
+	return reply;
+}
+
+
+function assembleHeroStrongerMapsReturnMessage(args) {
+	let reply = `${args.name.split("-").join(" ")} is usually stronger on these maps \n`;
+	for (i in args.strongerMaps) {
+		reply += args.strongerMaps[i] + '\n';
 	}
 	return reply;
 }
@@ -276,7 +285,7 @@ function assembleSynergiesReturnMessage(args) {
 
 function assembleMapReturnMessage(args) {
 	let reply = "";
-	if (args != null && args.trim() != "") {
+	if (args != null && args != "") {
 		reply = `These are the heroes that are usually stronger on ${args}`;
 	} else {
 		reply = `These are the available maps`;
@@ -294,7 +303,7 @@ function assembleReturnMessage(command, args) {
 	if (commandObj.name === 'Builds') {
 		reply = assembleBuildsReturnMessage(args);
 	} else if (commandObj.name === 'Banlist') {
-		reply = assembleBanListReturnMessage(args);
+		reply = assembleBanListReturnMessage();
 	} else if (commandObj.name === 'Counters') {
 		reply = assembleCountersReturnMessage(args);
 	} else if (commandObj.name === 'Help') {
@@ -307,8 +316,9 @@ function assembleReturnMessage(command, args) {
 		reply = assembleFreeWeekHeroesReturnMessage(args);
 	} else if (commandObj.name === 'Infos') {
 		reply = assembleBuildsReturnMessage(args);
-		reply += "\n" + assembleSynergiesReturnMessage(args);
+		reply += assembleSynergiesReturnMessage(args);
 		reply += "\n" + assembleCountersReturnMessage(args);
+		reply += "\n" + assembleHeroStrongerMapsReturnMessage(args);
 
 	} else if (commandObj.name === 'Update') {
 		reply = "The update proccess has finished!";
