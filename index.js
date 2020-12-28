@@ -28,6 +28,7 @@ bot.on("message", function (message) {
 	let receivedCommand = message.content.split(' ', 1)[0].substring(1);
 	let commAux = receivedCommand.toLowerCase()
 	let args = message.content.substring(commAux.length + 2);
+
 	try {
 		if (commAux === 'builds' || commAux === 'counters' ||
 			commAux === 'synergies' || commAux === 'infos') {
@@ -214,118 +215,6 @@ function getFreeHeroes() {
 	}
 }
 
-
-function assembleBuildsReturnMessage(args) {
-	let reply = `Available build(s) for ${args.name.split("-").join(" ")} \n`;
-	for (i in args.builds) {
-		reply += args.builds[i].name + ':\n' + args.builds[i].skills + '\n\n';
-	}
-	return reply
-}
-
-function assembleBanListReturnMessage() {
-	let reply = `Suggested bans\n`;
-	for (i in cacheBans) {
-		reply += cacheBans[i] + '\n';
-	}
-	return reply;
-}
-
-function assembleFreeWeekHeroesReturnMessage(args) {
-	let reply = `These are the free rotation heroes\n`;
-	for (i in cacheFreeHeroes) {
-		reply += cacheFreeHeroes[i] + '\n';
-	}
-	return reply;
-}
-
-function assembleCountersReturnMessage(args) {
-	let reply = `${args.name.split("-").join(" ")} is countered by \n`;
-	for (i in args.counters) {
-		reply += args.counters[i] + '\n';
-	}
-	return reply;
-}
-
-
-function assembleHeroStrongerMapsReturnMessage(args) {
-	let reply = `${args.name.split("-").join(" ")} is usually stronger on these maps \n`;
-	for (i in args.strongerMaps) {
-		reply += args.strongerMaps[i] + '\n';
-	}
-	return reply;
-}
-
-function assembleHelpReturnMessage(args) {
-	let reply = "";
-	if (args != null && args != "null" && args != "") {
-		let command = findCommand(args);
-		reply += command.hint;
-		if (command.acceptParams) {
-			reply += `\nExample: ${config.prefix}${command.name.toLowerCase()} [argument] `;
-		}
-	} else {
-		reply = 'The available commands are:\n'
-		reply += commands.map(it => it.name + "\n").join('');
-		reply += '\nAll the commands above supports both english and portuguese names\n';
-		reply += 'All the data shown here is gathered from https://www.icy-veins.com/heroes/\n';
-		reply += `If you want to know more about an specific command type ${config.prefix}help [command]`;
-		reply += `\nVersion: ${config.version}`;
-	}
-	return reply;
-}
-
-function assembleSynergiesReturnMessage(args) {
-	let reply = `${args.name.split("-").join(" ")} synergizes with \n`;
-	for (i in args.synergies) {
-		reply += args.synergies[i] + '\n';
-	}
-	return reply;
-}
-
-function assembleMapReturnMessage(args) {
-	let reply = "";
-	if (args != null && args != "") {
-		reply = `These are the heroes that are usually stronger on ${args}`;
-	} else {
-		reply = `These are the available maps`;
-	}
-	reply = "\n";
-	for (i in args) {
-		reply += args[i] + '\n';
-	}
-	return reply;
-}
-
-function assembleReturnMessage(command, args) {
-	let commandObj = findCommand(command);
-	let reply = "";
-	if (commandObj.name === 'Builds') {
-		reply = assembleBuildsReturnMessage(args);
-	} else if (commandObj.name === 'Banlist') {
-		reply = assembleBanListReturnMessage();
-	} else if (commandObj.name === 'Counters') {
-		reply = assembleCountersReturnMessage(args);
-	} else if (commandObj.name === 'Help') {
-		reply = assembleHelpReturnMessage(args);
-	} else if (commandObj.name === 'Synergies') {
-		reply = assembleSynergiesReturnMessage(args);
-	} else if (commandObj.name === 'Map') {
-		reply = assembleMapReturnMessage(args);
-	} else if (commandObj.name === 'FreeWeek') {
-		reply = assembleFreeWeekHeroesReturnMessage(args);
-	} else if (commandObj.name === 'Infos') {
-		reply = assembleBuildsReturnMessage(args);
-		reply += assembleSynergiesReturnMessage(args);
-		reply += "\n" + assembleCountersReturnMessage(args);
-		reply += "\n" + assembleHeroStrongerMapsReturnMessage(args);
-
-	} else if (commandObj.name === 'Update') {
-		reply = "The update proccess has finished!";
-	}
-	msg.reply(reply);
-}
-
 function findHero(heroName) {
 	if (heroes[heroName.toLowerCase()] != null) {
 		process.stdout.write('Found hero by key ' + heroes[heroName.toLowerCase()].name);
@@ -357,7 +246,6 @@ function findCommand(commandName) {
 function help(command) {
 	assembleReturnMessage('help', command);
 }
-
 
 async function updateData() {
 	msg.reply('The update proccess has started...');
@@ -431,10 +319,10 @@ async function updateData() {
 		heroes[i].strongerMaps = result.strongerMaps;
 		process.stdout.write(`Finished proccess for ${heroes[i].name}\n`);
 	}
-	process.stdout.write(JSON.stringify(heroes));
-	fs.writeFile('heroes.json', JSON.stringify(heroes), (e)=> {
-		if(e != null){
-			process.stdout.write('error: '+ e);
+
+	fs.writeFile('heroes.json', JSON.stringify(heroes), (e) => {
+		if (e != null) {
+			process.stdout.write('error: ' + e);
 			msg.reply('KEKW, the bot is on fire');
 		}
 	});
@@ -442,9 +330,128 @@ async function updateData() {
 	assembleReturnMessage('update');
 };
 
+//Return messages
+function assembleBuildsReturnMessage(args) {
+	let reply = `Available build(s) for ${args.name.split("-").join(" ")} \n`;
+	for (i in args.builds) {
+		reply += args.builds[i].name + ':\n' + args.builds[i].skills + '\n\n';
+	}
+	return reply
+}
+
+function assembleBanListReturnMessage() {
+	let reply = `Suggested bans\n`;
+	for (i in cacheBans) {
+		reply += cacheBans[i] + '\n';
+	}
+	return reply;
+}
+
+function assembleFreeWeekHeroesReturnMessage(args) {
+	let reply = `There are no free heroes yet ¯\\_(ツ)_/¯`;
+
+	if (cacheFreeHeroes.length > 0) {
+		reply = "These are the free rotation heroes\n";
+		for (i in cacheFreeHeroes) {
+			reply += cacheFreeHeroes[i] + '\n';
+		}
+	}
+	return reply;
+}
+
+function assembleCountersReturnMessage(args) {
+	let reply = `${args.name.split("-").join(" ")} is countered by \n`;
+	for (i in args.counters) {
+		reply += args.counters[i] + '\n';
+	}
+	return reply;
+}
+
+function assembleHeroStrongerMapsReturnMessage(args) {
+	let reply = `${args.name.split("-").join(" ")} is usually stronger on these maps \n`;
+	for (i in args.strongerMaps) {
+		reply += args.strongerMaps[i] + '\n';
+	}
+	return reply;
+}
+
+function assembleHelpReturnMessage(args) {
+	let reply = "";
+	if (args != null && args != "null" && args != "") {
+		let command = findCommand(args);
+		reply += command.hint;
+		if (command.acceptParams) {
+			reply += `\nExample: ${config.prefix}${command.name.toLowerCase()} [argument] `;
+		}
+	} else {
+		reply = 'The available commands are:\n'
+		reply += commands.map(it => it.name + "\n").join('');
+		reply += '\nAll the commands above supports both english and portuguese names\n';
+		reply += 'All the data shown here is gathered from https://www.icy-veins.com/heroes/\n';
+		reply += `If you want to know more about an specific command, type ${config.prefix}help [command]`;
+		reply += `\nVersion: ${config.version}`;
+	}
+	return reply;
+}
+
+function assembleSynergiesReturnMessage(args) {
+	let reply = `${args.name.split("-").join(" ")} synergizes with \n`;
+	for (i in args.synergies) {
+		reply += args.synergies[i] + '\n';
+	}
+	return reply;
+}
+
+function assembleMapReturnMessage(args) {
+	let reply = "";
+	if (args != null && args != "") {
+		reply = `These are the heroes that are usually stronger on ${args}`;
+	} else {
+		reply = `These are the available maps`;
+	}
+	reply = "\n";
+	for (i in args) {
+		reply += args[i] + '\n';
+	}
+	return reply;
+}
+
+function assembleReturnMessage(command, args) {
+	let commandObj = findCommand(command);
+	let reply = "";
+	if (commandObj.name === 'Builds') {
+		reply = assembleBuildsReturnMessage(args);
+	} else if (commandObj.name === 'Banlist') {
+		reply = assembleBanListReturnMessage();
+	} else if (commandObj.name === 'Counters') {
+		reply = assembleCountersReturnMessage(args);
+	} else if (commandObj.name === 'Help') {
+		reply = assembleHelpReturnMessage(args);
+	} else if (commandObj.name === 'Synergies') {
+		reply = assembleSynergiesReturnMessage(args);
+	} else if (commandObj.name === 'Map') {
+		reply = assembleMapReturnMessage(args);
+	} else if (commandObj.name === 'FreeWeek') {
+		reply = assembleFreeWeekHeroesReturnMessage(args);
+	} else if (commandObj.name === 'Infos') {
+		reply = assembleBuildsReturnMessage(args);
+		reply += assembleSynergiesReturnMessage(args);
+		reply += "\n" + assembleCountersReturnMessage(args);
+		reply += "\n" + assembleHeroStrongerMapsReturnMessage(args);
+
+	} else if (commandObj.name === 'Update') {
+		reply = "The update proccess has finished!";
+	}
+	msg.reply(reply);
+}
+//end return messages
 
 bot.on("ready", function () {
 	process.stdout.write('Application ready!');
+	bot.user.setActivity("Heroes of the Storm", {
+		type: "PLAYING",
+		url: "https://heroesofthestorm.com/"
+	  })
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN);
