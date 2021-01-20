@@ -2,8 +2,9 @@ const fs = require('fs');
 const Discord = require("discord.js");
 const config = require("./config.json");
 require('dotenv').config({ path: './variables.env' });
-const puppeteer = require('puppeteer')
-const heroes = JSON.parse(fs.readFileSync("./heroes.json"));
+const puppeteer = require('puppeteer');
+const heroesBase = JSON.parse(fs.readFileSync("./heroes-base.json"));
+const heroesInfos = JSON.parse(fs.readFileSync("./heroes-infos.json"));
 const commands = JSON.parse(fs.readFileSync("./commands.json"));
 const maps = JSON.parse(fs.readFileSync("./maps.json"));
 const prefix = config.prefix;
@@ -32,7 +33,7 @@ bot.on("message", function (message) {
 	try {
 		if (commAux === 'builds' || commAux === 'counters' ||
 			commAux === 'synergies' || commAux === 'infos') {
-			getHeroInfos(commAux, args);
+			getHeroInfos(commAux, args);					
 		} else if (commAux === 'banlist') {
 			getTopHeroesBan();
 		} else if (commAux === 'freeweek') {
@@ -47,12 +48,12 @@ bot.on("message", function (message) {
 			msg.reply(`The command ${receivedCommand} does not exists!\nType ${config.prefix}help to know more about commands`);
 		}
 	} catch (e) {
-		process.stdout.write(`Exception: ${e.stack}`);
+		process.stdout.write(`Exception: ${e.stack}\n`);
 		msg.reply('An exception occurred! ' + e)
 	}
 });
 
-async function accessSite(command, heroName) {
+async function accessSite(command, heroLink) {
 
 	const browser = await puppeteer.launch()
 	const page = await browser.newPage()
@@ -90,7 +91,7 @@ async function accessSite(command, heroName) {
 		});
 	} else {
 
-		await page.goto(`http://www.icy-veins.com/heroes/${heroName}-build-guide`, { waitUntil: 'domcontentloaded' })
+		await page.goto(`http://www.icy-veins.com/heroes/${heroLink}-build-guide`, { waitUntil: 'domcontentloaded' })
 		result = await page.evaluate(() => {
 			const names = [];
 			const skills = [];
@@ -134,123 +135,11 @@ async function accessSite(command, heroName) {
 	return result;
 };
 
-function getHeroInfos(command, heroName) {
-	let heroBuilds = []
-	let hero = findHero(heroName);
-
-	if (hero != null) {
-		if ((command === 'counters' && hero.counters.length > 0)
-			|| (command === 'synergies' && hero.synergies.length > 0)
-			|| (command === 'builds' && hero.builds.length > 0
-				|| (command === 'infos' && hero.counters.length > 0 && hero.synergies.length > 0 && hero.builds.length > 0))) {
-
-			assembleReturnMessage(command, hero);
-		} else {
-			accessSite(command, hero.name).then((value) => {
-
-				for (name in value.names) {
-					let obj = {
-						name: value.names[name],
-						skills: value.skills[name]
-					};
-
-					heroBuilds.push(obj);
-				}
-				hero.builds = heroBuilds;
-				hero.synergies = value.synergies;
-				hero.counters = value.counters;
-				hero.strongerMaps = value.strongerMaps;
-
-				assembleReturnMessage(command, hero);
-			});
-		}
-
-	} else {
-		msg.reply(`The hero ${heroName} was not found`);
-	}
-}
-
-function getMapInfos(mapName) {
-	if (mapName != null && mapName.trim().length > 0) {
-		let map = findMap(mapName);
-		let bestHeroes = [];
-		if (map != null) {
-			for (i in heroes) {
-				for (j in heroes[i].strongerMaps) {
-					if (heroes[i].strongerMaps[j] === map.name) {
-						bestHeroes.push(heroes[i].name)
-					}
-				}
-			}
-			assembleReturnMessage('map', bestHeroes);
-		} else {
-			msg.reply(`The specified map was not found\nType ${config.prefix}help map to get a list with the available maps`);
-		}
-	} else {
-		assembleReturnMessage('map', maps.map(it => it.name + ' ( ' + it.localizedName + ' )'))
-	}
-}
-
-function getTopHeroesBan() {
-
-	if (cacheBans.length > 0) {
-		assembleReturnMessage('banlist');
-	} else {
-		accessSite('banlist').then((value) => {
-			cacheBans = value
-			assembleReturnMessage('banlist');
-		});
-	}
-
-}
-
-function getFreeHeroes() {
-	if (cacheFreeHeroes.length > 0) {
-		assembleReturnMessage('freeweek');
-	} else {
-		accessSite('freeweek').then((value) => {
-			cacheFreeHeroes = value;
-			assembleReturnMessage('freeweek');
-		});
-	}
-}
-
-function findHero(heroName) {
-	if (heroes[heroName.toLowerCase()] != null) {
-		process.stdout.write('Found hero by key ' + heroes[heroName.toLowerCase()].name);
-		return heroes[heroName.toLowerCase()];
-	} else {
-		for (i in heroes) {
-			if (heroes[i].name.toLowerCase().split("-").join(" ") === heroName.toLowerCase().split("-").join(" ")) {
-				process.stdout.write('Found hero by value ' + heroes[i].name);
-				return heroes[i];
-			}
-		}
-	}
-	process.stdout.write(`Hero ${heroName} not found`);
-}
-
-function findMap(mapName) {
-	let mapLowerCase = mapName.toLowerCase().split("-").join(" ");
-	return maps.find(map =>
-	(map.name.toLowerCase().split("-").join(" ") === mapLowerCase ||
-		map.localizedName.toLowerCase().split("-").join(" ") === mapLowerCase));
-}
-
-function findCommand(commandName) {
-	let commandNameToLowerCase = commandName.toLowerCase().split("-").join(" ");
-	return commands.find(command =>
-		(command.name.toLowerCase().split("-").join(" ") === commandNameToLowerCase));
-}
-
-function help(command) {
-	assembleReturnMessage('help', command);
-}
-
 async function updateData() {
-	msg.reply('The update proccess has started...');
+	msg.reply('The update process has started...');
 	updatingData = true;
-	for (let i in heroes) {
+	for (let i in heroesBase) {
+
 		const browser = await puppeteer.launch()
 		const page = await browser.newPage()
 		await page.setRequestInterception(true)
@@ -262,7 +151,7 @@ async function updateData() {
 
 		let result = ""
 
-		await page.goto(`http://www.icy-veins.com/heroes/${heroes[i].name}-build-guide`, { waitUntil: 'domcontentloaded' })
+		await page.goto(`http://www.icy-veins.com/heroes/${heroesBase[i].accessLink}-build-guide`, { waitUntil: 'domcontentloaded' })
 		result = await page.evaluate(() => {
 			const names = [];
 			const skills = [];
@@ -304,6 +193,9 @@ async function updateData() {
 
 		await browser.close();
 		let heroBuilds = [];
+		let heroCounters = [];
+		let heroSynergies = [];
+
 		for (name in result.names) {
 			let obj = {
 				name: result.names[name],
@@ -313,28 +205,167 @@ async function updateData() {
 			heroBuilds.push(obj);
 		}
 
-		heroes[i].builds = heroBuilds;
-		heroes[i].synergies = result.synergies;
-		heroes[i].counters = result.counters;
-		heroes[i].strongerMaps = result.strongerMaps;
-		process.stdout.write(`Finished proccess for ${heroes[i].name}\n`);
+		for (hero in result.synergies) {
+			heroSynergies.push(`${findHero(hero).name} (${findHero(hero).localizedName})`);
+		}
+	
+		for (hero in result.counters) {
+			heroCounters.push(`${findHero(hero).name} (${findHero(hero).localizedName})`);
+		}
+
+		if (heroesInfos[i] == null) {
+			heroesInfos[i] = {};
+		}
+		
+		heroesInfos[i].id = heroesBase[i].id;
+		heroesInfos[i].name = `${heroesBase[i].name} (${heroesBase[i].localizedName})`;
+		heroesInfos[i].builds = heroBuilds;
+		heroesInfos[i].synergies = heroSynergies;
+		heroesInfos[i].counters = heroCounters;
+		heroesInfos[i].strongerMaps = result.strongerMaps;
+		process.stdout.write(`Finished process for ${heroesInfos[i].name} at ${new Date().toLocaleTimeString()}\n`);
 	}
 
-	fs.writeFile('heroes.json', JSON.stringify(heroes), (e) => {
+	fs.writeFile('heroes-infos.json', JSON.stringify(heroesInfos), (e) => {
 		if (e != null) {
-			process.stdout.write('error: ' + e);
+			process.stdout.write('error: ' + e+"\n");
 			msg.reply('KEKW, the bot is on fire');
 		}
 	});
 	updatingData = false;
+	process.stdout.write(`Finished update process at ${new Date().toLocaleTimeString()}\n`);
 	assembleReturnMessage('update');
 };
 
+function getHeroInfos(command, heroName) {
+	let heroBuilds = []
+	let hero = findHero(heroName);
+
+	if (hero != null) {
+		let heroInfos = findHeroInfos(hero.id);
+
+		if (heroInfos != null && ((command === 'counters' && heroInfos.counters.length > 0)
+			|| (command === 'synergies' && heroInfos.synergies.length > 0)
+			|| (command === 'builds' && heroInfos.builds.length > 0
+				|| (command === 'infos' && heroInfos.counters.length > 0 && heroInfos.synergies.length > 0 && heroInfos.builds.length > 0)))) {
+
+			assembleReturnMessage(command, heroInfos);
+		} else {
+			accessSite(command, hero.acessLink).then((value) => {
+
+				for (name in value.names) {
+					let obj = {
+						name: value.names[name],
+						skills: value.skills[name]
+					};
+
+					heroBuilds.push(obj);
+				}
+
+				if(heroInfos == null) {
+					heroInfos = {}
+				}
+
+				heroInfos.id = hero.id;
+				heroInfos.name = `${hero.name} (${hero.localizedName})`;
+				heroInfos.builds = heroBuilds;
+				heroInfos.synergies = value.synergies;
+				heroInfos.counters = value.counters;
+				heroInfos.strongerMaps = value.strongerMaps;
+				heroesInfos.push(heroInfos);
+
+				assembleReturnMessage(command, heroInfos);
+			});
+		}
+
+	} else {
+		msg.reply(`The hero ${heroName} was not found`);
+	}
+}
+
+function getMapInfos(mapName) {
+	if (mapName != null && mapName.trim().length > 0) {
+		let map = findMap(mapName);
+		let bestHeroes = [];
+		if (map != null) {
+			for (i in heroesInfos) {
+				for (j in heroesInfos[i].strongerMaps) {
+					if (heroesInfos[i].strongerMaps[j] === map.name) {
+						bestHeroes.push(heroesInfos[i].name)
+					}
+				}
+			}
+			assembleReturnMessage('map', bestHeroes);
+		} else {
+			msg.reply(`The specified map was not found\nType ${config.prefix}help map to get a list with the available maps`);
+		}
+	} else {
+		assembleReturnMessage('map', maps.map(it => it.name + ' ( ' + it.localizedName + ' )'))
+	}
+}
+
+function getTopHeroesBan() {
+
+	if (cacheBans.length > 0) {
+		assembleReturnMessage('banlist');
+	} else {
+		accessSite('banlist').then((value) => {		
+			cacheBans = value
+			assembleReturnMessage('banlist');
+		});
+	}
+
+}
+
+function getFreeHeroes() {
+	if (cacheFreeHeroes.length > 0) {
+		assembleReturnMessage('freeweek');
+	} else {
+		accessSite('freeweek').then((value) => {
+			cacheFreeHeroes = value;
+			assembleReturnMessage('freeweek');
+		});
+	}
+}
+
+function findHero(heroName) {
+	let hero = heroesBase.find(hero => (hero.name.cleanVal() === heroName.cleanVal() || 
+		hero.localizedName.cleanVal() === heroName.cleanVal() ||
+		hero.id.cleanVal() === heroName.cleanVal()));
+
+	if (hero != null) {		
+		return hero;
+	} 
+	process.stdout.write(`Hero ${heroName} not found\n`);
+}
+
+function findHeroInfos(idParam){
+	return heroesInfos.find(hero => (hero.id === idParam));
+}
+
+function findMap(mapName) {
+	let mapLowerCase = mapName.cleanVal();
+	return maps.find(map =>
+	(map.name.cleanVal() === mapLowerCase ||
+		map.localizedName.cleanVal() === mapLowerCase));
+}
+
+function findCommand(commandName) {
+	let commandNameToLowerCase = commandName.cleanVal();
+	return commands.find(command =>
+		(command.name.cleanVal() === commandNameToLowerCase));
+}
+
+function help(command) {
+	assembleReturnMessage('help', command);
+}
+
+
 //Return messages
-function assembleBuildsReturnMessage(args) {
-	let reply = `Available build(s) for ${args.name.split("-").join(" ")} \n`;
-	for (i in args.builds) {
-		reply += args.builds[i].name + ':\n' + args.builds[i].skills + '\n\n';
+function assembleBuildsReturnMessage(hero) {
+	let reply = `Available build(s) for ${hero.name} \n`;
+	for (i in hero.builds) {
+		reply += hero.builds[i].name + ':\n' + hero.builds[i].skills + '\n\n';
 	}
 	return reply
 }
@@ -347,7 +378,7 @@ function assembleBanListReturnMessage() {
 	return reply;
 }
 
-function assembleFreeWeekHeroesReturnMessage(args) {
+function assembleFreeWeekHeroesReturnMessage() {
 	let reply = `There are no free heroes yet ¯\\_(ツ)_/¯`;
 
 	if (cacheFreeHeroes.length > 0) {
@@ -359,18 +390,18 @@ function assembleFreeWeekHeroesReturnMessage(args) {
 	return reply;
 }
 
-function assembleCountersReturnMessage(args) {
-	let reply = `${args.name.split("-").join(" ")} is countered by \n`;
-	for (i in args.counters) {
-		reply += args.counters[i] + '\n';
+function assembleCountersReturnMessage(hero) {
+	let reply = `${hero.name} is countered by \n`;
+	for (i in hero.counters) {
+		reply += hero.counters[i] + '\n';
 	}
 	return reply;
 }
 
-function assembleHeroStrongerMapsReturnMessage(args) {
-	let reply = `${args.name.split("-").join(" ")} is usually stronger on these maps \n`;
-	for (i in args.strongerMaps) {
-		reply += args.strongerMaps[i] + '\n';
+function assembleHeroStrongerMapsReturnMessage(hero) {
+	let reply = `${hero.name} is usually stronger on these maps \n`;
+	for (i in hero.strongerMaps) {
+		reply += hero.strongerMaps[i] + '\n';
 	}
 	return reply;
 }
@@ -440,14 +471,23 @@ function assembleReturnMessage(command, args) {
 		reply += "\n" + assembleHeroStrongerMapsReturnMessage(args);
 
 	} else if (commandObj.name === 'Update') {
-		reply = "The update proccess has finished!";
+		reply = "The update process has finished!";
 	}
 	msg.reply(reply);
 }
 //end return messages
 
 bot.on("ready", function () {
-	process.stdout.write('Application ready!');
+	
+	Object.defineProperty(String.prototype, "cleanVal", {
+		value: function SayHi() {
+			return this.toLowerCase().split("-").join(" ");
+		},
+		writable: true,
+		configurable: true
+	});
+
+	process.stdout.write('Application ready!\n');
 	bot.user.setActivity("Heroes of the Storm", {
 		type: "PLAYING",
 		url: "https://heroesofthestorm.com/"

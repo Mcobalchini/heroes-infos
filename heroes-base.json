@@ -1,0 +1,542 @@
+[
+    {
+       "name": "Hogger",
+       "localizedName": "Hogger",
+       "accessLink": "hogger",
+       "id": "0"
+    },
+    {
+       "name": "Mei",
+       "localizedName": "Mei",
+       "accessLink": "mei",
+       "id": "1"
+    },
+    {
+       "name": "Deathwing",
+       "localizedName": "Asa da Morte",
+       "accessLink": "deathwing",
+       "id": "2"
+    },
+    {
+       "name": "Qhira",
+       "localizedName": "Qhira",
+       "accessLink": "qhira",
+       "id": "3"
+    },
+    {
+       "name": "Anduin",
+       "localizedName": "Anduin",
+       "accessLink": "anduin",
+       "id": "4"
+    },
+    {
+       "name": "Imperius",
+       "localizedName": "Impérius",
+       "accessLink": "imperius",
+       "id": "5"
+    },
+    {
+       "name": "Orphea",
+       "localizedName": "Orféa",
+       "accessLink": "orphea",
+       "id": "6"
+    },
+    {
+       "name": "Mal'Ganis",
+       "localizedName": "Mal'Ganis",
+       "accessLink": "malganis",
+       "id": "7"
+    },
+    {
+       "name": "Mephisto",
+       "localizedName": "Mefisto",
+       "accessLink": "mephisto",
+       "id": "8"
+    },
+    {
+       "name": "Whitemane",
+       "localizedName": "Cristalba",
+       "accessLink": "whitemane",
+       "id": "9"
+    },
+    {
+       "name": "Yrel",
+       "localizedName": "Yrel",
+       "accessLink": "yrel",
+       "id": "10"
+    },
+    {
+       "name": "Deckard",
+       "localizedName": "Deckard",
+       "accessLink": "deckard",
+       "id": "11"
+    },
+    {
+       "name": "Fenix",
+       "localizedName": "Fenix",
+       "accessLink": "fenix",
+       "id": "12"
+    },
+    {
+       "name": "Maiev",
+       "localizedName": "Maiev",
+       "accessLink": "maiev",
+       "id": "13"
+    },
+    {
+       "name": "Blaze",
+       "localizedName": "Blaze",
+       "accessLink": "blaze",
+       "id": "14"
+    },
+    {
+       "name": "Hanzo",
+       "localizedName": "Hanzo",
+       "accessLink": "hanzo",
+       "id": "15"
+    },
+    {
+       "name": "Alexstrasza",
+       "localizedName": "Alexstrasza",
+       "accessLink": "alexstrasza",
+       "id": "16"
+    },
+    {
+       "name": "Junkrat",
+       "localizedName": "Junkrat",
+       "accessLink": "junkrat",
+       "id": "17"
+    },
+    {
+       "name": "Ana",
+       "localizedName": "Ana",
+       "accessLink": "ana",
+       "id": "18"
+    },
+    {
+       "name": "Kel'Thuzad",
+       "localizedName": "Kel'Thuzad",
+       "accessLink": "kelthuzad",
+       "id": "19"
+    },
+    {
+       "name": "Garrosh",
+       "localizedName": "Garrosh",
+       "accessLink": "garrosh",
+       "id": "20"
+    },
+    {
+       "name": "Stukov",
+       "localizedName": "Stukov",
+       "accessLink": "stukov",
+       "id": "21"
+    },
+    {
+       "name": "Malthael",
+       "localizedName": "Maltael",
+       "accessLink": "malthael",
+       "id": "22"
+    },
+    {
+       "name": "D.Va",
+       "localizedName": "D.Va",
+       "accessLink": "dva",
+       "id": "23"
+    },
+    {
+       "name": "Genji",
+       "localizedName": "Genji",
+       "accessLink": "genji",
+       "id": "24"
+    },
+    {
+       "name": "Cassia",
+       "localizedName": "Cássia",
+       "accessLink": "cassia",
+       "id": "25"
+    },
+    {
+       "name": "Probius",
+       "localizedName": "Sondius",
+       "accessLink": "probius",
+       "id": "26"
+    },
+    {
+       "name": "Lúcio",
+       "localizedName": "Lúcio",
+       "accessLink": "lúcio",
+       "id": "27"
+    },
+    {
+       "name": "Valeera",
+       "localizedName": "Valira",
+       "accessLink": "valeera",
+       "id": "28"
+    },
+    {
+       "name": "Zul'jin",
+       "localizedName": "Zul'jin",
+       "accessLink": "zuljin",
+       "id": "29"
+    },
+    {
+       "name": "Ragnaros",
+       "localizedName": "Ragnaros",
+       "accessLink": "ragnaros",
+       "id": "30"
+    },
+    {
+       "name": "Varian",
+       "localizedName": "Varian",
+       "accessLink": "varian",
+       "id": "31"
+    },
+    {
+       "name": "Samuro",
+       "localizedName": "Samuro",
+       "accessLink": "samuro",
+       "id": "32"
+    },
+    {
+       "name": "Zarya",
+       "localizedName": "Zarya",
+       "accessLink": "zarya",
+       "id": "33"
+    },
+    {
+       "name": "Alarak",
+       "localizedName": "Alarak",
+       "accessLink": "alarak",
+       "id": "34"
+    },
+    {
+       "name": "Auriel",
+       "localizedName": "Auriel",
+       "accessLink": "auriel",
+       "id": "35"
+    },
+    {
+       "name": "Gul'dan",
+       "localizedName": "Gul'dan",
+       "accessLink": "guldan",
+       "id": "36"
+    },
+    {
+       "name": "Medivh",
+       "localizedName": "Medivh",
+       "accessLink": "medivh",
+       "id": "37"
+    },
+    {
+       "name": "Chromie",
+       "localizedName": "Crona",
+       "accessLink": "chromie",
+       "id": "38"
+    },
+    {
+       "name": "Tracer",
+       "localizedName": "Tracer",
+       "accessLink": "tracer",
+       "id": "39"
+    },
+    {
+       "name": "Dehaka",
+       "localizedName": "Dehaka",
+       "accessLink": "dehaka",
+       "id": "40"
+    },
+    {
+       "name": "Xul",
+       "localizedName": "Xul",
+       "accessLink": "xul",
+       "id": "41"
+    },
+    {
+       "name": "Li-Ming",
+       "localizedName": "Li-Ming",
+       "accessLink": "li-ming",
+       "id": "42"
+    },
+    {
+       "name": "Greymane",
+       "localizedName": "Greymane",
+       "accessLink": "greymane",
+       "id": "43"
+    },
+    {
+       "name": "Lunara",
+       "localizedName": "Lunara",
+       "accessLink": "lunara",
+       "id": "44"
+    },
+    {
+       "name": "Cho",
+       "localizedName": "Cho",
+       "accessLink": "cho",
+       "id": "45"
+    },
+    {
+       "name": "Gall",
+       "localizedName": "Gall",
+       "accessLink": "gall",
+       "id": "46"
+    },
+    {
+       "name": "Artanis",
+       "localizedName": "Artanis",
+       "accessLink": "artanis",
+       "id": "47"
+    },
+    {
+       "name": "Lt. Morales",
+       "localizedName": "Ten. Morales",
+       "accessLink": "lt-morales",
+       "id": "48"
+    },
+    {
+       "name": "Rexxar",
+       "localizedName": "Rexxar",
+       "accessLink": "rexxar",
+       "id": "49"
+    },
+    {
+       "name": "Kharazim",
+       "localizedName": "Kharazim",
+       "accessLink": "kharazim",
+       "id": "50"
+    },
+    {
+       "name": "Leoric",
+       "localizedName": "Leoric",
+       "accessLink": "leoric",
+       "id": "51"
+    },
+    {
+       "name": "The Butcher",
+       "localizedName": "O Açougueiro",
+       "accessLink": "the-butcher",
+       "id": "52"
+    },
+    {
+       "name": "Johanna",
+       "localizedName": "Johanna",
+       "accessLink": "johanna",
+       "id": "53"
+    },
+    {
+       "name": "Kael'thas",
+       "localizedName": "Kael'thas",
+       "accessLink": "kaelthas",
+       "id": "54"
+    },
+    {
+       "name": "Sylvanas",
+       "localizedName": "Sylvana",
+       "accessLink": "sylvanas",
+       "id": "55"
+    },
+    {
+       "name": "The Lost Vikings",
+       "localizedName": "Os Vikings Perdidos",
+       "accessLink": "the-lost-vikings",
+       "id": "56"
+    },
+    {
+       "name": "Thrall",
+       "localizedName": "Thrall",
+       "accessLink": "thrall",
+       "id": "57"
+    },
+    {
+       "name": "Jaina",
+       "localizedName": "Jaina",
+       "accessLink": "jaina",
+       "id": "58"
+    },
+    {
+       "name": "Azmodan",
+       "localizedName": "Azmodan",
+       "accessLink": "azmodan",
+       "id": "59"
+    },
+    {
+       "name": "Anub'arak",
+       "localizedName": "Anub'arak",
+       "accessLink": "anubarak",
+       "id": "60"
+    },
+    {
+       "name": "Chen",
+       "localizedName": "Chen",
+       "accessLink": "chen",
+       "id": "61"
+    },
+    {
+       "name": "Rehgar",
+       "localizedName": "Rehgar",
+       "accessLink": "rehgar",
+       "id": "62"
+    },
+    {
+       "name": "Zagara",
+       "localizedName": "Zagara",
+       "accessLink": "zagara",
+       "id": "63"
+    },
+    {
+       "name": "Murky",
+       "localizedName": "Murquinho",
+       "accessLink": "murky",
+       "id": "64"
+    },
+    {
+       "name": "Brightwing",
+       "localizedName": "Asaluz",
+       "accessLink": "brightwing",
+       "id": "65"
+    },
+    {
+       "name": "Li Li",
+       "localizedName": "Li Li",
+       "accessLink": "li-li",
+       "id": "66"
+    },
+    {
+       "name": "Tychus",
+       "localizedName": "Tychus",
+       "accessLink": "tychus",
+       "id": "67"
+    },
+    {
+       "name": "Abathur",
+       "localizedName": "Abathur",
+       "accessLink": "abathur",
+       "id": "68"
+    },
+    {
+       "name": "Arthas",
+       "localizedName": "Arthas",
+       "accessLink": "arthas",
+       "id": "69"
+    },
+    {
+       "name": "Diablo",
+       "localizedName": "Diablo",
+       "accessLink": "diablo",
+       "id": "70"
+    },
+    {
+       "name": "Illidan",
+       "localizedName": "Illidan",
+       "accessLink": "illidan",
+       "id": "71"
+    },
+    {
+       "name": "Kerrigan",
+       "localizedName": "Kerrigan",
+       "accessLink": "kerrigan",
+       "id": "72"
+    },
+    {
+       "name": "Malfurion",
+       "localizedName": "Malfurion",
+       "accessLink": "malfurion",
+       "id": "73"
+    },
+    {
+       "name": "Muradin",
+       "localizedName": "Muradin",
+       "accessLink": "muradin",
+       "id": "74"
+    },
+    {
+       "name": "Nazeebo",
+       "localizedName": "Nazibo",
+       "accessLink": "nazeebo",
+       "id": "75"
+    },
+    {
+       "name": "Nova",
+       "localizedName": "Nova",
+       "accessLink": "nova",
+       "id": "76"
+    },
+    {
+       "name": "Raynor",
+       "localizedName": "Raynor",
+       "accessLink": "raynor",
+       "id": "77"
+    },
+    {
+       "name": "Sgt. Hammer",
+       "localizedName": "Sgt. Marreta",
+       "accessLink": "sgt-hammer",
+       "id": "78"
+    },
+    {
+       "name": "Sonya",
+       "localizedName": "Sonya",
+       "accessLink": "sonya",
+       "id": "79"
+    },
+    {
+       "name": "Tyrael",
+       "localizedName": "Tyrael",
+       "accessLink": "tyrael",
+       "id": "80"
+    },
+    {
+       "name": "Tyrande",
+       "localizedName": "Tyrande",
+       "accessLink": "tyrande",
+       "id": "81"
+    },
+    {
+       "name": "Uther",
+       "localizedName": "Uther",
+       "accessLink": "uther",
+       "id": "82"
+    },
+    {
+       "name": "Valla",
+       "localizedName": "Valla",
+       "accessLink": "valla",
+       "id": "83"
+    },
+    {
+       "name": "Zeratul",
+       "localizedName": "Zeratul",
+       "accessLink": "zeratul",
+       "id": "84"
+    },
+    {
+       "name": "E.T.C.",
+       "localizedName": "C.T.E.",
+       "accessLink": "e-t-c",
+       "id": "85"
+    },
+    {
+       "name": "Falstad",
+       "localizedName": "Falstad",
+       "accessLink": "falstad",
+       "id": "86"
+    },
+    {
+       "name": "Gazlowe",
+       "localizedName": "Gasganete",
+       "accessLink": "gazlowe",
+       "id": "87"
+    },
+    {
+       "name": "Stitches",
+       "localizedName": "Suturino",
+       "accessLink": "stitches",
+       "id": "88"
+    },
+    {
+       "name": "Tassadar",
+       "localizedName": "Tassadar",
+       "accessLink": "tassadar",
+       "id": "89"
+    }
+ ]
