@@ -43,5 +43,10 @@
 		"name": "Update",
 		"hint": "Update all the bot database\nWARNING: all the commands will be unavailable while this is running!",
 		"acceptParams": false
+	},
+	{
+		"name": "Tips",
+		"hint": "Display useful tips for the hero",
+		"acceptParams": true
 	}
 ]

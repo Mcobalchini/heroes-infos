@@ -32,7 +32,8 @@ bot.on("message", function (message) {
 
 	try {
 		if (commAux === 'builds' || commAux === 'counters' ||
-			commAux === 'synergies' || commAux === 'infos') {
+			commAux === 'synergies' || commAux === 'infos' ||
+			 commAux === 'tips') {
 			getHeroInfos(commAux, args);					
 		} else if (commAux === 'banlist') {
 			getTopHeroesBan();
@@ -98,6 +99,7 @@ async function accessSite(command, heroLink) {
 			const counters = [];
 			const synergies = [];
 			const strongerMaps = [];
+			const tips = [];
 
 			document.querySelectorAll('.toc_no_parsing').forEach(nameElements =>
 				names.push(nameElements.innerText)
@@ -119,12 +121,17 @@ async function accessSite(command, heroLink) {
 				strongerMaps.push(i.title);
 			});
 
+			document.querySelectorAll('.heroes_tips li').forEach((i) => {
+				tips.push(i.innerText.trim().replaceAll('  ',' '));
+			});
+
 			let retorno = {
 				names: names,
 				skills: skills,
 				counters: counters,
 				synergies: synergies,
-				strongerMaps: strongerMaps
+				strongerMaps: strongerMaps,
+				tips: tips
 			}
 
 			return retorno;
@@ -158,6 +165,7 @@ async function updateData() {
 			const counters = [];
 			const synergies = [];
 			const strongerMaps = [];
+			const tips = [];
 
 			document.querySelectorAll('.toc_no_parsing').forEach(nameElements =>
 				names.push(nameElements.innerText)
@@ -179,12 +187,17 @@ async function updateData() {
 				strongerMaps.push(i.title);
 			});
 
+			document.querySelectorAll('.heroes_tips li').forEach((i) => {
+				tips.push(i.innerText.trim().replaceAll('  ',' '));
+			});
+
 			let retorno = {
 				names: names,
 				skills: skills,
 				counters: counters,
 				synergies: synergies,
-				strongerMaps: strongerMaps
+				strongerMaps: strongerMaps,
+				tips: tips
 			}
 
 			return retorno;
@@ -195,6 +208,8 @@ async function updateData() {
 		let heroBuilds = [];
 		let heroCounters = [];
 		let heroSynergies = [];
+		let heroMaps = [];
+		let heroTips = "";
 
 		for (name in result.names) {
 			let obj = {
@@ -205,12 +220,23 @@ async function updateData() {
 			heroBuilds.push(obj);
 		}
 
-		for (hero in result.synergies) {
-			heroSynergies.push(`${findHero(hero).name} (${findHero(hero).localizedName})`);
+		for (index in result.synergies) {
+			let synergyHero = findHero(result.synergies[index]);
+			heroSynergies.push(`${synergyHero.name} (${synergyHero.localizedName})`);
 		}
 	
-		for (hero in result.counters) {
-			heroCounters.push(`${findHero(hero).name} (${findHero(hero).localizedName})`);
+		for (index in result.counters) {
+			let countHero = findHero(result.counters[index]);
+			heroCounters.push(`${countHero.name} (${countHero.localizedName})`);
+		}
+			
+		for (index in result.strongerMaps) {
+			let heroMap = findMap(result.strongerMaps[index]);
+			heroMaps.push(`${heroMap.name} (${heroMap.localizedName})`);
+		}
+
+		for (index in result.tips) {
+			heroTips += result.tips[index] + "\n";
 		}
 
 		if (heroesInfos[i] == null) {
@@ -222,7 +248,8 @@ async function updateData() {
 		heroesInfos[i].builds = heroBuilds;
 		heroesInfos[i].synergies = heroSynergies;
 		heroesInfos[i].counters = heroCounters;
-		heroesInfos[i].strongerMaps = result.strongerMaps;
+		heroesInfos[i].strongerMaps = heroMaps;
+		heroesInfos[i].tips = heroTips;
 		process.stdout.write(`Finished process for ${heroesInfos[i].name} at ${new Date().toLocaleTimeString()}\n`);
 	}
 
@@ -433,6 +460,12 @@ function assembleSynergiesReturnMessage(args) {
 	return reply;
 }
 
+function assembleTipsReturnMessage(args) {
+	let reply = `Take thoses tips for ${args.name.split("-").join(" ")}\n`;
+	reply += args.tips + '\n';
+	return reply;
+}
+
 function assembleMapReturnMessage(args) {
 	let reply = "";
 	if (args != null && args != "") {
@@ -464,12 +497,15 @@ function assembleReturnMessage(command, args) {
 		reply = assembleMapReturnMessage(args);
 	} else if (commandObj.name === 'FreeWeek') {
 		reply = assembleFreeWeekHeroesReturnMessage(args);
+	} else if (commandObj.name === 'Tips') {
+		reply = assembleTipsReturnMessage(args);
 	} else if (commandObj.name === 'Infos') {
 		reply = assembleBuildsReturnMessage(args);
 		reply += assembleSynergiesReturnMessage(args);
 		reply += "\n" + assembleCountersReturnMessage(args);
 		reply += "\n" + assembleHeroStrongerMapsReturnMessage(args);
-
+		reply += "\n" + assembleTipsReturnMessage(args);
+	
 	} else if (commandObj.name === 'Update') {
 		reply = "The update process has finished!";
 	}
@@ -480,7 +516,7 @@ function assembleReturnMessage(command, args) {
 bot.on("ready", function () {
 	
 	Object.defineProperty(String.prototype, "cleanVal", {
-		value: function SayHi() {
+		value: function cleanVal() {
 			return this.toLowerCase().split("-").join(" ");
 		},
 		writable: true,
