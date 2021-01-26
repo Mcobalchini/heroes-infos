@@ -4,7 +4,12 @@ const config = require("./config.json");
 require('dotenv').config({ path: './variables.env' });
 const puppeteer = require('puppeteer');
 const heroesBase = JSON.parse(fs.readFileSync("./heroes-base.json"));
-const heroesInfos = JSON.parse(fs.readFileSync("./heroes-infos.json"));
+let heroesInfos = [];
+
+try {
+	heroesInfos = JSON.parse(fs.readFileSync("./heroes-infos.json"))
+} catch (e) {}
+
 const commands = JSON.parse(fs.readFileSync("./commands.json"));
 const maps = JSON.parse(fs.readFileSync("./maps.json"));
 const prefix = config.prefix;
@@ -15,6 +20,8 @@ let cacheBans = [];
 let cacheFreeHeroes = [];
 
 let updatingData = false;
+
+
 
 bot.on("message", function (message) {
 	if (message.author.bot) return;
@@ -54,7 +61,7 @@ bot.on("message", function (message) {
 	}
 });
 
-async function accessSite(command, heroLink) {
+async function accessSite(command) {
 
 	const browser = await puppeteer.launch()
 	const page = await browser.newPage()
@@ -89,52 +96,6 @@ async function accessSite(command, heroLink) {
 			);
 
 			return freeHeroes;
-		});
-	} else {
-
-		await page.goto(`http://www.icy-veins.com/heroes/${heroLink}-build-guide`, { waitUntil: 'domcontentloaded' })
-		result = await page.evaluate(() => {
-			const names = [];
-			const skills = [];
-			const counters = [];
-			const synergies = [];
-			const strongerMaps = [];
-			const tips = [];
-
-			document.querySelectorAll('.toc_no_parsing').forEach(nameElements =>
-				names.push(nameElements.innerText)
-			);
-
-			document.querySelectorAll('.talent_build_copy_button > input').forEach(skillsElements =>
-				skills.push(skillsElements.value)
-			);
-
-			document.querySelectorAll('.hero_portrait_bad').forEach(nameElements =>
-				counters.push(nameElements.title)
-			);
-
-			document.querySelectorAll('.hero_portrait_good').forEach(nameElements =>
-				synergies.push(nameElements.title)
-			);
-
-			document.querySelectorAll('.heroes_maps_stronger .heroes_maps_content span img').forEach((i) => {
-				strongerMaps.push(i.title);
-			});
-
-			document.querySelectorAll('.heroes_tips li').forEach((i) => {
-				tips.push(i.innerText.trim().replaceAll('  ',' '));
-			});
-
-			let retorno = {
-				names: names,
-				skills: skills,
-				counters: counters,
-				synergies: synergies,
-				strongerMaps: strongerMaps,
-				tips: tips
-			}
-
-			return retorno;
 		});
 	}
 
@@ -265,7 +226,6 @@ async function updateData() {
 };
 
 function getHeroInfos(command, heroName) {
-	let heroBuilds = []
 	let hero = findHero(heroName);
 
 	if (hero != null) {
@@ -274,35 +234,12 @@ function getHeroInfos(command, heroName) {
 		if (heroInfos != null && ((command === 'counters' && heroInfos.counters.length > 0)
 			|| (command === 'synergies' && heroInfos.synergies.length > 0)
 			|| (command === 'builds' && heroInfos.builds.length > 0
-				|| (command === 'infos' && heroInfos.counters.length > 0 && heroInfos.synergies.length > 0 && heroInfos.builds.length > 0)))) {
+				|| (command === 'infos' && heroInfos.counters.length > 0 && heroInfos.synergies.length > 0 && heroInfos.builds.length > 0)))
+				|| command === 'tips') {
 
 			assembleReturnMessage(command, heroInfos);
 		} else {
-			accessSite(command, hero.acessLink).then((value) => {
-
-				for (name in value.names) {
-					let obj = {
-						name: value.names[name],
-						skills: value.skills[name]
-					};
-
-					heroBuilds.push(obj);
-				}
-
-				if(heroInfos == null) {
-					heroInfos = {}
-				}
-
-				heroInfos.id = hero.id;
-				heroInfos.name = `${hero.name} (${hero.localizedName})`;
-				heroInfos.builds = heroBuilds;
-				heroInfos.synergies = value.synergies;
-				heroInfos.counters = value.counters;
-				heroInfos.strongerMaps = value.strongerMaps;
-				heroesInfos.push(heroInfos);
-
-				assembleReturnMessage(command, heroInfos);
-			});
+			msg.reply(`There was not enough info found for the hero ${heroName} \nPlease, call the ${config.prefix}update command to search for them`);
 		}
 
 	} else {
@@ -324,7 +261,7 @@ function getMapInfos(mapName) {
 			}
 			assembleReturnMessage('map', bestHeroes);
 		} else {
-			msg.reply(`The specified map was not found\nType ${config.prefix}help map to get a list with the available maps`);
+			msg.reply(`The specified map was not found\nType "${config.prefix}help map" to get a list with the available maps`);
 		}
 	} else {
 		assembleReturnMessage('map', maps.map(it => it.name + ' ( ' + it.localizedName + ' )'))
@@ -336,8 +273,11 @@ function getTopHeroesBan() {
 	if (cacheBans.length > 0) {
 		assembleReturnMessage('banlist');
 	} else {
-		accessSite('banlist').then((value) => {		
-			cacheBans = value
+		accessSite('banlist').then((value) => {	
+			for (index in value) {
+				let banHero = findHero(value[index]);
+				cacheBans.push(`${banHero.name} (${banHero.localizedName})`);
+			}		
 			assembleReturnMessage('banlist');
 		});
 	}
@@ -386,7 +326,6 @@ function findCommand(commandName) {
 function help(command) {
 	assembleReturnMessage('help', command);
 }
-
 
 //Return messages
 function assembleBuildsReturnMessage(hero) {
@@ -453,7 +392,7 @@ function assembleHelpReturnMessage(args) {
 }
 
 function assembleSynergiesReturnMessage(args) {
-	let reply = `${args.name.split("-").join(" ")} synergizes with \n`;
+	let reply = `${args.name} synergizes with \n`;
 	for (i in args.synergies) {
 		reply += args.synergies[i] + '\n';
 	}
@@ -461,7 +400,7 @@ function assembleSynergiesReturnMessage(args) {
 }
 
 function assembleTipsReturnMessage(args) {
-	let reply = `Take thoses tips for ${args.name.split("-").join(" ")}\n`;
+	let reply = `Here are some tips for ${args.name}\n`;
 	reply += args.tips + '\n';
 	return reply;
 }
@@ -509,7 +448,7 @@ function assembleReturnMessage(command, args) {
 	} else if (commandObj.name === 'Update') {
 		reply = "The update process has finished!";
 	}
-	msg.reply(reply);
+	msg.reply(reply, {split: true});
 }
 //end return messages
 
@@ -517,7 +456,7 @@ bot.on("ready", function () {
 	
 	Object.defineProperty(String.prototype, "cleanVal", {
 		value: function cleanVal() {
-			return this.toLowerCase().split("-").join(" ");
+			return this.split("\'").join("").split(".").join("").toLowerCase().split("-").join(" ");
 		},
 		writable: true,
 		configurable: true
