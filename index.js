@@ -1,26 +1,26 @@
 const fs = require('fs');
-const Discord = require("discord.js");
+const { Client, MessageEmbed } = require("discord.js");
 const config = require("./config.json");
 require('dotenv').config({ path: './variables.env' });
 const puppeteer = require('puppeteer');
 const heroesBase = JSON.parse(fs.readFileSync("./heroes-base.json"));
+const SEPARATOR = "------------------------------------------------------------------------"
 let heroesInfos = [];
 
 try {
 	heroesInfos = JSON.parse(fs.readFileSync("./heroes-infos.json"))
-} catch (e) {}
+} catch (e) { }
 
 const commands = JSON.parse(fs.readFileSync("./commands.json"));
 const maps = JSON.parse(fs.readFileSync("./maps.json"));
 const prefix = config.prefix;
-const bot = new Discord.Client();
+const bot = new Client();
 let msg = null;
 
 let cacheBans = [];
 let cacheFreeHeroes = [];
 
 let updatingData = false;
-
 
 
 bot.on("message", function (message) {
@@ -40,8 +40,8 @@ bot.on("message", function (message) {
 	try {
 		if (commAux === 'builds' || commAux === 'counters' ||
 			commAux === 'synergies' || commAux === 'infos' ||
-			 commAux === 'tips') {
-			getHeroInfos(commAux, args);					
+			commAux === 'tips') {
+			getHeroInfos(commAux, args);
 		} else if (commAux === 'banlist') {
 			getTopHeroesBan();
 		} else if (commAux === 'freeweek') {
@@ -120,9 +120,11 @@ async function updateData() {
 		let result = ""
 
 		await page.goto(`http://www.icy-veins.com/heroes/${heroesBase[i].accessLink}-build-guide`, { waitUntil: 'domcontentloaded' })
+
 		result = await page.evaluate(() => {
 			const names = [];
 			const skills = [];
+			const builds = [];
 			const counters = [];
 			const synergies = [];
 			const strongerMaps = [];
@@ -149,12 +151,20 @@ async function updateData() {
 			});
 
 			document.querySelectorAll('.heroes_tips li').forEach((i) => {
-				tips.push(i.innerText.trim().replaceAll('  ',' '));
+				tips.push(i.innerText.trim().replaceAll('  ', ' '));
 			});
 
+
+			for (i in names) {
+				let obj = {
+					name: names[i],
+					skills: skills[i]
+				};
+				builds.push(obj);
+			}
+
 			let retorno = {
-				names: names,
-				skills: skills,
+				builds: builds,
 				counters: counters,
 				synergies: synergies,
 				strongerMaps: strongerMaps,
@@ -172,40 +182,31 @@ async function updateData() {
 		let heroMaps = [];
 		let heroTips = "";
 
-		for (name in result.names) {
-			let obj = {
-				name: result.names[name],
-				skills: result.skills[name]
-			};
+		heroBuilds = result.builds;
 
-			heroBuilds.push(obj);
+		for (synergy in result.synergies) {
+			let synergyHero = findHero(synergy);
+			heroSynergies.push(getName(synergyHero));
 		}
 
-		for (index in result.synergies) {
-			let synergyHero = findHero(result.synergies[index]);
-			heroSynergies.push(`${synergyHero.name} (${synergyHero.localizedName})`);
-		}
-	
-		for (index in result.counters) {
-			let countHero = findHero(result.counters[index]);
-			heroCounters.push(`${countHero.name} (${countHero.localizedName})`);
-		}
-			
-		for (index in result.strongerMaps) {
-			let heroMap = findMap(result.strongerMaps[index]);
-			heroMaps.push(`${heroMap.name} (${heroMap.localizedName})`);
+		for (counter of result.counters) {
+			let countHero = findHero(counter);
+			heroCounters.push(getName(countHero));
 		}
 
-		for (index in result.tips) {
-			heroTips += result.tips[index] + "\n";
+		for (strongerMap of result.strongerMaps) {
+			let heroMap = findMap(strongerMap);
+			heroMaps.push(getName(heroMap));
 		}
+
+		heroTips += result.tips.map(tip => `${tip}\n`).join('');
 
 		if (heroesInfos[i] == null) {
 			heroesInfos[i] = {};
 		}
-		
+
 		heroesInfos[i].id = heroesBase[i].id;
-		heroesInfos[i].name = `${heroesBase[i].name} (${heroesBase[i].localizedName})`;
+		heroesInfos[i].name = getName(findHero(heroesBase[i].name));
 		heroesInfos[i].builds = heroBuilds;
 		heroesInfos[i].synergies = heroSynergies;
 		heroesInfos[i].counters = heroCounters;
@@ -216,8 +217,8 @@ async function updateData() {
 
 	fs.writeFile('heroes-infos.json', JSON.stringify(heroesInfos), (e) => {
 		if (e != null) {
-			process.stdout.write('error: ' + e+"\n");
-			msg.reply('KEKW, the bot is on fire');
+			process.stdout.write('error: ' + e + "\n");
+			msg.reply('I couldn\'t update the heroes data due to an error, check the logs to see what\'s going on');
 		}
 	});
 	updatingData = false;
@@ -235,7 +236,7 @@ function getHeroInfos(command, heroName) {
 			|| (command === 'synergies' && heroInfos.synergies.length > 0)
 			|| (command === 'builds' && heroInfos.builds.length > 0
 				|| (command === 'infos' && heroInfos.counters.length > 0 && heroInfos.synergies.length > 0 && heroInfos.builds.length > 0)))
-				|| command === 'tips') {
+			|| command === 'tips') {
 
 			assembleReturnMessage(command, heroInfos);
 		} else {
@@ -252,19 +253,19 @@ function getMapInfos(mapName) {
 		let map = findMap(mapName);
 		let bestHeroes = [];
 		if (map != null) {
-			for (i in heroesInfos) {
-				for (j in heroesInfos[i].strongerMaps) {
-					if (heroesInfos[i].strongerMaps[j] === map.name) {
-						bestHeroes.push(heroesInfos[i].name)
+			for (info of heroesInfos) {
+				for (strongerMap of info.strongerMaps) {
+					if (strongerMap === `${map.name} (${map.localizedName})`) {
+						bestHeroes.push(info.name)
 					}
 				}
 			}
-			assembleReturnMessage('map', bestHeroes);
+			assembleReturnMessage('map', { map: map, heroes: bestHeroes });
 		} else {
 			msg.reply(`The specified map was not found\nType "${config.prefix}help map" to get a list with the available maps`);
 		}
 	} else {
-		assembleReturnMessage('map', maps.map(it => it.name + ' ( ' + it.localizedName + ' )'))
+		assembleReturnMessage('map', { map: maps.map(it => it.name + ' ( ' + it.localizedName + ' )'), heroes: [] })
 	}
 }
 
@@ -273,11 +274,11 @@ function getTopHeroesBan() {
 	if (cacheBans.length > 0) {
 		assembleReturnMessage('banlist');
 	} else {
-		accessSite('banlist').then((value) => {	
-			for (index in value) {
-				let banHero = findHero(value[index]);
+		accessSite('banlist').then((value) => {
+			for (heroName of value) {
+				let banHero = findHero(heroName);
 				cacheBans.push(`${banHero.name} (${banHero.localizedName})`);
-			}		
+			}
 			assembleReturnMessage('banlist');
 		});
 	}
@@ -285,6 +286,9 @@ function getTopHeroesBan() {
 }
 
 function getFreeHeroes() {
+	let reply = `All heroes are free now comrade! ☭`;
+	msg.reply(reply, { split: true });
+	/*
 	if (cacheFreeHeroes.length > 0) {
 		assembleReturnMessage('freeweek');
 	} else {
@@ -293,20 +297,30 @@ function getFreeHeroes() {
 			assembleReturnMessage('freeweek');
 		});
 	}
+	*/
 }
 
 function findHero(heroName) {
-	let hero = heroesBase.find(hero => (hero.name.cleanVal() === heroName.cleanVal() || 
+	let hero = heroesBase.find(hero => (hero.name.cleanVal() === heroName.cleanVal() ||
 		hero.localizedName.cleanVal() === heroName.cleanVal() ||
+		hero.accessLink.cleanVal() === heroName.cleanVal() ||
 		hero.id.cleanVal() === heroName.cleanVal()));
 
-	if (hero != null) {		
+	if (hero) {
 		return hero;
-	} 
+	}
 	process.stdout.write(`Hero ${heroName} not found\n`);
 }
 
-function findHeroInfos(idParam){
+function getName(hero){
+	let heroName = `${hero.name} (${hero.localizedName})`;
+	if (hero.name == hero.localizedName) {
+		heroName = `${hero.name}`;
+	}
+	return heroName
+}
+
+function findHeroInfos(idParam) {
 	return heroesInfos.find(hero => (hero.id === idParam));
 }
 
@@ -319,8 +333,7 @@ function findMap(mapName) {
 
 function findCommand(commandName) {
 	let commandNameToLowerCase = commandName.cleanVal();
-	return commands.find(command =>
-		(command.name.cleanVal() === commandNameToLowerCase));
+	return commands.find(command => (command.name.cleanVal() === commandNameToLowerCase));
 }
 
 function help(command) {
@@ -329,18 +342,14 @@ function help(command) {
 
 //Return messages
 function assembleBuildsReturnMessage(hero) {
-	let reply = `Available build(s) for ${hero.name} \n`;
-	for (i in hero.builds) {
-		reply += hero.builds[i].name + ':\n' + hero.builds[i].skills + '\n\n';
-	}
+	let reply = `Available build(s) for ${hero.name}`;
+	reply += hero.builds.map(build => `\n${build.name}:\n${build.skills}\n`).join('')
 	return reply
 }
 
 function assembleBanListReturnMessage() {
 	let reply = `Suggested bans\n`;
-	for (i in cacheBans) {
-		reply += cacheBans[i] + '\n';
-	}
+	reply += cacheBans.map(ban => ban + '\n').join('');
 	return reply;
 }
 
@@ -349,26 +358,20 @@ function assembleFreeWeekHeroesReturnMessage() {
 
 	if (cacheFreeHeroes.length > 0) {
 		reply = "These are the free rotation heroes\n";
-		for (i in cacheFreeHeroes) {
-			reply += cacheFreeHeroes[i] + '\n';
-		}
+		reply += cacheFreeHeroes.map(freeHeroes => `${freeHeroes}\n`).join('');
 	}
 	return reply;
 }
 
 function assembleCountersReturnMessage(hero) {
 	let reply = `${hero.name} is countered by \n`;
-	for (i in hero.counters) {
-		reply += hero.counters[i] + '\n';
-	}
+	reply += hero.counters.map(counter => `${counter}\n`).join('');
 	return reply;
 }
 
 function assembleHeroStrongerMapsReturnMessage(hero) {
 	let reply = `${hero.name} is usually stronger on these maps \n`;
-	for (i in hero.strongerMaps) {
-		reply += hero.strongerMaps[i] + '\n';
-	}
+	reply += hero.strongerMaps.map(hero => `${hero}\n`).join('');
 	return reply;
 }
 
@@ -391,31 +394,30 @@ function assembleHelpReturnMessage(args) {
 	return reply;
 }
 
-function assembleSynergiesReturnMessage(args) {
-	let reply = `${args.name} synergizes with \n`;
-	for (i in args.synergies) {
-		reply += args.synergies[i] + '\n';
-	}
+function assembleSynergiesReturnMessage(hero) {
+	let reply = `${hero.name} synergizes with \n`;
+	reply += hero.synergies.map(it => it + '\n').join('')
 	return reply;
 }
 
-function assembleTipsReturnMessage(args) {
-	let reply = `Here are some tips for ${args.name}\n`;
-	reply += args.tips + '\n';
+function assembleTipsReturnMessage(hero) {
+	let reply = `Here are some tips for ${hero.name}\n`;
+	reply += hero.tips + '\n';
 	return reply;
 }
 
 function assembleMapReturnMessage(args) {
 	let reply = "";
-	if (args != null && args != "") {
-		reply = `These are the heroes that are usually stronger on ${args}`;
+	if (args.heroes.length > 0) {
+		reply = `These are the heroes that are usually stronger on ${args.map.name}`;
+		reply += "\n";
+		reply += args.heroes.map(it => `${it}\n`).join('')
 	} else {
 		reply = `These are the available maps`;
+		reply += "\n";
+		reply += args.map.map(map => `${map}\n`).join('')
 	}
-	reply = "\n";
-	for (i in args) {
-		reply += args[i] + '\n';
-	}
+
 	return reply;
 }
 
@@ -440,20 +442,25 @@ function assembleReturnMessage(command, args) {
 		reply = assembleTipsReturnMessage(args);
 	} else if (commandObj.name === 'Infos') {
 		reply = assembleBuildsReturnMessage(args);
-		reply += assembleSynergiesReturnMessage(args);
+		reply += SEPARATOR 
+		reply += "\n" + assembleSynergiesReturnMessage(args);
+		reply += SEPARATOR
 		reply += "\n" + assembleCountersReturnMessage(args);
+		reply += SEPARATOR 
 		reply += "\n" + assembleHeroStrongerMapsReturnMessage(args);
+		reply += SEPARATOR
 		reply += "\n" + assembleTipsReturnMessage(args);
-	
+
 	} else if (commandObj.name === 'Update') {
 		reply = "The update process has finished!";
 	}
-	msg.reply(reply, {split: true});
+
+	msg.reply(reply, { split: true });
 }
 //end return messages
 
 bot.on("ready", function () {
-	
+
 	Object.defineProperty(String.prototype, "cleanVal", {
 		value: function cleanVal() {
 			return this.split("\'").join("").split(".").join("").toLowerCase().split("-").join(" ");
@@ -466,7 +473,7 @@ bot.on("ready", function () {
 	bot.user.setActivity("Heroes of the Storm", {
 		type: "PLAYING",
 		url: "https://heroesofthestorm.com/"
-	  })
+	})
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN);
