@@ -23,14 +23,13 @@ let cacheFreeHeroes = [];
 
 let updatingData = false;
 
-
 bot.on("message", function (message) {
 	if (message.author.bot) return;
 	if (!message.content.startsWith(prefix)) return;
 	msg = message;
 
 	if (updatingData) {
-		msg.reply('Hold still, i\'m updating the heroes data');
+		msg.reply('Hold still, i\'m updating heroes data');
 		return;
 	}
 
@@ -39,23 +38,7 @@ bot.on("message", function (message) {
 	let args = message.content.substring(commAux.length + 2);
 
 	try {
-		if (commAux === 'builds' || commAux === 'counters' ||
-			commAux === 'synergies' || commAux === 'infos' ||
-			commAux === 'tips') {
-			getHeroInfos(commAux, args);
-		} else if (commAux === 'banlist') {
-			getTopHeroesBan();
-		} else if (commAux === 'freeweek') {
-			getFreeHeroes();
-		} else if (commAux === 'help') {
-			help(args);
-		} else if (commAux === 'map') {
-			getMapInfos(args);
-		} else if (commAux === 'update') {
-			updateData(args);
-		} else {
-			msg.reply(`The command ${receivedCommand} does not exists!\nType ${config.prefix}help to know more about commands`);
-		}
+		handleCommand(commAux, args, receivedCommand);
 	} catch (e) {
 		process.stdout.write(`Exception: ${e.stack}\n`);
 		msg.reply('An exception occurred! ' + e)
@@ -187,17 +170,17 @@ async function updateData() {
 
 		for (synergy in result.synergies) {
 			let synergyHero = findHero(synergy);
-			heroSynergies.push(getName(synergyHero));
+			heroSynergies.push(getHeroName(synergyHero));
 		}
 
 		for (counter of result.counters) {
 			let countHero = findHero(counter);
-			heroCounters.push(getName(countHero));
+			heroCounters.push(getHeroName(countHero));
 		}
 
 		for (strongerMap of result.strongerMaps) {
 			let heroMap = findMap(strongerMap);
-			heroMaps.push(getName(heroMap));
+			heroMaps.push(getHeroName(heroMap));
 		}
 
 		heroTips += result.tips.map(tip => `${tip}\n`).join('');
@@ -206,8 +189,12 @@ async function updateData() {
 			heroesInfos[i] = {};
 		}
 
+		let role = findRoleById(heroesBase[i].role);
+		let roleName = `${role.name} (${role.localizedName})`;
+
 		heroesInfos[i].id = heroesBase[i].id;
-		heroesInfos[i].name = getName(findHero(heroesBase[i].name));
+		heroesInfos[i].name = getHeroName(findHero(heroesBase[i].name));
+		heroesInfos[i].role = roleName;
 		heroesInfos[i].builds = heroBuilds;
 		heroesInfos[i].synergies = heroSynergies;
 		heroesInfos[i].counters = heroCounters;
@@ -233,12 +220,9 @@ function getHeroInfos(command, heroName) {
 	if (hero != null) {
 		let heroInfos = findHeroInfos(hero.id);
 
-		if (heroInfos != null && ((command === 'counters' && heroInfos.counters.length > 0)
-			|| (command === 'synergies' && heroInfos.synergies.length > 0)
-			|| (command === 'builds' && heroInfos.builds.length > 0
-				|| (command === 'infos' && heroInfos.counters.length > 0 && heroInfos.synergies.length > 0 && heroInfos.builds.length > 0)))
-			|| command === 'tips') {
-
+		if (heroInfos != null && (heroInfos.counters.length > 0 &&
+			heroInfos.synergies.length > 0 &&
+			heroInfos.builds.length > 0)) {
 			assembleReturnMessage(command, heroInfos);
 		} else {
 			msg.reply(`There was not enough info found for the hero ${heroName} \nPlease, call the ${config.prefix}update command to search for them`);
@@ -257,7 +241,7 @@ function getMapInfos(mapName) {
 			for (info of heroesInfos) {
 				for (strongerMap of info.strongerMaps) {
 					if (strongerMap === `${map.name} (${map.localizedName})`) {
-						bestHeroes.push(info.name)
+						bestHeroes.push(info)
 					}
 				}
 			}
@@ -313,7 +297,14 @@ function findHero(heroName) {
 	process.stdout.write(`Hero ${heroName} not found\n`);
 }
 
-function getName(hero){
+function findRoleById(roleId) {
+	let role = roles.find(role => (role.id.toString().cleanVal() === roleId.toString().cleanVal()));
+	if (role) {
+		return role;
+	}
+}
+
+function getHeroName(hero) {
 	let heroName = `${hero.name} (${hero.localizedName})`;
 	if (hero.name == hero.localizedName) {
 		heroName = `${hero.name}`;
@@ -332,6 +323,30 @@ function findMap(mapName) {
 		map.localizedName.cleanVal() === mapLowerCase));
 }
 
+function handleCommand(commAux, args, receivedCommand) {
+	let command = findCommand(commAux);
+	if (command != null) {
+		if (command.name === 'Builds' || command.name === 'Counters' ||
+			command.name === 'Synergies' || command.name === 'Infos' ||
+			command.name === 'Tips') {
+			getHeroInfos(command, args);
+		} else if (command.name === 'Banlist') {
+			getTopHeroesBan();
+		} else if (command.name === 'FreeWeek') {
+			getFreeHeroes();
+		} else if (command.name === 'Help') {
+			help(args);
+		} else if (command.name === 'Map') {
+			getMapInfos(args);
+		} else if (command.name === 'Update') {
+			updateData(args);
+		} else {
+			msg.reply(`The command ${receivedCommand} does not exists!\nType ${config.prefix}help to know more about commands`);
+		}
+	}
+
+}
+
 function findCommand(commandName) {
 	let commandNameToLowerCase = commandName.cleanVal();
 	return commands.find(command => (command.name.cleanVal() === commandNameToLowerCase));
@@ -345,6 +360,11 @@ function help(command) {
 function assembleBuildsReturnMessage(hero) {
 	let reply = `Available build(s) for ${hero.name}`;
 	reply += hero.builds.map(build => `\n${build.name}:\n${build.skills}\n`).join('')
+	return reply
+}
+
+function assembleRoleReturnMessage(hero) {
+	let reply = `${hero.name} is a ${hero.role}`;
 	return reply
 }
 
@@ -410,9 +430,13 @@ function assembleTipsReturnMessage(hero) {
 function assembleMapReturnMessage(args) {
 	let reply = "";
 	if (args.heroes.length > 0) {
+
+		const map = new Map(Array.from(args.heroes, obj => [obj.role, []]));
+		args.heroes.forEach(obj => map.get(obj.role).push(obj));
+
 		reply = `These are the heroes that are usually stronger on ${args.map.name}`;
 		reply += "\n";
-		reply += args.heroes.map(it => `${it}\n`).join('')
+		reply += Array.from(map).map(([key, value]) => `${key} \n- ${value.map(it => `${it.name}\n`).join('- ')}${SEPARATOR}\n`).join('');
 	} else {
 		reply = `These are the available maps`;
 		reply += "\n";
@@ -422,8 +446,7 @@ function assembleMapReturnMessage(args) {
 	return reply;
 }
 
-function assembleReturnMessage(command, args) {
-	let commandObj = findCommand(command);
+function assembleReturnMessage(commandObj, args) {
 	let reply = "";
 	if (commandObj.name === 'Builds') {
 		reply = assembleBuildsReturnMessage(args);
@@ -442,12 +465,13 @@ function assembleReturnMessage(command, args) {
 	} else if (commandObj.name === 'Tips') {
 		reply = assembleTipsReturnMessage(args);
 	} else if (commandObj.name === 'Infos') {
-		reply = assembleBuildsReturnMessage(args);
-		reply += SEPARATOR 
+		reply = "\n" + assembleRoleReturnMessage(args);
+		reply += "\n" + assembleBuildsReturnMessage(args);
+		reply += SEPARATOR
 		reply += "\n" + assembleSynergiesReturnMessage(args);
 		reply += SEPARATOR
 		reply += "\n" + assembleCountersReturnMessage(args);
-		reply += SEPARATOR 
+		reply += SEPARATOR
 		reply += "\n" + assembleHeroStrongerMapsReturnMessage(args);
 		reply += SEPARATOR
 		reply += "\n" + assembleTipsReturnMessage(args);

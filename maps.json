@@ -1,77 +1,77 @@
 [
-    {
-      "id": 1,
-      "name": "Alterac Pass",
-      "localizedName": "Garganta de Alterac"
-    },
-    {
-      "id": 2,
-      "name": "Garden of Terror",
-      "localizedName": "Jardim do Terror"
-    },
-    {
-      "id": 3,
-      "name": "Hanamura Temple",
-      "localizedName": "Templo de Hanamura"
-    },
-    {
-      "id": 4,
-      "name": "Volskaya Foundry",
-      "localizedName": "Fundição Volskaya"
-    },
-    {
-      "id": 5,
-      "name": "Haunted Mines",
-      "localizedName": "Mina Assombrada"
-    },
-    {
-      "id": 6,
-      "name": "Towers of Doom",
-      "localizedName": "Torres da Perdição"
-    },
-    {
-      "id": 7,
-      "name": "Infernal Shrines",
-      "localizedName": "Santuários Infernais"
-    },
-    {
-      "id": 8,
-      "name": "Battlefield of Eternity",
-      "localizedName": "Campo de Batalha da Eternidade"
-    },
-    {
-      "id": 9,
-      "name": "Tomb of The Spider Queen",
-      "localizedName": "Tuma da Aranha Rainha"
-    },
-    {
-      "id": 10,
-      "name": "Sky Temple",
-      "localizedName": "Templo Celeste"
-    },
-    {
-      "id": 11,
-      "name": "Blackheart's Bay",
-      "localizedName": "Baía do Coração Negro"
-    },
-    {
-      "id": 12,
-      "name": "Dragon Shire",
-      "localizedName": "Condado do Dragão"
-    },
-    {
-      "id": 13,
-      "name": "Cursed Hollow",
-      "localizedName": "Clareira Maldita"
-    },
-    {
-      "id": 14,
-      "name": "Braxis Holdout",
-      "localizedName": "Resistência de Braxis"
-    },
-    {
-      "id": 15,
-      "name": "Warhead Junction",
-      "localizedName": "Junção da Ogiva"
-    }
-  ]
+  {
+    "id": 1,
+    "name": "Alterac Pass",
+    "localizedName": "Garganta de Alterac"
+  },
+  {
+    "id": 2,
+    "name": "Garden of Terror",
+    "localizedName": "Jardim do Terror"
+  },
+  {
+    "id": 3,
+    "name": "Hanamura Temple",
+    "localizedName": "Templo de Hanamura"
+  },
+  {
+    "id": 4,
+    "name": "Volskaya Foundry",
+    "localizedName": "Fundição Volskaya"
+  },
+  {
+    "id": 5,
+    "name": "Haunted Mines",
+    "localizedName": "Mina Assombrada"
+  },
+  {
+    "id": 6,
+    "name": "Towers of Doom",
+    "localizedName": "Torres da Perdição"
+  },
+  {
+    "id": 7,
+    "name": "Infernal Shrines",
+    "localizedName": "Santuários Infernais"
+  },
+  {
+    "id": 8,
+    "name": "Battlefield of Eternity",
+    "localizedName": "Campo de Batalha da Eternidade"
+  },
+  {
+    "id": 9,
+    "name": "Tomb of The Spider Queen",
+    "localizedName": "Tumba da Aranha Rainha"
+  },
+  {
+    "id": 10,
+    "name": "Sky Temple",
+    "localizedName": "Templo Celeste"
+  },
+  {
+    "id": 11,
+    "name": "Blackheart's Bay",
+    "localizedName": "Baía do Coração Negro"
+  },
+  {
+    "id": 12,
+    "name": "Dragon Shire",
+    "localizedName": "Condado do Dragão"
+  },
+  {
+    "id": 13,
+    "name": "Cursed Hollow",
+    "localizedName": "Clareira Maldita"
+  },
+  {
+    "id": 14,
+    "name": "Braxis Holdout",
+    "localizedName": "Resistência de Braxis"
+  },
+  {
+    "id": 15,
+    "name": "Warhead Junction",
+    "localizedName": "Junção da Ogiva"
+  }
+]
