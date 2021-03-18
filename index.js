@@ -3,6 +3,7 @@ const { Client, MessageEmbed } = require("discord.js");
 const config = require("./config.json");
 require('dotenv').config({ path: './variables.env' });
 const puppeteer = require('puppeteer');
+const roles = JSON.parse(fs.readFileSync("./roles.json"));
 const heroesBase = JSON.parse(fs.readFileSync("./heroes-base.json"));
 const SEPARATOR = "------------------------------------------------------------------------"
 let heroesInfos = [];
