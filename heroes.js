@@ -9,32 +9,20 @@ try {
 	heroesInfos = JSON.parse(fs.readFileSync("./heroes-infos.json"))
 } catch (e) { }
 
-const maps = JSON.parse(fs.readFileSync("./maps.json"));
-
 
 exports.Heroes = {
 
-	findHero: function (heroName) {
-		let hero = heroesBase.find(hero => (hero.name.cleanVal() === heroName.cleanVal() ||
-			hero.localizedName.cleanVal() === heroName.cleanVal() ||
-			hero.accessLink.cleanVal() === heroName.cleanVal() ||
-			hero.id.cleanVal() === heroName.cleanVal()));
-		if (hero) {
-			return hero;
-		}
-		process.stdout.write(`Hero ${heroName} not found\n`);
-	},
+	hero : null,
 
-	getHeroInfos: function (command, heroName) {
-		let hero = this.findHero(heroName);
-
-		if (hero != null) {
-			let heroInfos = this.findHeroInfos(hero.id);
-
-			if (heroInfos != null && (heroInfos.counters.length > 0 &&
-				heroInfos.synergies.length > 0 &&
-				heroInfos.builds.length > 0)) {
-				return this.assembleReturnMessage(command, heroInfos);
+	init: function (command, heroName) {
+		
+		this.findHero(heroName);
+		if (this.hero != null) {
+			
+			if (this.hero.infos != null && (this.hero.infos.counters.length > 0 &&
+				this.hero.infos.synergies.length > 0 &&
+				this.hero.infos.builds.length > 0)) {
+				return this.assembleReturnMessage(command, this.hero.infos);
 			} else {
 				return `There was not enough info found for the hero ${heroName} \nPlease, call the ${config.prefix}update command to search for them`;
 			}
@@ -43,29 +31,29 @@ exports.Heroes = {
 			return `The hero ${heroName} was not found`;
 		}
 	},
-	findHeroInfos: function (idParam) {
-		return heroesInfos.find(hero => (hero.id === idParam));
+
+
+	findAllHeroes: function () {
+		heroesBase.map(hero => hero.infos = this.findHeroInfos(hero.id));
+		return heroesBase;
 	},
 
-	getMapInfos: function (command, mapName) {
-		if (mapName != null && mapName.trim().length > 0) {
-			let map = this.findMap(mapName);
-			let bestHeroes = [];
-			if (map != null) {
-				for (info of heroesInfos) {
-					for (strongerMap of info.strongerMaps) {
-						if (strongerMap === `${map.name} (${map.localizedName})`) {
-							bestHeroes.push(info)
-						}
-					}
-				}
-				return this.assembleReturnMessage(command, { map: map, heroes: bestHeroes });
-			} else {
-				return `The specified map was not found\nType "${config.prefix}help map" to get a list with the available maps`;
-			}
-		} else {
-			return this.assembleReturnMessage(command, { map: maps.map(it => it.name + ' (' + it.localizedName + ')'), heroes: [] })
+	findHero: function (heroName) {
+		let hero = heroesBase.find(hero => (hero.name.cleanVal() === heroName.cleanVal() ||
+			hero.localizedName.cleanVal() === heroName.cleanVal() ||
+			hero.accessLink.cleanVal() === heroName.cleanVal() ||
+			hero.id.cleanVal() === heroName.cleanVal()));
+
+		if (hero != null) {
+			this.hero = hero;
+			this.hero.infos = this.findHeroInfos(this.hero.id);
 		}
+
+		return this.hero;
+	},
+
+	findHeroInfos: function (idParam) {
+		return heroesInfos.find(hero => (hero.id === idParam));
 	},
 
 	findRoleById: function (roleId) {
@@ -75,30 +63,60 @@ exports.Heroes = {
 		}
 	},
 
-	getHeroName: function (hero) {
-		let heroName = `${hero.name} (${hero.localizedName})`;
-		if (hero.name == hero.localizedName) {
-			heroName = `${hero.name}`;
+	getHeroName: function () {
+		let heroName = `${this.hero.name} (${this.hero.localizedName})`;
+		if (this.hero.name == this.hero.localizedName) {
+			heroName = `${this.hero.name}`;
 		}
 		return heroName
 	},
 
-	findMap: function (mapName) {
-		let mapLowerCase = mapName.cleanVal();
-		return maps.find(map =>
-		(map.name.cleanVal() === mapLowerCase ||
-			map.localizedName.cleanVal() === mapLowerCase));
-	},
-
-	assembleBuildsReturnMessage: function (hero) {
-		let reply = `Available build(s) for ${hero.name}`;
-		reply += hero.builds.map(build => `\n${build.name}:\n${build.skills}\n`).join('')
+	getHeroBuilds: function () {
+		let reply = `Available build(s) for ${this.hero.name}`;
+		reply += this.hero.infos.builds.map(build => `\n${build.name}:\n${build.skills}\n`).join('')
 		return reply
 	},
 
-	assembleRoleReturnMessage: function (hero) {
-		let reply = `${hero.name} is a ${hero.role}`;
-		return reply
+	getHeroRole: function () {
+		return `${this.hero.name} is a ${this.hero.infos.role}`;	
+	},
+
+	getHeroCounters: function () {
+		let reply = `${this.hero.name} is countered by \n`;
+		reply += this.hero.infos.counters.map(counter => `${counter}\n`).join('');
+		return reply;
+	},
+
+	getHeroStrongerMaps: function () {
+		let reply = `${this.hero.name} is usually stronger on these maps \n`;
+		reply += this.hero.infos.strongerMaps.map(strongerMap => `${strongerMap}\n`).join('');
+		return reply;
+	},
+
+	getHeroSynergies: function () {
+		let reply = `${this.hero.name} synergizes with \n`;
+		reply += this.hero.infos.synergies.map(synergy => synergy + '\n').join('')
+		return reply;
+	},
+
+	getHeroTips: function () {
+		let reply = `Here are some tips for ${this.hero.name}\n`;
+		reply += this.hero.infos.tips + '\n';
+		return reply;
+	},
+
+	getHeroInfos: function () {
+		let reply = "\n" + this.getHeroRole() +
+			"\n" + this.getHeroBuilds() +
+			SEPARATOR +
+			"\n" + this.getHeroSynergies() +
+			SEPARATOR +
+			"\n" + this.getHeroCounters() +
+			SEPARATOR +
+			"\n" + this.getHeroStrongerMaps() +
+			SEPARATOR +
+			"\n" + this.getHeroTips();
+			return reply
 	},
 
 	assembleBanListReturnMessage: function () {
@@ -117,77 +135,19 @@ exports.Heroes = {
 		return reply;
 	},
 
-	assembleCountersReturnMessage: function (hero) {
-		let reply = `${hero.name} is countered by \n`;
-		reply += hero.counters.map(counter => `${counter}\n`).join('');
-		return reply;
-	},
-
-	assembleHeroStrongerMapsReturnMessage: function (hero) {
-		let reply = `${hero.name} is usually stronger on these maps \n`;
-		reply += hero.strongerMaps.map(hero => `${hero}\n`).join('');
-		return reply;
-	},
-
-
-	assembleSynergiesReturnMessage: function (hero) {
-		let reply = `${hero.name} synergizes with \n`;
-		reply += hero.synergies.map(it => it + '\n').join('')
-		return reply;
-	},
-
-	assembleTipsReturnMessage: function (hero) {
-		let reply = `Here are some tips for ${hero.name}\n`;
-		reply += hero.tips + '\n';
-		return reply;
-	},
-
-	assembleMapReturnMessage: function (args) {
-		let reply = "";
-		if (args.heroes.length > 0) {
-
-			const map = new Map(Array.from(args.heroes, obj => [obj.role, []]));
-			args.heroes.forEach(obj => map.get(obj.role).push(obj));
-
-			reply = `These are the heroes that are usually stronger on ${args.map.name}`;
-			reply += "\n";
-			reply += Array.from(map).map(([key, value]) => `${key} \n- ${value.map(it => `${it.name}\n`).join('- ')}${SEPARATOR}\n`).join('');
-		} else {
-			reply = `These are the available maps`;
-			reply += "\n";
-			reply += args.map.map(map => `${map}\n`).join('')
-		}
-
-		return reply;
-	},
 
 	assembleReturnMessage: function (commandObj, args) {
 		let reply = "";
-		if (commandObj.name === 'Builds') {
-			reply = this.assembleBuildsReturnMessage(args);
-		} else if (commandObj.name === 'Banlist') {
+	
+		if (commandObj.name === 'Banlist') {
 			reply = this.assembleBanListReturnMessage();
-		} else if (commandObj.name === 'Counters') {
-			reply = this.assembleCountersReturnMessage(args);
-		} else if (commandObj.name === 'Synergies') {
-			reply = this.assembleSynergiesReturnMessage(args);
 		} else if (commandObj.name === 'Map') {
 			reply = this.assembleMapReturnMessage(args);
 		} else if (commandObj.name === 'FreeWeek') {
 			reply = this.assembleFreeWeekHeroesReturnMessage(args);
-		} else if (commandObj.name === 'Tips') {
-			reply = this.assembleTipsReturnMessage(args);
-		} else if (commandObj.name === 'Infos') {
-			reply = "\n" + this.assembleRoleReturnMessage(args);
-			reply += "\n" + this.assembleBuildsReturnMessage(args);
-			reply += SEPARATOR
-			reply += "\n" + this.assembleSynergiesReturnMessage(args);
-			reply += SEPARATOR
-			reply += "\n" + this.assembleCountersReturnMessage(args);
-			reply += SEPARATOR
-			reply += "\n" + this.assembleHeroStrongerMapsReturnMessage(args);
-			reply += SEPARATOR
-			reply += "\n" + this.assembleTipsReturnMessage(args);
+		} else {
+
+			reply = eval(`this.getHero${commandObj.name}()`);
 		}
 
 		return reply;
