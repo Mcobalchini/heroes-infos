@@ -1,8 +1,9 @@
 const fs = require('fs');
-const { Client, MessageEmbed } = require("discord.js");
+const Client = require("discord.js");
 const config = require("./config.json");
 require('dotenv').config({ path: './variables.env' });
 let Heroes = require('./heroes.js').Heroes;
+let Maps = require('./maps.js').Maps;
 const puppeteer = require('puppeteer');
 const heroesBase = JSON.parse(fs.readFileSync("./heroes-base.json"));
 let heroesInfos = [];
@@ -176,8 +177,8 @@ async function updateData(command) {
 		}
 
 		for (strongerMap of result.strongerMaps) {
-			let heroMap = Heroes.findMap(strongerMap);
-			heroMaps.push(Heroes.getHeroName(heroMap));
+			let heroMap = Maps.findMap(strongerMap);
+			heroMaps.push(`${heroMap.name} (${heroMap.localizedName})`);
 		}
 
 		heroTips += result.tips.map(tip => `${tip}\n`).join('');
@@ -248,21 +249,21 @@ function handleCommand(commAux, args, receivedCommand) {
 		if (command.name === 'Builds' || command.name === 'Counters' ||
 			command.name === 'Synergies' || command.name === 'Infos' ||
 			command.name === 'Tips') {
-			reply = Heroes.getHeroInfos(command, args);
+			reply = Heroes.init(command, args);
 		} else if (command.name === 'Banlist') {
 			reply = getTopHeroesBan();
+		} else if (command.name === 'Map') {
+			reply = Maps.init(args);
 		} else if (command.name === 'FreeWeek') {
 			reply = getFreeHeroes();
 		} else if (command.name === 'Help') {
 			reply = help(args);
-		} else if (command.name === 'Map') {
-			reply = Heroes.getMapInfos(command, args);
 		} else if (command.name === 'Update') {
 			updateData(command);
 			reply = "The update process has started..."
-		} else {
-			reply = `The command ${receivedCommand} does not exists!\nType ${config.prefix}help to know more about commands`;
-		}
+		} 
+	} else {
+		reply = `The command ${receivedCommand} does not exists!\nType ${config.prefix}help to know more about commands`;
 	}
 	msg.reply(reply, {split: true })
 }
