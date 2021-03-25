@@ -1,53 +1,47 @@
 const fs = require('fs');
-
-const roles = JSON.parse(fs.readFileSync("./roles.json"), { encoding: 'utf8', flag: 'r' });
-const heroesBase = JSON.parse(fs.readFileSync("./heroes-base.json"), { encoding: 'utf8', flag: 'r' });
+const config = require("./config.json");
+const roles = JSON.parse(fs.readFileSync("./data/roles.json"), { encoding: 'utf8', flag: 'r' });
+const heroesBase = JSON.parse(fs.readFileSync("./data/heroes-base.json"), { encoding: 'utf8', flag: 'r' });
 const SEPARATOR = "------------------------------------------------------------------------"
 let heroesInfos = [];
+let freeHeroes = [];
+let mustBanHeroes = [];
 
 try {
-	heroesInfos = JSON.parse(fs.readFileSync("./heroes-infos.json"))
-} catch (e) { }
-
+	heroesInfos = JSON.parse(fs.readFileSync("./data/heroes-infos.json"));
+	mustBanHeroes = JSON.parse(fs.readFileSync("./data/banlist.json"));
+	freeHeroes = JSON.parse(fs.readFileSync("./data/freeweek.json"));
+} catch (e) {
+	process.stdout.write('error: ' + e + "\n");
+}
 
 exports.Heroes = {
 
-	hero : null,
+	hero: null,
+	mustBanHeroes: mustBanHeroes,
+	freeHeroes: freeHeroes,
+	heroesInfos: heroesInfos,
 
 	init: function (command, heroName) {
-		
-		this.findHero(heroName);
-		if (this.hero != null) {
-			
-			if (this.hero.infos != null && (this.hero.infos.counters.length > 0 &&
-				this.hero.infos.synergies.length > 0 &&
-				this.hero.infos.builds.length > 0)) {
-				return this.assembleReturnMessage(command, this.hero.infos);
-			} else {
-				return `There was not enough info found for the hero ${heroName} \nPlease, call the ${config.prefix}update command to search for them`;
-			}
-
-		} else {
-			return `The hero ${heroName} was not found`;
-		}
+		return this.assembleReturnMessage(command, heroName);
 	},
 
-
-	findAllHeroes: function () {
-		heroesBase.map(hero => hero.infos = this.findHeroInfos(hero.id));
+	findAllHeroes: function (searchInfos) {
+		if (searchInfos)
+			heroesBase.map(hero => hero.infos = this.findHeroInfos(hero.id));
 		return heroesBase;
 	},
 
-	findHero: function (heroName) {
+	findHero: function (heroName, searchInfos) {
 		let hero = heroesBase.find(hero => (hero.name.cleanVal() === heroName.cleanVal() ||
 			hero.localizedName.cleanVal() === heroName.cleanVal() ||
 			hero.accessLink.cleanVal() === heroName.cleanVal() ||
 			hero.id.cleanVal() === heroName.cleanVal()));
 
-		if (hero != null) {
-			this.hero = hero;
+		this.hero = hero;
+
+		if (hero != null && searchInfos)
 			this.hero.infos = this.findHeroInfos(this.hero.id);
-		}
 
 		return this.hero;
 	},
@@ -63,10 +57,10 @@ exports.Heroes = {
 		}
 	},
 
-	getHeroName: function () {
-		let heroName = `${this.hero.name} (${this.hero.localizedName})`;
-		if (this.hero.name == this.hero.localizedName) {
-			heroName = `${this.hero.name}`;
+	getHeroName: function (heroParam) {
+		let heroName = `${heroParam.name} (${heroParam.localizedName})`;
+		if (heroParam.name == heroParam.localizedName) {
+			heroName = `${heroParam.name}`;
 		}
 		return heroName
 	},
@@ -78,7 +72,7 @@ exports.Heroes = {
 	},
 
 	getHeroRole: function () {
-		return `${this.hero.name} is a ${this.hero.infos.role}`;	
+		return `${this.hero.name} is a ${this.hero.infos.role}`;
 	},
 
 	getHeroCounters: function () {
@@ -116,40 +110,60 @@ exports.Heroes = {
 			"\n" + this.getHeroStrongerMaps() +
 			SEPARATOR +
 			"\n" + this.getHeroTips();
-			return reply
+		return reply
 	},
 
 	assembleBanListReturnMessage: function () {
 		let reply = `Suggested bans\n`;
-		reply += cacheBans.map(ban => ban + '\n').join('');
+		reply += this.mustBanHeroes.map(ban => ban + '\n').join('');
 		return reply;
 	},
 
 	assembleFreeWeekHeroesReturnMessage: function () {
 		let reply = `There are no free heroes yet ¯\\_(ツ)_/¯`;
 
-		if (cacheFreeHeroes.length > 0) {
+		if (this.freeHeroes.length > 0) {
 			reply = "These are the free rotation heroes\n";
-			reply += cacheFreeHeroes.map(freeHeroes => `${freeHeroes}\n`).join('');
+			reply += this.freeHeroes.map(freeHero => `${freeHero}\n`).join('');
 		}
 		return reply;
 	},
 
-
-	assembleReturnMessage: function (commandObj, args) {
+	assembleReturnMessage: function (commandObj, heroName) {
 		let reply = "";
-	
+
 		if (commandObj.name === 'Banlist') {
 			reply = this.assembleBanListReturnMessage();
-		} else if (commandObj.name === 'Map') {
-			reply = this.assembleMapReturnMessage(args);
 		} else if (commandObj.name === 'FreeWeek') {
-			reply = this.assembleFreeWeekHeroesReturnMessage(args);
+			reply = this.assembleFreeWeekHeroesReturnMessage();
 		} else {
+			this.findHero(heroName, true);
+			if (this.hero != null) {
+				if (this.hero.infos != null && (this.hero.infos.counters.length > 0 &&
+					this.hero.infos.synergies.length > 0 &&
+					this.hero.infos.builds.length > 0)) {
+					reply = eval(`this.getHero${commandObj.name}()`);
+				} else {
+					return `There was not enough info found for the hero ${heroName} \nPlease, call the ${config.prefix}update command to search for them`;
+				}
 
-			reply = eval(`this.getHero${commandObj.name}()`);
+			} else {
+				return `The hero ${heroName} was not found`;
+			}
 		}
 
 		return reply;
+	},
+
+	setHeroesInfos: function (heroesParam) {
+		this.heroesInfos = heroesParam;
+	},
+
+	setBanHeroes: function (heroesParam) {
+		this.mustBanHeroes = heroesParam;
+	},
+
+	setFreeHeroes: function (heroesParam) {
+		this.freeHeroes = heroesParam;
 	}
 };

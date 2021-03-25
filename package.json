@@ -3,6 +3,7 @@
     "puppeteer": "5.4.1",
     "fs": "0.0.1-security",
     "discord.js": "12.5.1",
-    "dotenv": "8.2.0"
+    "dotenv": "8.2.0",
+    "es6-promise-pool": "2.5.0"
   }
 }

@@ -1,18 +1,12 @@
 const fs = require('fs');
-const Client = require("discord.js");
+const { Client } = require("discord.js");
 const config = require("./config.json");
 require('dotenv').config({ path: './variables.env' });
 let Heroes = require('./heroes.js').Heroes;
 let Maps = require('./maps.js').Maps;
 const puppeteer = require('puppeteer');
-const heroesBase = JSON.parse(fs.readFileSync("./heroes-base.json"));
-let heroesInfos = [];
-
-try {
-	heroesInfos = JSON.parse(fs.readFileSync("./heroes-infos.json"))
-} catch (e) { }
-
-const commands = JSON.parse(fs.readFileSync("./commands.json"));
+const PromisePool = require('es6-promise-pool');
+const commands = JSON.parse(fs.readFileSync("./data/commands.json"));
 const prefix = config.prefix;
 const bot = new Client();
 let msg = null;
@@ -33,11 +27,10 @@ bot.on("message", function (message) {
 	}
 
 	let receivedCommand = message.content.split(' ', 1)[0].substring(1);
-	let commAux = receivedCommand.toLowerCase()
-	let args = message.content.substring(commAux.length + 2);
+	let args = message.content.substring(receivedCommand.toLowerCase().length + 2);
 
 	try {
-		handleCommand(commAux, args, receivedCommand);
+		handleCommand(args, receivedCommand);
 	} catch (e) {
 		process.stdout.write(`Exception: ${e.stack}\n`);
 		msg.reply('An exception occurred! ' + e)
@@ -46,9 +39,9 @@ bot.on("message", function (message) {
 
 async function accessSite(command) {
 
-	const browser = await puppeteer.launch()
-	const page = await browser.newPage()
-	await page.setRequestInterception(true)
+	const browser = await puppeteer.launch();
+	const page = await browser.newPage();
+	await page.setRequestInterception(true);
 	page.on('request', (request) => {
 		if (request.resourceType() === 'image') request.abort()
 		else request.continue()
@@ -58,27 +51,15 @@ async function accessSite(command) {
 
 	if (command === 'banlist') {
 		await page.goto(`http://www.icy-veins.com/heroes/heroes-of-the-storm-master-tier-list`, { waitUntil: 'domcontentloaded' })
-
 		result = await page.evaluate(() => {
-			const bans = [];
-
-			document.querySelectorAll('.htl_ban_true').forEach(nameElements =>
-				bans.push(nameElements.nextElementSibling.innerText)
-			);
-
-			return bans;
+			return Array.from(document.querySelectorAll('.htl_ban_true')).map(nameElements => nameElements.nextElementSibling.innerText);
 		});
+
+
 	} else if (command === 'freeweek') {
-
 		await page.goto(`http://heroesofthestorm.com/pt-br/heroes/`, { waitUntil: 'domcontentloaded' })
-
-		result = await page.evaluate(() => {
-			const freeHeroes = [];
-			document.querySelectorAll('.HeroRotationIcon-container').forEach(nameElements =>
-				freeHeroes.push(nameElements.previousElementSibling.innerText)
-			);
-
-			return freeHeroes;
+		result = await page.evaluate(() => {			
+			return Array.from(document.querySelectorAll('.HeroRotationIcon-container')).map(nameElements => nameElements.previousElementSibling.innerText);
 		});
 	}
 
@@ -86,186 +67,167 @@ async function accessSite(command) {
 	return result;
 };
 
-async function updateData(command) {
-	updatingData = true;
-	for (let i in heroesBase) {
+const accessHeroUrl = async (url, heroId, heroRole, heroesMap, browser) => {
 
-		const browser = await puppeteer.launch()
-		const page = await browser.newPage()
-		await page.setRequestInterception(true)
-
-		page.on('request', (request) => {
-			if (request.resourceType() === 'image') request.abort()
-			else request.continue()
-		});
-
-		let result = ""
-
-		await page.goto(`http://www.icy-veins.com/heroes/${heroesBase[i].accessLink}-build-guide`, { waitUntil: 'domcontentloaded' })
-
-		result = await page.evaluate(() => {
-			const names = [];
-			const skills = [];
-			const builds = [];
-			const counters = [];
-			const synergies = [];
-			const strongerMaps = [];
-			const tips = [];
-
-			document.querySelectorAll('.toc_no_parsing').forEach(nameElements =>
-				names.push(nameElements.innerText)
-			);
-
-			document.querySelectorAll('.talent_build_copy_button > input').forEach(skillsElements =>
-				skills.push(skillsElements.value)
-			);
-
-			document.querySelectorAll('.hero_portrait_bad').forEach(nameElements =>
-				counters.push(nameElements.title)
-			);
-
-			document.querySelectorAll('.hero_portrait_good').forEach(nameElements =>
-				synergies.push(nameElements.title)
-			);
-
-			document.querySelectorAll('.heroes_maps_stronger .heroes_maps_content span img').forEach((i) => {
-				strongerMaps.push(i.title);
-			});
-
-			document.querySelectorAll('.heroes_tips li').forEach((i) => {
-				tips.push(i.innerText.trim().replaceAll('  ', ' '));
-			});
-
-
-			for (i in names) {
-				let obj = {
-					name: names[i],
-					skills: skills[i]
-				};
-				builds.push(obj);
-			}
-
-			let retorno = {
-				builds: builds,
-				counters: counters,
-				synergies: synergies,
-				strongerMaps: strongerMaps,
-				tips: tips
-			}
-
-			return retorno;
-		});
-
-
-		await browser.close();
-		let heroBuilds = [];
-		let heroCounters = [];
-		let heroSynergies = [];
-		let heroMaps = [];
-		let heroTips = "";
-
-		heroBuilds = result.builds;
-
-		for (synergy of result.synergies) {
-			let synergyHero = Heroes.findHero(synergy);
-			heroSynergies.push(Heroes.getHeroName(synergyHero));
-		}
-
-		for (counter of result.counters) {
-			let countHero = Heroes.findHero(counter);
-			heroCounters.push(Heroes.getHeroName(countHero));
-		}
-
-		for (strongerMap of result.strongerMaps) {
-			let heroMap = Maps.findMap(strongerMap);
-			heroMaps.push(`${heroMap.name} (${heroMap.localizedName})`);
-		}
-
-		heroTips += result.tips.map(tip => `${tip}\n`).join('');
-
-		if (heroesInfos[i] == null) {
-			heroesInfos[i] = {};
-		}
-
-		let role = Heroes.findRoleById(heroesBase[i].role);
-		let roleName = `${role.name} (${role.localizedName})`;
-
-		heroesInfos[i].id = heroesBase[i].id;
-		heroesInfos[i].name = Heroes.getHeroName(Heroes.findHero(heroesBase[i].name));
-		heroesInfos[i].role = roleName;
-		heroesInfos[i].builds = heroBuilds;
-		heroesInfos[i].synergies = heroSynergies;
-		heroesInfos[i].counters = heroCounters;
-		heroesInfos[i].strongerMaps = heroMaps;
-		heroesInfos[i].tips = heroTips;
-		process.stdout.write(`Finished process for ${heroesInfos[i].name} at ${new Date().toLocaleTimeString()}\n`);
-	}
-
-	fs.writeFile('heroes-infos.json', JSON.stringify(heroesInfos), (e) => {
-		if (e != null) {
-			process.stdout.write('error: ' + e + "\n");
-			msg.reply('I couldn\'t update the heroes data due to an error, check the logs to see what\'s going on');
-		}
+	const page = await browser.newPage()
+	page.on('request', (request) => {
+		if (request.resourceType() === 'image') request.abort()
+		else request.continue()
 	});
-	updatingData = false;
-	process.stdout.write(`Finished update process at ${new Date().toLocaleTimeString()}\n`);
-	msg.reply(assembleUpdateReturnMessage(command));
+	await page.setRequestInterception(true)
+	await page.goto(url);
+	
+	const result = await page.evaluate((heroRole) => {
+		const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.innerText);
+		const skills = Array.from(document.querySelectorAll('.talent_build_copy_button > input')).map(skillsElements => skillsElements.value);
+		const counters = Array.from(document.querySelectorAll('.hero_portrait_bad')).map(nameElements => nameElements.title);
+		const synergies = Array.from(document.querySelectorAll('.hero_portrait_good')).map(nameElements => nameElements.title);
+		const strongerMaps = Array.from(document.querySelectorAll('.heroes_maps_stronger .heroes_maps_content span img')).map(i => i.title);
+		const tips = Array.from(document.querySelectorAll('.heroes_tips li')).map(i => i.innerText.trim().replaceAll('  ', ' '));
+
+		const builds = [];
+		for (i in names) {
+			builds.push({
+				name: names[i],
+				skills: skills[i]
+			});
+		}
+
+		return {
+			builds: builds,
+			counters: counters,
+			synergies: synergies,
+			strongerMaps: strongerMaps,
+			tips: tips,
+			roleId: heroRole
+		};
+
+	}, heroRole);
+	heroesMap.set(heroId, result);
+	await page.close();
 };
 
-function getTopHeroesBan() {
+async function updateData() {
+	const browser = await puppeteer.launch();
+	
+	updatingData = true;
+	let heroesMap = new Map();
+	let heroesIdRolesAndUrls = [];
+	let heroesInfos = Heroes.findAllHeroes();
 
-	if (cacheBans.length > 0) {
-		return assembleBanListReturnMessage();
-	} else {
-		accessSite('banlist').then((value) => {
-			for (heroName of value) {
-				let banHero = Heroes.findHero(heroName);
-				cacheBans.push(Heroes.getHeroName(banHero));
+	for (hero of heroesInfos) {
+		heroesIdRolesAndUrls.push({ heroId: hero.id, url: `http://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`, roleId: hero.role })		
+	}
+
+	const promiseProducer = () => {
+		const heroCrawlInfo = heroesIdRolesAndUrls.pop();
+		return heroCrawlInfo ? accessHeroUrl(heroCrawlInfo.url, heroCrawlInfo.heroId, heroCrawlInfo.roleId, heroesMap, browser) : null;
+	};
+	
+	let startTime = new Date();
+	process.stdout.write(`Started gathering process at ${startTime.toLocaleTimeString()}\n`);
+
+	const thread = new PromisePool(promiseProducer, 5);
+
+	thread.start().then(() => {
+		
+		let finishedTime = new Date();
+
+		process.stdout.write(`Finished gathering process at ${finishedTime.toLocaleTimeString()}\n`);
+		process.stdout.write(`${(finishedTime - startTime) / 1000} seconds has passed\n`);
+
+		for (let [heroKey, heroData] of heroesMap) {
+			let index = heroesInfos.findIndex(it=> it.id == heroKey);
+
+			let heroCounters = [];
+			let heroSynergies = [];
+			let heroMaps = [];
+			let heroTips = "";
+
+			for (synergy of heroData.synergies) {
+				let synergyHero = Heroes.findHero(synergy);		
+				if (synergyHero)	
+					heroSynergies.push(Heroes.getHeroName(synergyHero));
 			}
-			return assembleBanListReturnMessage();
-		});
-	}
 
+			for (counter of heroData.counters) {
+				let counterHero = Heroes.findHero(counter);
+				if (counterHero)
+					heroCounters.push(Heroes.getHeroName(counterHero));
+			}
+
+			for (strongerMap of heroData.strongerMaps) {
+				let heroMap = Maps.findMap(strongerMap);
+				if (heroMap)
+					heroMaps.push(`${heroMap.name} (${heroMap.localizedName})`);
+			}
+
+			heroTips += heroData.tips.map(tip => `${tip}\n`).join('');
+
+			if (heroesInfos[index] == null) {
+				heroesInfos[index] = {};
+			}
+
+			let role = Heroes.findRoleById(heroData.roleId);
+			let roleName = `${role.name} (${role.localizedName})`;
+
+			heroesInfos[index].id = heroKey;
+			heroesInfos[index].name = Heroes.getHeroName(Heroes.findHero(heroKey));
+			heroesInfos[index].role = roleName;
+			heroesInfos[index].builds = heroData.builds;
+			heroesInfos[index].synergies = heroSynergies;
+			heroesInfos[index].counters = heroCounters;
+			heroesInfos[index].strongerMaps = heroMaps;
+			heroesInfos[index].tips = heroTips;			
+		}
+
+		writeFile('data/heroes-infos.json', heroesInfos);
+		Heroes.setHeroesInfos(heroesInfos);
+		
+		accessSite('freeweek').then((value)=> {
+			Heroes.setFreeHeroes(value);			
+			writeFile('data/banlist.json', value);
+		});
+	
+		accessSite('banlist').then((value)=> {
+			let cacheBans = [];
+			for (heroName of value) {						
+				let banHero = Heroes.findHero(heroName);
+				cacheBans.push(Heroes.getHeroName(banHero));					
+			}
+			writeFile('data/banlist.json', cacheBans);		
+			Heroes.setBanHeroes(cacheBans);
+			updatingData = false;			
+			msg.reply(assembleUpdateReturnMessage());
+		});				
+	}).catch((e)=> {
+		process.stdout.write(e.stack);
+		msg.reply('I couldn\'t update the heroes data due to an error, check the logs to see what\'s going on')
+	}	
+	);
 }
 
-function getFreeHeroes() {
-	return `All heroes are free now comrade! ☭`;
-	/*
-	if (cacheFreeHeroes.length > 0) {
-		assembleReturnMessage('freeweek');
-	} else {
-		accessSite('freeweek').then((value) => {
-			cacheFreeHeroes = value;
-			assembleReturnMessage('freeweek');
-		});
-	}
-	*/
-}
-
-function handleCommand(commAux, args, receivedCommand) {
+function handleCommand(args, receivedCommand) {
 	let reply = "";
-	let command = findCommand(commAux);
+	let command = findCommand(receivedCommand);
 	if (command != null) {
 		if (command.name === 'Builds' || command.name === 'Counters' ||
 			command.name === 'Synergies' || command.name === 'Infos' ||
-			command.name === 'Tips') {
-			reply = Heroes.init(command, args);
-		} else if (command.name === 'Banlist') {
-			reply = getTopHeroesBan();
+			command.name === 'Tips' || command.name === 'FreeWeek' ||
+			command.name === 'Banlist') {
+			reply = Heroes.init(command, args);	
 		} else if (command.name === 'Map') {
 			reply = Maps.init(args);
-		} else if (command.name === 'FreeWeek') {
-			reply = getFreeHeroes();
 		} else if (command.name === 'Help') {
 			reply = help(args);
 		} else if (command.name === 'Update') {
 			updateData(command);
 			reply = "The update process has started..."
-		} 
+		}
 	} else {
 		reply = `The command ${receivedCommand} does not exists!\nType ${config.prefix}help to know more about commands`;
 	}
-	msg.reply(reply, {split: true })
+	msg.reply(reply, { split: true })
 }
 
 function findCommand(commandName) {
@@ -275,6 +237,15 @@ function findCommand(commandName) {
 
 function help(command) {
 	return assembleHelpReturnMessage(command);
+}
+
+function writeFile(path, obj) {
+	fs.writeFile(path, JSON.stringify(obj), (e) => {
+		if (e != null) {
+			process.stdout.write('error: ' + e + "\n");
+			msg.reply('I couldn\'t write the heroes data due to an error, check the logs to see what\'s going on');
+		}
+	});
 }
 
 //Return messages
