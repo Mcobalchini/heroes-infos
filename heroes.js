@@ -1,5 +1,5 @@
 const fs = require('fs');
-
+const config = require("./config.json");
 const roles = JSON.parse(fs.readFileSync("./roles.json"), { encoding: 'utf8', flag: 'r' });
 const heroesBase = JSON.parse(fs.readFileSync("./heroes-base.json"), { encoding: 'utf8', flag: 'r' });
 const SEPARATOR = "------------------------------------------------------------------------"
@@ -16,7 +16,7 @@ exports.Heroes = {
 
 	init: function (command, heroName) {
 		
-		this.findHero(heroName);
+		this.findHero(heroName, true);
 		if (this.hero != null) {
 			
 			if (this.hero.infos != null && (this.hero.infos.counters.length > 0 &&
@@ -38,13 +38,16 @@ exports.Heroes = {
 		return heroesBase;
 	},
 
-	findHero: function (heroName) {
+	findHero: function (heroName, searchInfos) {
 		let hero = heroesBase.find(hero => (hero.name.cleanVal() === heroName.cleanVal() ||
 			hero.localizedName.cleanVal() === heroName.cleanVal() ||
 			hero.accessLink.cleanVal() === heroName.cleanVal() ||
 			hero.id.cleanVal() === heroName.cleanVal()));
 
 			this.hero = hero;
+
+			if (hero != null && searchInfos)
+				this.hero.infos = this.findHeroInfos(this.hero.id);
 	
 		return this.hero;
 	},
