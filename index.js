@@ -137,6 +137,7 @@ async function updateData() {
 		process.stdout.write(`${(finishedTime - startTime) / 1000} seconds has passed\n`);
 
 		for (let [heroKey, heroData] of heroesMap) {
+			let index = heroesInfos.findIndex(it=> it.id == heroKey);
 
 			let heroCounters = [];
 			let heroSynergies = [];
@@ -163,21 +164,21 @@ async function updateData() {
 
 			heroTips += heroData.tips.map(tip => `${tip}\n`).join('');
 
-			if (heroesInfos[heroKey] == null) {
-				heroesInfos[heroKey] = {};
+			if (heroesInfos[index] == null) {
+				heroesInfos[index] = {};
 			}
 
 			let role = Heroes.findRoleById(heroData.roleId);
 			let roleName = `${role.name} (${role.localizedName})`;
 
-			heroesInfos[heroKey].id = heroKey;
-			heroesInfos[heroKey].name = Heroes.getHeroName(Heroes.findHero(heroKey));
-			heroesInfos[heroKey].role = roleName;
-			heroesInfos[heroKey].builds = heroData.builds;
-			heroesInfos[heroKey].synergies = heroSynergies;
-			heroesInfos[heroKey].counters = heroCounters;
-			heroesInfos[heroKey].strongerMaps = heroMaps;
-			heroesInfos[heroKey].tips = heroTips;			
+			heroesInfos[index].id = heroKey;
+			heroesInfos[index].name = Heroes.getHeroName(Heroes.findHero(heroKey));
+			heroesInfos[index].role = roleName;
+			heroesInfos[index].builds = heroData.builds;
+			heroesInfos[index].synergies = heroSynergies;
+			heroesInfos[index].counters = heroCounters;
+			heroesInfos[index].strongerMaps = heroMaps;
+			heroesInfos[index].tips = heroTips;			
 		}
 
 		writeFile('data/heroes-infos.json', heroesInfos);

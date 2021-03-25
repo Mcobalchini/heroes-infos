@@ -57,10 +57,10 @@ exports.Heroes = {
 		}
 	},
 
-	getHeroName: function () {
-		let heroName = `${this.hero.name} (${this.hero.localizedName})`;
-		if (this.hero.name == this.hero.localizedName) {
-			heroName = `${this.hero.name}`;
+	getHeroName: function (heroParam) {
+		let heroName = `${heroParam.name} (${heroParam.localizedName})`;
+		if (heroParam.name == heroParam.localizedName) {
+			heroName = `${heroParam.name}`;
 		}
 		return heroName
 	},
