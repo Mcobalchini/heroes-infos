@@ -44,11 +44,8 @@ exports.Heroes = {
 			hero.accessLink.cleanVal() === heroName.cleanVal() ||
 			hero.id.cleanVal() === heroName.cleanVal()));
 
-		if (hero != null) {
 			this.hero = hero;
-			this.hero.infos = this.findHeroInfos(this.hero.id);
-		}
-
+	
 		return this.hero;
 	},
 
