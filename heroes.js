@@ -113,6 +113,18 @@ exports.Heroes = {
 			"\n" + this.getHeroTips();
 		return reply
 	},
+	
+	setHeroesInfos: function (heroesParam) {
+		this.heroesInfos = heroesParam;
+	},
+
+	setBanHeroes: function (heroesParam) {
+		this.mustBanHeroes = heroesParam;
+	},
+
+	setFreeHeroes: function (heroesParam) {
+		this.freeHeroes = heroesParam;
+	},
 
 	assembleBanListReturnMessage: function () {
 		let reply = `Suggested bans\n`;
@@ -154,17 +166,5 @@ exports.Heroes = {
 		}
 
 		return reply;
-	},
-
-	setHeroesInfos: function (heroesParam) {
-		this.heroesInfos = heroesParam;
-	},
-
-	setBanHeroes: function (heroesParam) {
-		this.mustBanHeroes = heroesParam;
-	},
-
-	setFreeHeroes: function (heroesParam) {
-		this.freeHeroes = heroesParam;
 	}
 };

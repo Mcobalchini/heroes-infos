@@ -2,15 +2,14 @@ const fs = require('fs');
 const { Client } = require("discord.js");
 const config = require("./config.json");
 require('dotenv').config({ path: './variables.env' });
-let Heroes = require('./heroes.js').Heroes;
-let Maps = require('./maps.js').Maps;
+const Heroes = require('./heroes.js').Heroes;
+const Maps = require('./maps.js').Maps;
 const puppeteer = require('puppeteer');
 const PromisePool = require('es6-promise-pool');
 const commands = JSON.parse(fs.readFileSync("./data/commands.json"));
 const prefix = config.prefix;
 const bot = new Client();
 let msg = null;
-
 let updatingData = false;
 
 bot.on("message", function (message) {
@@ -229,7 +228,7 @@ function handleCommand(args, receivedCommand) {
 		} else if (command.name === 'Map') {
 			reply = Maps.init(args);
 		} else if (command.name === 'Help') {
-			reply = help(args);
+			reply = assembleHelpReturnMessage(args);
 		} else if (command.name === 'Update') {
 			updateData(command);
 			reply = "The update process has started..."
@@ -243,19 +242,6 @@ function handleCommand(args, receivedCommand) {
 function findCommand(commandName) {
 	let commandNameToLowerCase = commandName.cleanVal();
 	return commands.find(command => (command.name.cleanVal() === commandNameToLowerCase));
-}
-
-function help(command) {
-	return assembleHelpReturnMessage(command);
-}
-
-function writeFile(path, obj) {
-	fs.writeFile(path, JSON.stringify(obj), (e) => {
-		if (e != null) {
-			process.stdout.write('error: ' + e + "\n");
-			msg.reply('I couldn\'t write the heroes data due to an error, check the logs to see what\'s going on');
-		}
-	});
 }
 
 //Return messages
@@ -283,6 +269,15 @@ function assembleUpdateReturnMessage(seconds) {
 	return `The update process has finished in ${seconds} seconds`;
 }
 //end return messages
+
+function writeFile(path, obj) {
+	fs.writeFile(path, JSON.stringify(obj), (e) => {
+		if (e != null) {
+			process.stdout.write('error: ' + e + "\n");
+			msg.reply('I couldn\'t write the heroes data due to an error, check the logs to see what\'s going on');
+		}
+	});
+}
 
 bot.on("ready", function () {
 
