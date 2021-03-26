@@ -11,9 +11,6 @@ const prefix = config.prefix;
 const bot = new Client();
 let msg = null;
 
-let cacheBans = [];
-let cacheFreeHeroes = [];
-
 let updatingData = false;
 
 bot.on("message", function (message) {
@@ -37,31 +34,28 @@ bot.on("message", function (message) {
 	}
 });
 
-async function accessSite(command) {
+async function accessSite(browser) {
 
-	const browser = await puppeteer.launch();
 	const page = await browser.newPage();
 	await page.setRequestInterception(true);
+
 	page.on('request', (request) => {
-		if (request.resourceType() === 'image') request.abort()
-		else request.continue()
+		if (['image', 'stylesheet', 'font', 'script'].indexOf(request.resourceType()) !== -1) {
+			request.abort();
+		} else {
+			request.continue();
+		}
 	});
 
 	let result = ""
 
-	if (command === 'banlist') {
-		await page.goto(`http://www.icy-veins.com/heroes/heroes-of-the-storm-master-tier-list`, { waitUntil: 'domcontentloaded' })
-		result = await page.evaluate(() => {
-			return Array.from(document.querySelectorAll('.htl_ban_true')).map(nameElements => nameElements.nextElementSibling.innerText);
-		});
-
-
-	} else if (command === 'freeweek') {
-		await page.goto(`http://heroesofthestorm.com/pt-br/heroes/`, { waitUntil: 'domcontentloaded' })
-		result = await page.evaluate(() => {			
-			return Array.from(document.querySelectorAll('.HeroRotationIcon-container')).map(nameElements => nameElements.previousElementSibling.innerText);
-		});
-	}
+	await page.goto(`http://www.icy-veins.com/heroes/heroes-of-the-storm-master-tier-list`);
+	result = await page.evaluate(() => {
+		return {
+			freeHeroes: Array.from(document.querySelectorAll('.free_heroes_list  span.free_hero_name')).map(it => it.innerText),
+			banHeroes: Array.from(document.querySelectorAll('.htl_ban_true')).map(nameElements => nameElements.nextElementSibling.innerText)
+		}
+	});
 
 	await browser.close();
 	return result;
@@ -69,14 +63,19 @@ async function accessSite(command) {
 
 const accessHeroUrl = async (url, heroId, heroRole, heroesMap, browser) => {
 
-	const page = await browser.newPage()
+	const page = await browser.newPage();
+	await page.setRequestInterception(true);
+
 	page.on('request', (request) => {
-		if (request.resourceType() === 'image') request.abort()
-		else request.continue()
+		if (['image', 'stylesheet', 'font', 'script'].indexOf(request.resourceType()) !== -1) {
+			request.abort();
+		} else {
+			request.continue();
+		}
 	});
-	await page.setRequestInterception(true)
+
 	await page.goto(url);
-	
+
 	const result = await page.evaluate((heroRole) => {
 		const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.innerText);
 		const skills = Array.from(document.querySelectorAll('.talent_build_copy_button > input')).map(skillsElements => skillsElements.value);
@@ -109,35 +108,35 @@ const accessHeroUrl = async (url, heroId, heroRole, heroesMap, browser) => {
 
 async function updateData() {
 	const browser = await puppeteer.launch();
-	
+
 	updatingData = true;
 	let heroesMap = new Map();
 	let heroesIdRolesAndUrls = [];
 	let heroesInfos = Heroes.findAllHeroes();
 
 	for (hero of heroesInfos) {
-		heroesIdRolesAndUrls.push({ heroId: hero.id, url: `http://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`, roleId: hero.role })		
+		heroesIdRolesAndUrls.push({ heroId: hero.id, url: `http://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`, roleId: hero.role })
 	}
 
 	const promiseProducer = () => {
 		const heroCrawlInfo = heroesIdRolesAndUrls.pop();
 		return heroCrawlInfo ? accessHeroUrl(heroCrawlInfo.url, heroCrawlInfo.heroId, heroCrawlInfo.roleId, heroesMap, browser) : null;
 	};
-	
+
 	let startTime = new Date();
 	process.stdout.write(`Started gathering process at ${startTime.toLocaleTimeString()}\n`);
 
 	const thread = new PromisePool(promiseProducer, 5);
 
 	thread.start().then(() => {
-		
+
 		let finishedTime = new Date();
 
 		process.stdout.write(`Finished gathering process at ${finishedTime.toLocaleTimeString()}\n`);
 		process.stdout.write(`${(finishedTime - startTime) / 1000} seconds has passed\n`);
 
 		for (let [heroKey, heroData] of heroesMap) {
-			let index = heroesInfos.findIndex(it=> it.id == heroKey);
+			let index = heroesInfos.findIndex(it => it.id == heroKey);
 
 			let heroCounters = [];
 			let heroSynergies = [];
@@ -145,8 +144,8 @@ async function updateData() {
 			let heroTips = "";
 
 			for (synergy of heroData.synergies) {
-				let synergyHero = Heroes.findHero(synergy);		
-				if (synergyHero)	
+				let synergyHero = Heroes.findHero(synergy);
+				if (synergyHero)
 					heroSynergies.push(Heroes.getHeroName(synergyHero));
 			}
 
@@ -168,42 +167,53 @@ async function updateData() {
 				heroesInfos[index] = {};
 			}
 
+			heroesInfos[index].infos = {};
+
 			let role = Heroes.findRoleById(heroData.roleId);
 			let roleName = `${role.name} (${role.localizedName})`;
 
 			heroesInfos[index].id = heroKey;
-			heroesInfos[index].name = Heroes.getHeroName(Heroes.findHero(heroKey));
-			heroesInfos[index].role = roleName;
-			heroesInfos[index].builds = heroData.builds;
-			heroesInfos[index].synergies = heroSynergies;
-			heroesInfos[index].counters = heroCounters;
-			heroesInfos[index].strongerMaps = heroMaps;
-			heroesInfos[index].tips = heroTips;			
+			heroesInfos[index].name = Heroes.findHero(heroKey).name;
+			heroesInfos[index].infos.role = roleName;
+			heroesInfos[index].infos.builds = heroData.builds;
+			heroesInfos[index].infos.synergies = heroSynergies;
+			heroesInfos[index].infos.counters = heroCounters;
+			heroesInfos[index].infos.strongerMaps = heroMaps;
+			heroesInfos[index].infos.tips = heroTips;
 		}
 
 		writeFile('data/heroes-infos.json', heroesInfos);
 		Heroes.setHeroesInfos(heroesInfos);
-		
-		accessSite('freeweek').then((value)=> {
-			Heroes.setFreeHeroes(value);			
-			writeFile('data/banlist.json', value);
-		});
-	
-		accessSite('banlist').then((value)=> {
+
+		accessSite(browser).then((value) => {
+
 			let cacheBans = [];
-			for (heroName of value) {						
+			let cacheFree = [];
+			let freeHeroes = value.freeHeroes;
+			let banHeroes = value.banHeroes;
+
+			for (heroName of banHeroes) {
 				let banHero = Heroes.findHero(heroName);
-				cacheBans.push(Heroes.getHeroName(banHero));					
+				cacheBans.push(Heroes.getHeroName(banHero));
 			}
-			writeFile('data/banlist.json', cacheBans);		
+
+			for (heroName of freeHeroes) {
+				let freeHero = Heroes.findHero(heroName);
+				cacheFree.push(Heroes.getHeroName(freeHero));
+			}
+
+			writeFile('data/banlist.json', cacheBans);
+			writeFile('data/freeweek.json', cacheFree);
+
 			Heroes.setBanHeroes(cacheBans);
-			updatingData = false;			
-			msg.reply(assembleUpdateReturnMessage());
-		});				
-	}).catch((e)=> {
+			Heroes.setFreeHeroes(cacheFree);
+			updatingData = false;
+			msg.reply(assembleUpdateReturnMessage((finishedTime - startTime) / 1000));
+		});
+	}).catch((e) => {
 		process.stdout.write(e.stack);
 		msg.reply('I couldn\'t update the heroes data due to an error, check the logs to see what\'s going on')
-	}	
+	}
 	);
 }
 
@@ -215,7 +225,7 @@ function handleCommand(args, receivedCommand) {
 			command.name === 'Synergies' || command.name === 'Infos' ||
 			command.name === 'Tips' || command.name === 'FreeWeek' ||
 			command.name === 'Banlist') {
-			reply = Heroes.init(command, args);	
+			reply = Heroes.init(command, args);
 		} else if (command.name === 'Map') {
 			reply = Maps.init(args);
 		} else if (command.name === 'Help') {
@@ -249,21 +259,6 @@ function writeFile(path, obj) {
 }
 
 //Return messages
-function assembleBanListReturnMessage() {
-	let reply = `Suggested bans\n`;
-	reply += cacheBans.map(ban => ban + '\n').join('');
-	return reply;
-}
-
-function assembleFreeWeekHeroesReturnMessage() {
-	let reply = `There are no free heroes yet ¯\\_(ツ)_/¯`;
-
-	if (cacheFreeHeroes.length > 0) {
-		reply = "These are the free rotation heroes\n";
-		reply += cacheFreeHeroes.map(freeHeroes => `${freeHeroes}\n`).join('');
-	}
-	return reply;
-}
 
 function assembleHelpReturnMessage(args) {
 	let reply = "";
@@ -284,8 +279,8 @@ function assembleHelpReturnMessage(args) {
 	return reply;
 }
 
-function assembleUpdateReturnMessage() {
-	return "The update process has finished!";
+function assembleUpdateReturnMessage(seconds) {
+	return `The update process has finished in ${seconds} seconds`;
 }
 //end return messages
 

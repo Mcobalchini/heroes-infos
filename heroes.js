@@ -27,8 +27,9 @@ exports.Heroes = {
 	},
 
 	findAllHeroes: function (searchInfos) {
-		if (searchInfos)
-			heroesBase.map(hero => hero.infos = this.findHeroInfos(hero.id));
+		if (searchInfos) {
+			return heroesBase.map(hero => this.findHeroInfos(hero.id));			
+		}
 		return heroesBase;
 	},
 
@@ -41,7 +42,7 @@ exports.Heroes = {
 		this.hero = hero;
 
 		if (hero != null && searchInfos)
-			this.hero.infos = this.findHeroInfos(this.hero.id);
+			this.hero = this.findHeroInfos(this.hero.id);
 
 		return this.hero;
 	},
@@ -66,35 +67,35 @@ exports.Heroes = {
 	},
 
 	getHeroBuilds: function () {
-		let reply = `Available build(s) for ${this.hero.name}`;
+		let reply = `Available build(s) for ${this.getHeroName(this.hero)}`;
 		reply += this.hero.infos.builds.map(build => `\n${build.name}:\n${build.skills}\n`).join('')
 		return reply
 	},
 
 	getHeroRole: function () {
-		return `${this.hero.name} is a ${this.hero.infos.role}`;
+		return `${this.getHeroName(this.hero)} is a ${this.hero.infos.role}`;
 	},
 
 	getHeroCounters: function () {
-		let reply = `${this.hero.name} is countered by \n`;
+		let reply = `${this.getHeroName(this.hero)} is countered by \n`;
 		reply += this.hero.infos.counters.map(counter => `${counter}\n`).join('');
 		return reply;
 	},
 
 	getHeroStrongerMaps: function () {
-		let reply = `${this.hero.name} is usually stronger on these maps \n`;
+		let reply = `${this.getHeroName(this.hero)} is usually stronger on these maps \n`;
 		reply += this.hero.infos.strongerMaps.map(strongerMap => `${strongerMap}\n`).join('');
 		return reply;
 	},
 
 	getHeroSynergies: function () {
-		let reply = `${this.hero.name} synergizes with \n`;
+		let reply = `${this.getHeroName(this.hero)} synergizes with \n`;
 		reply += this.hero.infos.synergies.map(synergy => synergy + '\n').join('')
 		return reply;
 	},
 
 	getHeroTips: function () {
-		let reply = `Here are some tips for ${this.hero.name}\n`;
+		let reply = `Here are some tips for ${this.getHeroName(this.hero)}\n`;
 		reply += this.hero.infos.tips + '\n';
 		return reply;
 	},
