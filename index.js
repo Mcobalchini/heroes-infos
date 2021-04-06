@@ -35,16 +35,7 @@ bot.on("message", function (message) {
 
 async function accessSite(browser) {
 
-	const page = await browser.newPage();
-	await page.setRequestInterception(true);
-
-	page.on('request', (request) => {
-		if (['image', 'stylesheet', 'font', 'script'].indexOf(request.resourceType()) !== -1) {
-			request.abort();
-		} else {
-			request.continue();
-		}
-	});
+	const page = await createPage(browser);
 
 	let result = ""
 
@@ -60,22 +51,17 @@ async function accessSite(browser) {
 	return result;
 };
 
-const accessHeroUrl = async (url, heroId, heroRole, heroesMap, browser) => {
+const accessHeroUrl = async (icyUrl, heroId, profileUrl, heroesMap, browser, cookie) => {
 
-	const page = await browser.newPage();
-	await page.setRequestInterception(true);
+	const page = await createPage(browser);
 
-	page.on('request', (request) => {
-		if (['image', 'stylesheet', 'font', 'script'].indexOf(request.resourceType()) !== -1) {
-			request.abort();
-		} else {
-			request.continue();
-		}
+	await page.setExtraHTTPHeaders({
+		'Cookie': cookie,
 	});
 
-	await page.goto(url);
+	await page.goto(icyUrl);
 
-	const result = await page.evaluate((heroRole) => {
+	const icyData = await page.evaluate(() => {
 		const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.innerText);
 		const skills = Array.from(document.querySelectorAll('.talent_build_copy_button > input')).map(skillsElements => skillsElements.value);
 		const counters = Array.from(document.querySelectorAll('.hero_portrait_bad')).map(nameElements => nameElements.title);
@@ -96,36 +82,77 @@ const accessHeroUrl = async (url, heroId, heroRole, heroesMap, browser) => {
 			counters: counters,
 			synergies: synergies,
 			strongerMaps: strongerMaps,
-			tips: tips,
-			roleId: heroRole
+			tips: tips
 		};
 
-	}, heroRole);
-	heroesMap.set(heroId, result);
+	});
+
+	await page.goto(profileUrl);
+
+	const profileData = await page.evaluate(() => {
+		const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `Popular build (${it.innerText}% win rate)`)
+		const skills = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .build-code')).map(it => it.innerText)
+		debugger;
+		const builds = [];
+		for (i in names) {
+			builds.push({
+				name: names[i],
+				skills: skills[i]
+			});
+		}
+
+		return {
+			builds: builds,
+		};
+
+	});
+
+	returnObject = {
+		icyData: icyData,
+		profileData: profileData
+	}
+
+	heroesMap.set(heroId, returnObject);
+
 	await page.close();
 };
 
 async function updateData() {
-	const browser = await puppeteer.launch();
-
 	updatingData = true;
+
+	//const browser = await puppeteer.launch({devtools: true});
+	const browser = await puppeteer.launch();
+	const page = await createPage(browser);
+
+	const response = await page.goto('https://www.heroesprofile.com/Global/Talents/');
+	let cookieValue = response._headers["set-cookie"];
+
 	let heroesMap = new Map();
-	let heroesIdRolesAndUrls = [];
+	let heroesIdAndUrls = [];
 	let heroesInfos = Heroes.findAllHeroes();
 
 	for (hero of heroesInfos) {
-		heroesIdRolesAndUrls.push({ heroId: hero.id, url: `http://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`, roleId: hero.role })
+		heroesIdAndUrls.push({
+			heroId: hero.id,
+			icyUrl: `http://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`,
+			profileUrl: `https://www.heroesprofile.com/Global/Talents/getChartDataTalentBuilds.php?hero=${hero.name.replace('/ /g', '+').replace('/\'/g', '%27')}`
+		});
 	}
 
 	const promiseProducer = () => {
-		const heroCrawlInfo = heroesIdRolesAndUrls.pop();
-		return heroCrawlInfo ? accessHeroUrl(heroCrawlInfo.url, heroCrawlInfo.heroId, heroCrawlInfo.roleId, heroesMap, browser) : null;
+		const heroCrawlInfo = heroesIdAndUrls.pop();
+		return heroCrawlInfo ? accessHeroUrl(heroCrawlInfo.icyUrl,
+			heroCrawlInfo.heroId,
+			heroCrawlInfo.profileUrl,
+			heroesMap,
+			browser,
+			cookieValue) : null;
 	};
 
 	let startTime = new Date();
 	process.stdout.write(`Started gathering process at ${startTime.toLocaleTimeString()}\n`);
 
-	const thread = new PromisePool(promiseProducer, 5);
+	const thread = new PromisePool(promiseProducer, 10);
 
 	thread.start().then(() => {
 
@@ -136,45 +163,57 @@ async function updateData() {
 
 		for (let [heroKey, heroData] of heroesMap) {
 			let index = heroesInfos.findIndex(it => it.id == heroKey);
-
+			let icyData = heroData.icyData
+			let profileData = heroData.profileData
 			let heroCounters = [];
 			let heroSynergies = [];
 			let heroMaps = [];
 			let heroTips = "";
 
-			for (synergy of heroData.synergies) {
+			for (synergy of icyData.synergies) {
 				let synergyHero = Heroes.findHero(synergy);
 				if (synergyHero)
 					heroSynergies.push(Heroes.getHeroName(synergyHero));
 			}
 
-			for (counter of heroData.counters) {
+			for (counter of icyData.counters) {
 				let counterHero = Heroes.findHero(counter);
 				if (counterHero)
 					heroCounters.push(Heroes.getHeroName(counterHero));
 			}
 
-			for (strongerMap of heroData.strongerMaps) {
+			for (strongerMap of icyData.strongerMaps) {
 				let heroMap = Maps.findMap(strongerMap);
 				if (heroMap)
 					heroMaps.push(`${heroMap.name} (${heroMap.localizedName})`);
 			}
 
-			heroTips += heroData.tips.map(tip => `${tip}\n`).join('');
+			heroTips += icyData.tips.map(tip => `${tip}\n`).join('');
 
 			if (heroesInfos[index] == null) {
 				heroesInfos[index] = {};
 			}
 
+			//Recupera os itens iguais
+			let repeatedBuilds = profileData.builds.filter(item => (icyData.builds.map(it => it.skills).includes(item.skills)));
+
+			//aplica o winrate no nome das builds conhecidas
+			icyData.builds.forEach(it => {
+				for (item of repeatedBuilds) {
+					if (item.skills == it.skills) {
+						it.name = `${it.name} (${item.name.match(/([0-9.]%*)/g, '').join('')} win rate)`
+					}
+				}
+			});
+
+			//remove os itens duplicados
+			profileData.builds = profileData.builds.filter(item => !repeatedBuilds.includes(item))
+			let heroBuilds = icyData.builds.concat(profileData.builds);
+
 			heroesInfos[index].infos = {};
-
-			let role = Heroes.findRoleById(heroData.roleId);
-			let roleName = `${role.name} (${role.localizedName})`;
-
 			heroesInfos[index].id = heroKey;
 			heroesInfos[index].name = Heroes.findHero(heroKey).name;
-			heroesInfos[index].infos.role = roleName;
-			heroesInfos[index].infos.builds = heroData.builds;
+			heroesInfos[index].infos.builds = heroBuilds;
 			heroesInfos[index].infos.synergies = heroSynergies;
 			heroesInfos[index].infos.counters = heroCounters;
 			heroesInfos[index].infos.strongerMaps = heroMaps;
@@ -215,6 +254,22 @@ async function updateData() {
 	}
 	);
 }
+
+async function createPage(browser) {
+
+	const page = await browser.newPage();
+	await page.setRequestInterception(true);
+
+	page.on('request', (request) => {
+		if (['image', 'stylesheet', 'font', 'script'].indexOf(request.resourceType()) !== -1) {
+			request.abort();
+		} else {
+			request.continue();
+		}
+	});
+	return page;
+}
+
 
 function handleCommand(args, receivedCommand) {
 	let reply = "";

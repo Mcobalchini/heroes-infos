@@ -28,7 +28,7 @@ exports.Heroes = {
 
 	findAllHeroes: function (searchInfos) {
 		if (searchInfos) {
-			return heroesBase.map(hero => this.findHeroInfos(hero.id));			
+			return heroesBase.map(hero => this.findHeroInfos(hero.id));
 		}
 		return heroesBase;
 	},
@@ -48,7 +48,7 @@ exports.Heroes = {
 	},
 
 	findHeroInfos: function (idParam) {
-		return heroesInfos.find(hero => (hero.id === idParam));
+		return this.heroesInfos.find(hero => (hero.id === idParam));
 	},
 
 	findRoleById: function (roleId) {
@@ -56,6 +56,10 @@ exports.Heroes = {
 		if (role) {
 			return role;
 		}
+	},
+
+	getRoleName: function (roleParam) {
+		return `${roleParam.name} (${roleParam.localizedName})`;
 	},
 
 	getHeroName: function (heroParam) {
@@ -68,12 +72,12 @@ exports.Heroes = {
 
 	getHeroBuilds: function () {
 		let reply = `Available build(s) for ${this.getHeroName(this.hero)}`;
-		reply += this.hero.infos.builds.map(build => `\n${build.name}:\n${build.skills}\n`).join('')
+		reply += this.hero.infos.builds.map(build => `\n${build.name}\n${build.skills}\n`).join('')
 		return reply
 	},
 
 	getHeroRole: function () {
-		return `${this.getHeroName(this.hero)} is a ${this.hero.infos.role}`;
+		return `${this.getHeroName(this.hero)} is a ${this.getRoleName(this.findRoleById(this.hero.role))}`;
 	},
 
 	getHeroCounters: function () {
@@ -113,7 +117,7 @@ exports.Heroes = {
 			"\n" + this.getHeroTips();
 		return reply
 	},
-	
+
 	setHeroesInfos: function (heroesParam) {
 		this.heroesInfos = heroesParam;
 	},

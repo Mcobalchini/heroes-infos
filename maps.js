@@ -41,12 +41,12 @@ exports.Maps = {
 	assembleMapReturnMessage: function (args) {
 		let reply = "";
 		if (args.heroes.length > 0) {
-			const map = new Map(Array.from(args.heroes, obj => [obj.infos.role, []]));
-			args.heroes.forEach(obj => map.get(obj.infos.role).push(obj));
+			const map = new Map(Array.from(args.heroes, obj => [obj.role, []]));
+			args.heroes.forEach(obj => map.get(obj.role).push(obj));
 
 			reply = `These are the heroes that are usually stronger on ${this.getMapName(args.map)}`;
 			reply += "\n";
-			reply += Array.from(map).map(([key, value]) => `${key} \n- ${value.map(it => `${it.name}\n`).join('- ')}${SEPARATOR}\n`).join('');
+			reply += Array.from(map).map(([key, value]) => `${Heroes.getRoleName(Heroes.findRoleById(key))} \n- ${value.map(it => `${Heroes.getHeroName(it)}\n`).join('- ')}${SEPARATOR}\n`).join('');
 		} else {
 			reply = `These are the available maps`;
 			reply += "\n";
