@@ -80,6 +80,10 @@ exports.Heroes = {
 		return `${this.getHeroName(this.hero)} is a ${this.getRoleName(this.findRoleById(this.hero.role))}`;
 	},
 
+	getHeroUniverse: function () {
+		return ` from ${this.hero.universe} universe`;
+	},
+
 	getHeroCounters: function () {
 		let reply = `${this.getHeroName(this.hero)} is countered by \n`;
 		reply += this.hero.infos.counters.map(counter => `${counter}\n`).join('');
@@ -106,7 +110,8 @@ exports.Heroes = {
 
 	getHeroInfos: function () {
 		let reply = "\n" + this.getHeroRole() +
-			"\n" + this.getHeroBuilds() +
+			this.getHeroUniverse() +
+			"\n\n" + this.getHeroBuilds() +
 			SEPARATOR +
 			"\n" + this.getHeroSynergies() +
 			SEPARATOR +

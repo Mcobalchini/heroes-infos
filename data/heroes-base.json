@@ -4,629 +4,719 @@
     "localizedName": "Zul'jin",
     "accessLink": "zuljin",
     "id": "29",
-    "role": 1
+    "role": 1,
+    "universe": "warcraft"
   },
   {
     "name": "Zagara",
     "localizedName": "Zagara",
     "accessLink": "zagara",
     "id": "63",
-    "role": 1
+    "role": 1,
+    "universe": "starcraft"
   },
   {
     "name": "Valla",
     "localizedName": "Valla",
     "accessLink": "valla",
     "id": "83",
-    "role": 1
+    "role": 1,
+    "universe": "diablo"
   },
   {
     "name": "Tychus",
     "localizedName": "Tychus",
     "accessLink": "tychus",
     "id": "67",
-    "role": 1
+    "role": 1,
+    "universe": "starcraft"
   },
   {
     "name": "Tracer",
     "localizedName": "Tracer",
     "accessLink": "tracer",
     "id": "39",
-    "role": 1
+    "role": 1,
+    "universe": "overwatch"
   },
   {
     "name": "Tassadar",
     "localizedName": "Tassadar",
     "accessLink": "tassadar",
     "id": "89",
-    "role": 1
+    "role": 1,
+    "universe": "starcraft"
   },
   {
     "name": "Sylvanas",
     "localizedName": "Sylvana",
     "accessLink": "sylvanas",
     "id": "55",
-    "role": 1
+    "role": 1,
+    "universe": "warcraft"
   },
   {
     "name": "Sgt. Hammer",
     "localizedName": "Sgt. Marreta",
     "accessLink": "sgt-hammer",
     "id": "78",
-    "role": 1
+    "role": 1,
+    "universe": "starcraft"
   },
   {
     "name": "Raynor",
     "localizedName": "Raynor",
     "accessLink": "raynor",
     "id": "77",
-    "role": 1
+    "role": 1,
+    "universe": "starcraft"
   },
   {
     "name": "Probius",
     "localizedName": "Sondius",
     "accessLink": "probius",
     "id": "26",
-    "role": 1
+    "role": 1,
+    "universe": "starcraft"
   },
   {
     "name": "Orphea",
     "localizedName": "Orféa",
     "accessLink": "orphea",
     "id": "6",
-    "role": 1
+    "role": 1,
+    "universe": "nexus"
   },
   {
     "name": "Nova",
     "localizedName": "Nova",
     "accessLink": "nova",
     "id": "76",
-    "role": 1
+    "role": 1,
+    "universe": "starcraft"
   },
   {
     "name": "Nazeebo",
     "localizedName": "Nazibo",
     "accessLink": "nazeebo",
     "id": "75",
-    "role": 1
+    "role": 1,
+    "universe": "diablo"
   },
   {
     "name": "Mephisto",
     "localizedName": "Mefisto",
     "accessLink": "mephisto",
     "id": "8",
-    "role": 1
+    "role": 1,
+    "universe": "diablo"
   },
   {
     "name": "Lunara",
     "localizedName": "Lunara",
     "accessLink": "lunara",
     "id": "44",
-    "role": 1
+    "role": 1,
+    "universe": "warcraft"
   },
   {
     "name": "Li-Ming",
     "localizedName": "Li-Ming",
     "accessLink": "li-ming",
     "id": "42",
-    "role": 1
+    "role": 1,
+    "universe": "diablo"
   },
   {
     "name": "Kel'Thuzad",
     "localizedName": "Kel'Thuzad",
     "accessLink": "kelthuzad",
     "id": "19",
-    "role": 1
+    "role": 1,
+    "universe": "warcraft"
   },
   {
     "name": "Kael'thas",
     "localizedName": "Kael'thas",
     "accessLink": "kaelthas",
     "id": "54",
-    "role": 1
+    "role": 1,
+    "universe": "warcraft"
   },
   {
     "name": "Junkrat",
     "localizedName": "Junkrat",
     "accessLink": "junkrat",
     "id": "17",
-    "role": 1
+    "role": 1,
+    "universe": "overwatch"
   },
   {
     "name": "Jaina",
     "localizedName": "Jaina",
     "accessLink": "jaina",
     "id": "58",
-    "role": 1
+    "role": 1,
+    "universe": "warcraft"
   },
   {
     "name": "Hanzo",
     "localizedName": "Hanzo",
     "accessLink": "hanzo",
     "id": "15",
-    "role": 1
+    "role": 1,
+    "universe": "overwatch"
   },
   {
     "name": "Gul'dan",
     "localizedName": "Gul'dan",
     "accessLink": "guldan",
     "id": "36",
-    "role": 1
+    "role": 1,
+    "universe": "warcraft"
   },
   {
     "name": "Greymane",
     "localizedName": "Greymane",
     "accessLink": "greymane",
     "id": "43",
-    "role": 1
+    "role": 1,
+    "universe": "warcraft"
   },
   {
     "name": "Genji",
     "localizedName": "Genji",
     "accessLink": "genji",
     "id": "24",
-    "role": 1
+    "role": 1,
+    "universe": "overwatch"
   },
   {
     "name": "Gall",
     "localizedName": "Gall",
     "accessLink": "gall",
     "id": "46",
-    "role": 1
+    "role": 1,
+    "universe": "warcraft"
   },
   {
     "name": "Fenix",
     "localizedName": "Fenix",
     "accessLink": "fenix",
     "id": "12",
-    "role": 1
+    "role": 1,
+    "universe": "starcraft"
   },
   {
     "name": "Falstad",
     "localizedName": "Falstad",
     "accessLink": "falstad",
     "id": "86",
-    "role": 1
+    "role": 1,
+    "universe": "warcraft"
   },
   {
     "name": "Chromie",
     "localizedName": "Crona",
     "accessLink": "chromie",
     "id": "38",
-    "role": 1
+    "role": 1,
+    "universe": "warcraft"
   },
   {
     "name": "Cassia",
     "localizedName": "Cássia",
     "accessLink": "cassia",
     "id": "25",
-    "role": 1
+    "role": 1,
+    "universe": "diablo"
   },
   {
     "name": "Azmodan",
     "localizedName": "Azmodan",
     "accessLink": "azmodan",
     "id": "59",
-    "role": 1
+    "role": 1,
+    "universe": "diablo"
   },
   {
     "name": "Whitemane",
     "localizedName": "Cristalba",
     "accessLink": "whitemane",
     "id": "9",
-    "role": 2
+    "role": 2,
+    "universe": "warcraft"
   },
   {
     "name": "Uther",
     "localizedName": "Uther",
     "accessLink": "uther",
     "id": "82",
-    "role": 2
+    "role": 2,
+    "universe": "warcraft"
   },
   {
     "name": "Tyrande",
     "localizedName": "Tyrande",
     "accessLink": "tyrande",
     "id": "81",
-    "role": 2
+    "role": 2,
+    "universe": "warcraft"
   },
   {
     "name": "Stukov",
     "localizedName": "Stukov",
     "accessLink": "stukov",
     "id": "21",
-    "role": 2
+    "role": 2,
+    "universe": "starcraft"
   },
   {
     "name": "Rehgar",
     "localizedName": "Rehgar",
     "accessLink": "rehgar",
     "id": "62",
-    "role": 2
+    "role": 2,
+    "universe": "warcraft"
   },
   {
     "name": "Malfurion",
     "localizedName": "Malfurion",
     "accessLink": "malfurion",
     "id": "73",
-    "role": 2
+    "role": 2,
+    "universe": "warcraft"
   },
   {
     "name": "Lúcio",
     "localizedName": "Lúcio",
     "accessLink": "lucio",
     "id": "27",
-    "role": 2
+    "role": 2,
+    "universe": "overwatch"
   },
   {
     "name": "Lt. Morales",
     "localizedName": "Ten. Morales",
     "accessLink": "lt-morales",
     "id": "48",
-    "role": 2
+    "role": 2,
+    "universe": "starcraft"
   },
   {
     "name": "Li Li",
     "localizedName": "Li Li",
     "accessLink": "li-li",
     "id": "66",
-    "role": 2
+    "role": 2,
+    "universe": "warcraft"
   },
   {
     "name": "Kharazim",
     "localizedName": "Kharazim",
     "accessLink": "kharazim",
     "id": "50",
-    "role": 2
+    "role": 2,
+    "universe": "diablo"
   },
   {
-    "name": "Deckard Cain",
+    "name": "Deckard",
     "localizedName": "Deckard Cain",
     "accessLink": "deckard",
     "id": "11",
-    "role": 2
+    "role": 2,
+    "universe": "diablo"
   },
   {
     "name": "Brightwing",
     "localizedName": "Asaluz",
     "accessLink": "brightwing",
     "id": "65",
-    "role": 2
+    "role": 2,
+    "universe": "warcraft"
   },
   {
     "name": "Auriel",
     "localizedName": "Auriel",
     "accessLink": "auriel",
     "id": "35",
-    "role": 2
+    "role": 2,
+    "universe": "diablo"
   },
   {
     "name": "Anduin",
     "localizedName": "Anduin",
     "accessLink": "anduin",
     "id": "4",
-    "role": 2
+    "role": 2,
+    "universe": "warcraft"
   },
   {
     "name": "Ana",
     "localizedName": "Ana",
     "accessLink": "ana",
     "id": "18",
-    "role": 2
+    "role": 2,
+    "universe": "overwatch"
   },
   {
     "name": "Alexstrasza",
     "localizedName": "Alexstrasza",
     "accessLink": "alexstrasza",
     "id": "16",
-    "role": 2
+    "role": 2,
+    "universe": "warcraft"
   },
   {
     "name": "Zeratul",
     "localizedName": "Zeratul",
     "accessLink": "zeratul",
     "id": "84",
-    "role": 3
+    "role": 3,
+    "universe": "starcraft"
   },
   {
     "name": "Valeera",
     "localizedName": "Valira",
     "accessLink": "valeera",
     "id": "28",
-    "role": 3
+    "role": 3,
+    "universe": "warcraft"
   },
   {
     "name": "The Butcher",
     "localizedName": "O Açougueiro",
     "accessLink": "the-butcher",
     "id": "52",
-    "role": 3
+    "role": 3,
+    "universe": "diablo"
   },
   {
     "name": "Samuro",
     "localizedName": "Samuro",
     "accessLink": "samuro",
     "id": "32",
-    "role": 3
+    "role": 3,
+    "universe": "warcraft"
   },
   {
     "name": "Qhira",
     "localizedName": "Qhira",
     "accessLink": "qhira",
     "id": "3",
-    "role": 3
+    "role": 3,
+    "universe": "nexus"
   },
   {
     "name": "Murky",
     "localizedName": "Murquinho",
     "accessLink": "murky",
     "id": "64",
-    "role": 3
+    "role": 3,
+    "universe": "warcraft"
   },
   {
     "name": "Maiev",
     "localizedName": "Maiev",
     "accessLink": "maiev",
     "id": "13",
-    "role": 3
+    "role": 3,
+    "universe": "warcraft"
   },
   {
     "name": "Kerrigan",
     "localizedName": "Kerrigan",
     "accessLink": "kerrigan",
     "id": "72",
-    "role": 3
+    "role": 3,
+    "universe": "starcraft"
   },
   {
     "name": "Illidan",
     "localizedName": "Illidan",
     "accessLink": "illidan",
     "id": "71",
-    "role": 3
+    "role": 3,
+    "universe": "warcraft"
   },
   {
     "name": "Alarak",
     "localizedName": "Alarak",
     "accessLink": "alarak",
     "id": "34",
-    "role": 3
+    "role": 3,
+    "universe": "starcraft"
   },
   {
     "name": "Tyrael",
     "localizedName": "Tyrael",
     "accessLink": "tyrael",
     "id": "80",
-    "role": 4
+    "role": 4,
+    "universe": "diablo"
   },
   {
     "name": "Stitches",
     "localizedName": "Suturino",
     "accessLink": "stitches",
     "id": "88",
-    "role": 4
+    "role": 4,
+    "universe": "warcraft"
   },
   {
     "name": "Muradin",
     "localizedName": "Muradin",
     "accessLink": "muradin",
     "id": "74",
-    "role": 4
+    "role": 4,
+    "universe": "warcraft"
   },
   {
     "name": "Mei",
     "localizedName": "Mei",
     "accessLink": "mei",
     "id": "1",
-    "role": 4
+    "role": 4,
+    "universe": "overwatch"
   },
   {
     "name": "Mal'Ganis",
     "localizedName": "Mal'Ganis",
     "accessLink": "malganis",
     "id": "7",
-    "role": 4
+    "role": 4,
+    "universe": "warcraft"
   },
   {
     "name": "Johanna",
     "localizedName": "Johanna",
     "accessLink": "johanna",
     "id": "53",
-    "role": 4
+    "role": 4,
+    "universe": "diablo"
   },
   {
     "name": "Garrosh",
     "localizedName": "Garrosh",
     "accessLink": "garrosh",
     "id": "20",
-    "role": 4
+    "role": 4,
+    "universe": "warcraft"
   },
   {
     "name": "E.T.C.",
     "localizedName": "C.T.E.",
     "accessLink": "e-t-c",
     "id": "85",
-    "role": 4
+    "role": 4,
+    "universe": "warcraft"
   },
   {
     "name": "Diablo",
     "localizedName": "Diablo",
     "accessLink": "diablo",
     "id": "70",
-    "role": 4
+    "role": 4,
+    "universe": "diablo"
   },
   {
     "name": "Cho",
     "localizedName": "Cho",
     "accessLink": "cho",
     "id": "45",
-    "role": 4
+    "role": 4,
+    "universe": "warcraft"
   },
   {
     "name": "Blaze",
     "localizedName": "Blaze",
     "accessLink": "blaze",
     "id": "14",
-    "role": 4
+    "role": 4,
+    "universe": "starcraft"
   },
   {
     "name": "Arthas",
     "localizedName": "Arthas",
     "accessLink": "arthas",
     "id": "69",
-    "role": 4
+    "role": 4,
+    "universe": "warcraft"
   },
   {
     "name": "Anub'arak",
     "localizedName": "Anub'arak",
     "accessLink": "anubarak",
     "id": "60",
-    "role": 4
+    "role": 4,
+    "universe": "warcraft"
   },
   {
     "name": "Zarya",
     "localizedName": "Zarya",
     "accessLink": "zarya",
     "id": "33",
-    "role": 5
+    "role": 5,
+    "universe": "overwatch"
   },
   {
     "name": "The Lost Vikings",
     "localizedName": "Os Vikings Perdidos",
     "accessLink": "the-lost-vikings",
     "id": "56",
-    "role": 5
+    "role": 5,
+    "universe": "nexus"
   },
   {
     "name": "Medivh",
     "localizedName": "Medivh",
     "accessLink": "medivh",
     "id": "37",
-    "role": 5
+    "role": 5,
+    "universe": "warcraft"
   },
   {
     "name": "Abathur",
     "localizedName": "Abathur",
     "accessLink": "abathur",
     "id": "68",
-    "role": 5
+    "role": 5,
+    "universe": "starcraft"
   },
   {
     "name": "Yrel",
     "localizedName": "Yrel",
     "accessLink": "yrel",
     "id": "10",
-    "role": 6
+    "role": 6,
+    "universe": "warcraft"
   },
   {
     "name": "Xul",
     "localizedName": "Xul",
     "accessLink": "xul",
     "id": "41",
-    "role": 6
+    "role": 6,
+    "universe": "diablo"
   },
   {
     "name": "Varian",
     "localizedName": "Varian",
     "accessLink": "varian",
     "id": "31",
-    "role": 6
+    "role": 6,
+    "universe": "warcraft"
   },
   {
     "name": "Thrall",
     "localizedName": "Thrall",
     "accessLink": "thrall",
     "id": "57",
-    "role": 6
+    "role": 6,
+    "universe": "warcraft"
   },
   {
     "name": "Sonya",
     "localizedName": "Sonya",
     "accessLink": "sonya",
     "id": "79",
-    "role": 6
+    "role": 6,
+    "universe": "diablo"
   },
   {
     "name": "Rexxar",
     "localizedName": "Rexxar",
     "accessLink": "rexxar",
     "id": "49",
-    "role": 6
+    "role": 6,
+    "universe": "warcraft"
   },
   {
     "name": "Ragnaros",
     "localizedName": "Ragnaros",
     "accessLink": "ragnaros",
     "id": "30",
-    "role": 6
+    "role": 6,
+    "universe": "warcraft"
   },
   {
     "name": "Malthael",
     "localizedName": "Maltael",
     "accessLink": "malthael",
     "id": "22",
-    "role": 6
+    "role": 6,
+    "universe": "diablo"
   },
   {
     "name": "Leoric",
     "localizedName": "Leoric",
     "accessLink": "leoric",
     "id": "51",
-    "role": 6
+    "role": 6,
+    "universe": "diablo"
   },
   {
     "name": "Imperius",
     "localizedName": "Impérius",
     "accessLink": "imperius",
     "id": "5",
-    "role": 6
+    "role": 6,
+    "universe": "diablo"
   },
   {
     "name": "Hogger",
     "localizedName": "Hogger",
     "accessLink": "hogger",
     "id": "0",
-    "role": 6
+    "role": 6,
+    "universe": "warcraft"
   },
   {
     "name": "Gazlowe",
     "localizedName": "Gasganete",
     "accessLink": "gazlowe",
     "id": "87",
-    "role": 6
+    "role": 6,
+    "universe": "warcraft"
   },
   {
     "name": "D.Va",
     "localizedName": "D.Va",
     "accessLink": "dva",
     "id": "23",
-    "role": 6
+    "role": 6,
+    "universe": "overwatch"
   },
   {
     "name": "Dehaka",
     "localizedName": "Dehaka",
     "accessLink": "dehaka",
     "id": "40",
-    "role": 6
+    "role": 6,
+    "universe": "starcraft"
   },
   {
     "name": "Deathwing",
     "localizedName": "Asa da Morte",
     "accessLink": "deathwing",
     "id": "2",
-    "role": 6
+    "role": 6,
+    "universe": "warcraft"
   },
   {
     "name": "Chen",
     "localizedName": "Chen",
     "accessLink": "chen",
     "id": "61",
-    "role": 6
+    "role": 6,
+    "universe": "warcraft"
   },
   {
     "name": "Artanis",
     "localizedName": "Artanis",
     "accessLink": "artanis",
     "id": "47",
-    "role": 6
+    "role": 6,
+    "universe": "starcraft"
   }
 ]

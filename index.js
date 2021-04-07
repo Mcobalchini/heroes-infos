@@ -39,7 +39,7 @@ async function accessSite(browser) {
 
 	let result = ""
 
-	await page.goto(`http://www.icy-veins.com/heroes/heroes-of-the-storm-master-tier-list`);
+	await page.goto(`https://www.icy-veins.com/heroes/heroes-of-the-storm-master-tier-list`);
 	result = await page.evaluate(() => {
 		return {
 			freeHeroes: Array.from(document.querySelectorAll('.free_heroes_list  span.free_hero_name')).map(it => it.innerText),
@@ -91,8 +91,7 @@ const accessHeroUrl = async (icyUrl, heroId, profileUrl, heroesMap, browser, coo
 
 	const profileData = await page.evaluate(() => {
 		const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `Popular build (${it.innerText}% win rate)`)
-		const skills = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .build-code')).map(it => it.innerText)
-		debugger;
+		const skills = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .build-code')).map(it => it.innerText)		
 		const builds = [];
 		for (i in names) {
 			builds.push({
@@ -113,20 +112,39 @@ const accessHeroUrl = async (icyUrl, heroId, profileUrl, heroesMap, browser, coo
 	}
 
 	heroesMap.set(heroId, returnObject);
-
 	await page.close();
 };
+
+async function createHeroesProfileSession(browser) {
+	const page = await createPage(browser);
+	const response = await page.goto('https://www.heroesprofile.com/Global/Talents/');
+	return response._headers["set-cookie"];
+}
+
+async function gatherTierListInfo(browser) {
+	const page = await createPage(browser);
+	
+	let result = ""
+
+	await page.goto(`https://psionic-storm.com/en/tierlist/`);
+	result = await page.evaluate(() => {
+		return Array.from(document.querySelectorAll('#tierlist-content li > a h3:first-child')).map((it, idx) => {
+			return { name: it.innerText, position: idx+1 }
+	   })
+	});
+
+	await page.close();
+	return result;
+}
 
 async function updateData() {
 	updatingData = true;
 
 	//const browser = await puppeteer.launch({devtools: true});
 	const browser = await puppeteer.launch();
-	const page = await createPage(browser);
-
-	const response = await page.goto('https://www.heroesprofile.com/Global/Talents/');
-	let cookieValue = response._headers["set-cookie"];
-
+	const cookieValue = await createHeroesProfileSession(browser);
+	const tierList = await gatherTierListInfo(browser);
+	
 	let heroesMap = new Map();
 	let heroesIdAndUrls = [];
 	let heroesInfos = Heroes.findAllHeroes();
@@ -134,7 +152,7 @@ async function updateData() {
 	for (hero of heroesInfos) {
 		heroesIdAndUrls.push({
 			heroId: hero.id,
-			icyUrl: `http://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`,
+			icyUrl: `https://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`,
 			profileUrl: `https://www.heroesprofile.com/Global/Talents/getChartDataTalentBuilds.php?hero=${hero.name.replace('/ /g', '+').replace('/\'/g', '%27')}`
 		});
 	}
@@ -152,7 +170,7 @@ async function updateData() {
 	let startTime = new Date();
 	process.stdout.write(`Started gathering process at ${startTime.toLocaleTimeString()}\n`);
 
-	const thread = new PromisePool(promiseProducer, 10);
+	const thread = new PromisePool(promiseProducer, 15);
 
 	thread.start().then(() => {
 
@@ -217,7 +235,8 @@ async function updateData() {
 			heroesInfos[index].infos.synergies = heroSynergies;
 			heroesInfos[index].infos.counters = heroCounters;
 			heroesInfos[index].infos.strongerMaps = heroMaps;
-			heroesInfos[index].infos.tips = heroTips;
+			heroesInfos[index].infos.tips = heroTips;	
+			heroesInfos[index].infos.tierPosition = tierList.find(it => { return it.name.cleanVal() == heroesInfos[index].name.cleanVal()}).tierPos;
 		}
 
 		writeFile('data/heroes-infos.json', heroesInfos);
@@ -246,13 +265,13 @@ async function updateData() {
 			Heroes.setBanHeroes(cacheBans);
 			Heroes.setFreeHeroes(cacheFree);
 			updatingData = false;
+
 			msg.reply(assembleUpdateReturnMessage((finishedTime - startTime) / 1000));
 		});
 	}).catch((e) => {
 		process.stdout.write(e.stack);
 		msg.reply('I couldn\'t update the heroes data due to an error, check the logs to see what\'s going on')
-	}
-	);
+	});
 }
 
 async function createPage(browser) {
@@ -269,7 +288,6 @@ async function createPage(browser) {
 	});
 	return page;
 }
-
 
 function handleCommand(args, receivedCommand) {
 	let reply = "";
@@ -300,7 +318,6 @@ function findCommand(commandName) {
 }
 
 //Return messages
-
 function assembleHelpReturnMessage(args) {
 	let reply = "";
 	if (args != null && args != "null" && args != "") {
@@ -313,7 +330,10 @@ function assembleHelpReturnMessage(args) {
 		reply = 'The available commands are:\n'
 		reply += commands.map(it => it.name + "\n").join('');
 		reply += '\nAll the commands above supports both english and portuguese names\n';
-		reply += 'All the data shown here is gathered from https://www.icy-veins.com/heroes/\n';
+		reply += 'All the data shown here is gathered from\n';
+		reply += 'https://www.icy-veins.com/heroes/\n';
+		reply += 'https://www.heroesprofile.com\n';
+		reply += 'https://psionic-storm.com/\n';
 		reply += `If you want to know more about an specific command, type ${config.prefix}help [command]`;
 		reply += `\nVersion: ${config.version}`;
 	}
