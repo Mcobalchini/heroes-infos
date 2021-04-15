@@ -126,11 +126,12 @@ async function gatherTierListInfo(browser) {
 	
 	let result = ""
 
-	await page.goto(`https://psionic-storm.com/en/tierlist/`);
+	await page.goto(`http://robogrub.com/silvertierlist_api`);
 	result = await page.evaluate(() => {
-		return Array.from(document.querySelectorAll('#tierlist-content li > a h3:first-child')).map((it, idx) => {
-			return { name: it.innerText, position: idx+1 }
-	   })
+		let documentBody = JSON.parse(document.body.innerText);
+		return documentBody.s.concat(documentBody.t1, documentBody.t2, documentBody.t3, documentBody.t4, documentBody.t5).map((it, idx) => {
+			return { name: it.name, position: idx+1 }
+	   });
 	});
 
 	await page.close();
@@ -236,7 +237,7 @@ async function updateData() {
 			heroesInfos[index].infos.counters = heroCounters;
 			heroesInfos[index].infos.strongerMaps = heroMaps;
 			heroesInfos[index].infos.tips = heroTips;	
-			heroesInfos[index].infos.tierPosition = tierList.find(it => { return it.name.cleanVal() == heroesInfos[index].name.cleanVal()}).tierPos;
+			heroesInfos[index].infos.tierPosition = tierList.find(it => { return it.name.cleanVal() == heroesInfos[index].name.cleanVal()})?.position;
 		}
 
 		writeFile('data/heroes-infos.json', heroesInfos);
@@ -270,7 +271,8 @@ async function updateData() {
 		});
 	}).catch((e) => {
 		process.stdout.write(e.stack);
-		msg.reply('I couldn\'t update the heroes data due to an error, check the logs to see what\'s going on')
+		msg.reply('I couldn\'t update the heroes data due to an error, check the logs to see what\'s going on');
+		updatingData = false;
 	});
 }
 
@@ -296,6 +298,7 @@ function handleCommand(args, receivedCommand) {
 		if (command.name === 'Builds' || command.name === 'Counters' ||
 			command.name === 'Synergies' || command.name === 'Infos' ||
 			command.name === 'Tips' || command.name === 'FreeWeek' ||
+			command.name === 'Suggest' ||
 			command.name === 'Banlist') {
 			reply = Heroes.init(command, args);
 		} else if (command.name === 'Map') {
@@ -333,7 +336,7 @@ function assembleHelpReturnMessage(args) {
 		reply += 'All the data shown here is gathered from\n';
 		reply += 'https://www.icy-veins.com/heroes/\n';
 		reply += 'https://www.heroesprofile.com\n';
-		reply += 'https://psionic-storm.com/\n';
+		reply += 'http://robogrub.com/silvertierlist_api\n';
 		reply += `If you want to know more about an specific command, type ${config.prefix}help [command]`;
 		reply += `\nVersion: ${config.version}`;
 	}

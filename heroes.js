@@ -58,6 +58,20 @@ exports.Heroes = {
 		}
 	},
 
+	findRoleByName: function (roleName) {
+		let role = roles.find(role => (role.name.cleanVal() === roleName.cleanVal() ||
+		role.localizedName.cleanVal() === roleName.cleanVal()));	
+		if (role) {
+			return role;
+		}
+	},
+
+	findHeroesByRole: function (roleId) {
+		return this.heroesInfos.filter(hero => (hero.role === roleId)).sort(function(a, b) { 
+			return a.infos.tierPosition - b.infos.tierPosition;
+		  }).map(it=> `${this.getHeroName(it)} - Tier ${it.infos.tierPosition}\n`).join('')
+	},
+
 	getRoleName: function (roleParam) {
 		return `${roleParam.name} (${roleParam.localizedName})`;
 	},
@@ -82,6 +96,10 @@ exports.Heroes = {
 
 	getHeroUniverse: function () {
 		return ` from ${this.hero.universe} universe`;
+	},
+
+	getHeroTierPosition: function () {
+		return `currently on ${this.hero.infos.tierPosition} tier position`;
 	},
 
 	getHeroCounters: function () {
@@ -111,6 +129,7 @@ exports.Heroes = {
 	getHeroInfos: function () {
 		let reply = "\n" + this.getHeroRole() +
 			this.getHeroUniverse() +
+			"\n" + this.getHeroTierPosition() +
 			"\n\n" + this.getHeroBuilds() +
 			SEPARATOR +
 			"\n" + this.getHeroSynergies() +
@@ -151,26 +170,39 @@ exports.Heroes = {
 		return reply;
 	},
 
-	assembleReturnMessage: function (commandObj, heroName) {
+	assembleSuggestHeroesReturnMessage: function (roleName) {
+		let reply = `Suggested heroes \n`;
+		let role = this.findRoleByName(roleName)
+		if (role != null) {
+			reply += this.findHeroesByRole(parseInt(role.id))
+		} else {
+			reply = `The role ${roleName} was not found`
+		}
+		return reply;
+	},
+
+	assembleReturnMessage: function (commandObj, argument) {
 		let reply = "";
 
 		if (commandObj.name === 'Banlist') {
 			reply = this.assembleBanListReturnMessage();
 		} else if (commandObj.name === 'FreeWeek') {
 			reply = this.assembleFreeWeekHeroesReturnMessage();
-		} else {
-			this.findHero(heroName, true);
+		} else if (commandObj.name === 'Suggest') {
+			reply = this.assembleSuggestHeroesReturnMessage(argument);
+		}else {
+			this.findHero(argument, true);
 			if (this.hero != null) {
 				if (this.hero.infos != null && (this.hero.infos.counters.length > 0 &&
 					this.hero.infos.synergies.length > 0 &&
 					this.hero.infos.builds.length > 0)) {
 					reply = eval(`this.getHero${commandObj.name}()`);
 				} else {
-					return `There was not enough info found for the hero ${heroName} \nPlease, call the ${config.prefix}update command to search for them`;
+					return `There was not enough info found for the hero ${argument} \nPlease, call the ${config.prefix}update command to search for them`;
 				}
 
 			} else {
-				return `The hero ${heroName} was not found`;
+				return `The hero ${argument} was not found`;
 			}
 		}
 

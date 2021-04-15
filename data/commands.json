@@ -48,5 +48,10 @@
 		"name": "Tips",
 		"hint": "Display useful tips for the hero",
 		"acceptParams": true
+	},
+	{
+		"name": "Suggest",
+		"hint": "Find the top 10 heroes by filters",
+		"acceptParams": true
 	}
 ]
