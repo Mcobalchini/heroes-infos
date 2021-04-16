@@ -1,56 +1,67 @@
 [
 	{
 		"name": "Counters",
+		"localizedName": "Fraquezas",
 		"hint": "Display who counters the specified hero!",
 		"acceptParams": true
 	},
 	{
 		"name": "Synergies",
+		"localizedName": "Sinergias",
 		"hint": "Display who synergizes with the specified hero!",
 		"acceptParams": true
 	},
 	{
 		"name": "Builds",
+		"localizedName": "Builds",
 		"hint": "Display the known builds for the specified hero!",
 		"acceptParams": true
 	},
 	{
 		"name": "Banlist",
+		"localizedName": "Banimentos",
 		"hint": "Display suggested heroes to ban on ranked",
 		"acceptParams": false
 	},
 	{
 		"name": "Map",
+		"localizedName": "Mapa",
 		"hint": "Display all available maps and the heroes that are usually stronger on them",
 		"acceptParams": true
 	},
 	{
 		"name": "Help",
+		"localizedName": "Ajuda",
 		"hint": "Display useful hints for all commands",
 		"acceptParams": true
 	},
 	{
 		"name": "FreeWeek",
+		"localizedName": "HeroisGratis",
 		"hint": "Display which heroes are currently free",
 		"acceptParams": false
 	},
 	{
 		"name": "Infos",
+		"localizedName": "Informações",
 		"hint": "Display builds, counters and synergies for specified hero",
 		"acceptParams": true
 	},
 	{
 		"name": "Update",
+		"localizedName": "Atualizar",
 		"hint": "Update all the bot database\nWARNING: all the commands will be unavailable while this is running!",
 		"acceptParams": false
 	},
 	{
 		"name": "Tips",
+		"localizedName": "Dicas",
 		"hint": "Display useful tips for the hero",
 		"acceptParams": true
 	},
 	{
 		"name": "Suggest",
+		"localizedName": "Sugerir",	
 		"hint": "Find the top 10 heroes by filters",
 		"acceptParams": true
 	}

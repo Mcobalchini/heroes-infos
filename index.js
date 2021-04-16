@@ -317,7 +317,7 @@ function handleCommand(args, receivedCommand) {
 
 function findCommand(commandName) {
 	let commandNameToLowerCase = commandName.cleanVal();
-	return commands.find(command => (command.name.cleanVal() === commandNameToLowerCase));
+	return commands.find(command => (command.name.cleanVal() === commandNameToLowerCase || command.localizedName.cleanVal() === commandNameToLowerCase));
 }
 
 //Return messages
@@ -331,7 +331,7 @@ function assembleHelpReturnMessage(args) {
 		}
 	} else {
 		reply = 'The available commands are:\n'
-		reply += commands.map(it => it.name + "\n").join('');
+		reply += commands.map(it => `${it.name} (${it.localizedName}) \n`).join('');
 		reply += '\nAll the commands above supports both english and portuguese names\n';
 		reply += 'All the data shown here is gathered from\n';
 		reply += 'https://www.icy-veins.com/heroes/\n';
