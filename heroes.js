@@ -190,19 +190,22 @@ exports.Heroes = {
 			reply = this.assembleFreeWeekHeroesReturnMessage();
 		} else if (commandObj.name === 'Suggest') {
 			reply = this.assembleSuggestHeroesReturnMessage(argument);
-		}else {
+		} else {
 			this.findHero(argument, true);
 			if (this.hero != null) {
 				if (this.hero.infos != null && (this.hero.infos.counters.length > 0 &&
 					this.hero.infos.synergies.length > 0 &&
 					this.hero.infos.builds.length > 0)) {
-					reply = eval(`this.getHero${commandObj.name}()`);
+					reply = { 
+						text: eval(`this.getHero${commandObj.name}()`), 
+						image:`images/${this.hero.name.cleanVal()}.png`
+					};
 				} else {
-					return `There was not enough info found for the hero ${argument} \nPlease, call the ${config.prefix}update command to search for them`;
+					reply = `There was not enough info found for the hero ${argument} \nPlease, call the ${config.prefix}update command to search for them`;
 				}
 
 			} else {
-				return `The hero ${argument} was not found`;
+				reply = `The hero ${argument} was not found`;
 			}
 		}
 

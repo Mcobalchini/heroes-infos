@@ -312,7 +312,11 @@ function handleCommand(args, receivedCommand) {
 	} else {
 		reply = `The command ${receivedCommand} does not exists!\nType ${config.prefix}help to know more about commands`;
 	}
-	msg.reply(reply, { split: true })
+	if (reply.image != null) {
+		msg.reply(reply.text, { split: true, files: [reply.image] })
+	} else {
+		msg.reply(reply, { split: true })
+	}
 }
 
 function findCommand(commandName) {
