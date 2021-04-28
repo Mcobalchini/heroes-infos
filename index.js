@@ -17,11 +17,6 @@ bot.on("message", function (message) {
 	if (!message.content.startsWith(prefix)) return;
 	msg = message;
 
-	if (updatingData) {
-		msg.reply('Hold still, i\'m updating heroes data');
-		return;
-	}
-
 	let receivedCommand = message.content.split(' ', 1)[0].substring(1);
 	let args = message.content.substring(receivedCommand.toLowerCase().length + 2);
 
@@ -91,7 +86,7 @@ const accessHeroUrl = async (icyUrl, heroId, profileUrl, heroesMap, browser, coo
 
 	const profileData = await page.evaluate(() => {
 		const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `Popular build (${it.innerText}% win rate)`)
-		const skills = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .build-code')).map(it => it.innerText)		
+		const skills = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .build-code')).map(it => it.innerText)
 		const builds = [];
 		for (i in names) {
 			builds.push({
@@ -123,15 +118,35 @@ async function createHeroesProfileSession(browser) {
 
 async function gatherTierListInfo(browser) {
 	const page = await createPage(browser);
-	
+
 	let result = ""
 
 	await page.goto(`http://robogrub.com/silvertierlist_api`);
 	result = await page.evaluate(() => {
 		let documentBody = JSON.parse(document.body.innerText);
 		return documentBody.s.concat(documentBody.t1, documentBody.t2, documentBody.t3, documentBody.t4, documentBody.t5).map((it, idx) => {
-			return { name: it.name, position: idx+1 }
-	   });
+			return { name: it.name, position: idx + 1 }
+		});
+	});
+
+	await page.close();
+	return result;
+}
+
+async function gatherPopularityAndWinRateListInfo(browser) {
+	const page = await createPage(browser);
+
+	let result = ""
+
+	await page.goto(`https://www.hotslogs.com/sitewide/HeroAndMapStatistics?GameMode=3&League=0,1,2,3,4,5`);
+	result = await page.evaluate(() => {
+		return Array.from(document.querySelectorAll('.rgRow,.rgAltRow')).map((it) => {
+			return {
+				name: it.children[1].firstElementChild.innerText,
+				winRate: parseFloat(it.children[5].innerText.replace(",", ".")),
+				popularity: parseFloat(it.children[4].innerText.replace(",", ".")),
+			}
+		});
 	});
 
 	await page.close();
@@ -145,7 +160,8 @@ async function updateData() {
 	const browser = await puppeteer.launch();
 	const cookieValue = await createHeroesProfileSession(browser);
 	const tierList = await gatherTierListInfo(browser);
-	
+	const popularityWinRate = await gatherPopularityAndWinRateListInfo(browser);
+
 	let heroesMap = new Map();
 	let heroesIdAndUrls = [];
 	let heroesInfos = Heroes.findAllHeroes();
@@ -236,8 +252,12 @@ async function updateData() {
 			heroesInfos[index].infos.synergies = heroSynergies;
 			heroesInfos[index].infos.counters = heroCounters;
 			heroesInfos[index].infos.strongerMaps = heroMaps;
-			heroesInfos[index].infos.tips = heroTips;	
-			heroesInfos[index].infos.tierPosition = tierList.find(it => { return it.name.cleanVal() == heroesInfos[index].name.cleanVal()})?.position;
+			heroesInfos[index].infos.tips = heroTips;
+			heroesInfos[index].infos.tierPosition = tierList.find(it => { return it.name.cleanVal() == heroesInfos[index].name.cleanVal() || heroesInfos[index].accessLink.cleanVal() == it.name.cleanVal() })?.position;
+			let obj = popularityWinRate.find(it => { return it.name.cleanVal() == heroesInfos[index].name.cleanVal() });
+			heroesInfos[index].infos.winRate = obj.winRate;
+			heroesInfos[index].infos.popularity = obj.popularity;
+			heroesInfos[index].infos.score = (obj.winRate + obj.popularity - parseFloat(heroesInfos[index].infos.tierPosition / 10)).toFixed(2)
 		}
 
 		writeFile('data/heroes-infos.json', heroesInfos);
@@ -270,8 +290,15 @@ async function updateData() {
 			msg.reply(assembleUpdateReturnMessage((finishedTime - startTime) / 1000));
 		});
 	}).catch((e) => {
+		let replyMsg = 'I couldn\'t update the heroes data due to an error, check the logs to see what\'s going on ';
+
+		if (e.stack.includes("Navigation timeout of 30000 ms exceeded")) {
+			replyMsg += '\nI\'ll try to update data again anyway';
+			updateData();
+		}
+
 		process.stdout.write(e.stack);
-		msg.reply('I couldn\'t update the heroes data due to an error, check the logs to see what\'s going on');
+		msg.reply(replyMsg);
 		updatingData = false;
 	});
 }
@@ -306,8 +333,12 @@ function handleCommand(args, receivedCommand) {
 		} else if (command.name === 'Help') {
 			reply = assembleHelpReturnMessage(args);
 		} else if (command.name === 'Update') {
-			updateData(command);
-			reply = "The update process has started..."
+			if (updatingData) {
+				reply = 'Hold still, i\'m updating heroes data';
+			} else {
+				updateData();
+				reply = "The update process has started..."
+			}
 		}
 	} else {
 		reply = `The command ${receivedCommand} does not exists!\nType ${config.prefix}help to know more about commands`;
