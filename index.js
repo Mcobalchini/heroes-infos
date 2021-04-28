@@ -34,12 +34,9 @@ async function accessSite(browser) {
 
 	let result = ""
 
-	await page.goto(`https://www.icy-veins.com/heroes/heroes-of-the-storm-master-tier-list`);
-	result = await page.evaluate(() => {
-		return {
-			freeHeroes: Array.from(document.querySelectorAll('.free_heroes_list  span.free_hero_name')).map(it => it.innerText),
-			banHeroes: Array.from(document.querySelectorAll('.htl_ban_true')).map(nameElements => nameElements.nextElementSibling.innerText)
-		}
+	await page.goto(`https://nexuscompendium.com/api/currently/RotationHero`);
+	result = await page.evaluate(() => {		
+		return JSON.parse(document.body.innerText).RotationHero.Heroes.map(it => it.ID)	
 	});
 
 	await browser.close();
@@ -124,8 +121,8 @@ async function gatherTierListInfo(browser) {
 	await page.goto(`http://robogrub.com/silvertierlist_api`);
 	result = await page.evaluate(() => {
 		let documentBody = JSON.parse(document.body.innerText);
-		return documentBody.s.concat(documentBody.t1, documentBody.t2, documentBody.t3, documentBody.t4, documentBody.t5).map((it, idx) => {
-			return { name: it.name, position: idx + 1 }
+		return documentBody.s.concat(documentBody.s, documentBody.t1, documentBody.t2, documentBody.t3, documentBody.t4, documentBody.t5).map((it, idx) => {
+			return { name: it.name, position: idx + 1, isTierS: documentBody.s.filter(s => s.name === it.name ).length > 0 }
 		});
 	});
 
@@ -187,7 +184,7 @@ async function updateData() {
 	let startTime = new Date();
 	process.stdout.write(`Started gathering process at ${startTime.toLocaleTimeString()}\n`);
 
-	const thread = new PromisePool(promiseProducer, 15);
+	const thread = new PromisePool(promiseProducer, 13);
 
 	thread.start().then(() => {
 
@@ -263,27 +260,27 @@ async function updateData() {
 		writeFile('data/heroes-infos.json', heroesInfos);
 		Heroes.setHeroesInfos(heroesInfos);
 
+		let cacheBans = [];
+		tierList.filter(it => it.isTierS).forEach(it => {						
+			cacheBans.push(Heroes.getHeroName(Heroes.findHero(it.name)));
+		});
+		
+		Heroes.setBanHeroes(cacheBans);
+		writeFile('data/banlist.json', cacheBans);
+		
 		accessSite(browser).then((value) => {
 
-			let cacheBans = [];
 			let cacheFree = [];
-			let freeHeroes = value.freeHeroes;
-			let banHeroes = value.banHeroes;
-
-			for (heroName of banHeroes) {
-				let banHero = Heroes.findHero(heroName);
-				cacheBans.push(Heroes.getHeroName(banHero));
-			}
-
+			let freeHeroes = value;
+	
 			for (heroName of freeHeroes) {
 				let freeHero = Heroes.findHero(heroName);
 				cacheFree.push(Heroes.getHeroName(freeHero));
 			}
-
-			writeFile('data/banlist.json', cacheBans);
+			
 			writeFile('data/freeweek.json', cacheFree);
 
-			Heroes.setBanHeroes(cacheBans);
+			
 			Heroes.setFreeHeroes(cacheFree);
 			updatingData = false;
 
@@ -372,6 +369,7 @@ function assembleHelpReturnMessage(args) {
 		reply += 'https://www.icy-veins.com/heroes/\n';
 		reply += 'https://www.heroesprofile.com\n';
 		reply += 'http://robogrub.com/silvertierlist_api\n';
+		reply += 'https://www.hotslogs.com/sitewide/HeroAndMapStatistics?GameMode=3&League=0,1,2,3,4,5';
 		reply += `If you want to know more about an specific command, type ${config.prefix}help [command]`;
 		reply += `\nVersion: ${config.version}`;
 	}

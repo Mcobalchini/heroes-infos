@@ -26,7 +26,7 @@
 	{
 		"name": "Map",
 		"localizedName": "Mapa",
-		"hint": "Display all available maps and the heroes that are usually stronger on them",
+		"hint": "Display all available maps or the heroes that are usually stronger on a specified map, depending on the received parameters",
 		"acceptParams": true
 	},
 	{
@@ -38,19 +38,19 @@
 	{
 		"name": "FreeWeek",
 		"localizedName": "HeroisGratis",
-		"hint": "Display which heroes are currently free",
+		"hint": "Display which heroes are currently free week",
 		"acceptParams": false
 	},
 	{
 		"name": "Infos",
 		"localizedName": "Informações",
-		"hint": "Display builds, counters and synergies for specified hero",
+		"hint": "Display information about the specified hero, like its universe, tier position, score, builds, counters, synergies and tips",
 		"acceptParams": true
 	},
 	{
 		"name": "Update",
 		"localizedName": "Atualizar",
-		"hint": "Update all the bot database\nWARNING: all the commands will be unavailable while this is running!",
+		"hint": "Update all bot database",
 		"acceptParams": false
 	},
 	{
@@ -62,7 +62,7 @@
 	{
 		"name": "Suggest",
 		"localizedName": "Sugerir",	
-		"hint": "Find the top 10 heroes by filters",
+		"hint": "Find the top 10 heroes by filters sorted by their score based on QUICKMATCH",
 		"acceptParams": true
 	}
 ]
