@@ -60,16 +60,22 @@ exports.Heroes = {
 
 	findRoleByName: function (roleName) {
 		let role = roles.find(role => (role.name.cleanVal() === roleName.cleanVal() ||
-		role.localizedName.cleanVal() === roleName.cleanVal()));	
+			role.localizedName.cleanVal() === roleName.cleanVal()));
 		if (role) {
 			return role;
 		}
 	},
 
-	findHeroesByRole: function (roleId) {
-		return this.heroesInfos.filter(hero => (hero.role === roleId)).sort(function(a, b) { 
-			return a.infos.tierPosition - b.infos.tierPosition;
-		  }).map(it=> `${this.getHeroName(it)} - Tier ${it.infos.tierPosition}\n`).join('')
+	findHeroesByScore: function (roleId) {
+		let list = this.heroesInfos;
+
+		if (roleId != null) {
+			list.filter(hero => (hero.role === roleId))
+		}
+
+		return list.sort(function (a, b) {
+			return a.infos.score - b.infos.score;
+		}).reverse().map(it => `${this.getHeroName(it)} - Score ${it.infos.score}\n`).slice(0, 10).join('')
 	},
 
 	getRoleName: function (roleParam) {
@@ -102,6 +108,10 @@ exports.Heroes = {
 		return `currently on ${this.hero.infos.tierPosition} tier position`;
 	},
 
+	getHeroScore: function () {
+		return `with ${this.hero.infos.score} score points`;
+	},
+
 	getHeroCounters: function () {
 		let reply = `${this.getHeroName(this.hero)} is countered by \n`;
 		reply += this.hero.infos.counters.map(counter => `${counter}\n`).join('');
@@ -130,6 +140,7 @@ exports.Heroes = {
 		let reply = "\n" + this.getHeroRole() +
 			this.getHeroUniverse() +
 			"\n" + this.getHeroTierPosition() +
+			"\n" + this.getHeroScore() +
 			"\n\n" + this.getHeroBuilds() +
 			SEPARATOR +
 			"\n" + this.getHeroSynergies() +
@@ -172,11 +183,15 @@ exports.Heroes = {
 
 	assembleSuggestHeroesReturnMessage: function (roleName) {
 		let reply = `Suggested heroes \n`;
-		let role = this.findRoleByName(roleName)
-		if (role != null) {
-			reply += this.findHeroesByRole(parseInt(role.id))
+		if (roleName != null && roleName != "") {
+			let role = this.findRoleByName(roleName)
+			if (role != null) {
+				reply += this.findHeroesByScore(parseInt(role.id))
+			} else {
+				reply = `The role ${roleName} was not found`
+			}
 		} else {
-			reply = `The role ${roleName} was not found`
+			reply += this.findHeroesByScore()
 		}
 		return reply;
 	},
@@ -196,9 +211,9 @@ exports.Heroes = {
 				if (this.hero.infos != null && (this.hero.infos.counters.length > 0 &&
 					this.hero.infos.synergies.length > 0 &&
 					this.hero.infos.builds.length > 0)) {
-					reply = { 
-						text: eval(`this.getHero${commandObj.name}()`), 
-						image:`images/${this.hero.name.cleanVal()}.png`
+					reply = {
+						text: eval(`this.getHero${commandObj.name}()`),
+						image: `images/${this.hero.name.cleanVal()}.png`
 					};
 				} else {
 					reply = `There was not enough info found for the hero ${argument} \nPlease, call the ${config.prefix}update command to search for them`;
