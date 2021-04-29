@@ -70,12 +70,12 @@ exports.Heroes = {
 		let list = this.heroesInfos;
 
 		if (roleId != null) {
-			list.filter(hero => (hero.role === roleId))
+			list = list.filter(hero => (hero.role === roleId))
 		}
 
 		return list.sort(function (a, b) {
 			return a.infos.score - b.infos.score;
-		}).reverse().map(it => `${this.getHeroName(it)} - Score ${it.infos.score}\n`).slice(0, 10).join('')
+		}).reverse().map(it => `${this.getHeroName(it)} - Score ${it.infos.score} Tier - ${it.infos.tierPosition}\n`).slice(0, 10).join('')
 	},
 
 	getRoleName: function (roleParam) {
