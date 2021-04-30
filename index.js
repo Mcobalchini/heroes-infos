@@ -51,7 +51,7 @@ const accessHeroUrl = async (icyUrl, heroId, profileUrl, heroesMap, browser, coo
 		'Cookie': cookie,
 	});
 
-	await page.goto(icyUrl);
+	await page.goto(icyUrl, {timeout: 0});
 
 	const icyData = await page.evaluate(() => {
 		const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.innerText);
@@ -79,7 +79,7 @@ const accessHeroUrl = async (icyUrl, heroId, profileUrl, heroesMap, browser, coo
 
 	});
 
-	await page.goto(profileUrl);
+	await page.goto(profileUrl, {timeout: 0});
 
 	const profileData = await page.evaluate(() => {
 		const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `Popular build (${it.innerText}% win rate)`)
@@ -135,13 +135,13 @@ async function gatherPopularityAndWinRateListInfo(browser) {
 
 	let result = ""
 
-	await page.goto(`https://www.hotslogs.com/sitewide/HeroAndMapStatistics?GameMode=3&League=0,1,2,3,4,5`);
+	await page.goto(`https://www.hotslogs.com/Sitewide/ScoreResultStatistics?GameMode=3`);
 	result = await page.evaluate(() => {
-		return Array.from(document.querySelectorAll('.rgRow,.rgAltRow')).map((it) => {
+		return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
 			return {
 				name: it.children[1].firstElementChild.innerText,
-				winRate: parseFloat(it.children[5].innerText.replace(",", ".")),
-				popularity: parseFloat(it.children[4].innerText.replace(",", ".")),
+				winRate: parseFloat(it.children[3].innerText.replace(",", ".")),
+				games: parseFloat(it.children[2].innerText.replace(",", ".")),
 			}
 		});
 	});
@@ -155,7 +155,7 @@ async function updateData() {
 
 	//const browser = await puppeteer.launch({devtools: true});
 	const browser = await puppeteer.launch();
-	const cookieValue = await createHeroesProfileSession(browser);
+	const cookieValue = await createHeroesProfileSession(browser);	
 	const tierList = await gatherTierListInfo(browser);
 	const popularityWinRate = await gatherPopularityAndWinRateListInfo(browser);
 
@@ -250,14 +250,26 @@ async function updateData() {
 			heroesInfos[index].infos.counters = heroCounters;
 			heroesInfos[index].infos.strongerMaps = heroMaps;
 			heroesInfos[index].infos.tips = heroTips;
-			heroesInfos[index].infos.tierPosition = tierList.find(it => { return it.name.cleanVal() == heroesInfos[index].name.cleanVal() || heroesInfos[index].accessLink.cleanVal() == it.name.cleanVal() })?.position;
+			
 			let obj = popularityWinRate.find(it => { return it.name.cleanVal() == heroesInfos[index].name.cleanVal() });
 			heroesInfos[index].infos.winRate = obj.winRate;
-			heroesInfos[index].infos.popularity = obj.popularity;
-			heroesInfos[index].infos.score = (obj.winRate + obj.popularity - parseFloat(heroesInfos[index].infos.tierPosition / 10)).toFixed(2)
+			heroesInfos[index].infos.games = obj.games;		
 		}
 
 		writeFile('data/heroes-infos.json', heroesInfos);
+		
+		heroesInfos.sort(function (a, b) {
+			return a.infos.games - b.infos.games;
+		}).forEach((it, idx)=> {
+			it.tierPosition = idx+1;
+		});
+
+		heroesInfos.sort(function (a, b) {
+			return a.infos.winRate - b.infos.winRate;
+		}).forEach((it, idx)=> {
+			it.tierPosition = it.tierPosition + idx+1;
+		})
+
 		Heroes.setHeroesInfos(heroesInfos);
 
 		let cacheBans = [];
@@ -369,7 +381,7 @@ function assembleHelpReturnMessage(args) {
 		reply += 'https://www.icy-veins.com/heroes/\n';
 		reply += 'https://www.heroesprofile.com\n';
 		reply += 'http://robogrub.com/silvertierlist_api\n';
-		reply += 'https://www.hotslogs.com/sitewide/HeroAndMapStatistics?GameMode=3&League=0,1,2,3,4,5';
+		reply += 'https://www.hotslogs.com/Sitewide/ScoreResultStatistics?GameMode=3';
 		reply += `If you want to know more about an specific command, type ${config.prefix}help [command]`;
 		reply += `\nVersion: ${config.version}`;
 	}

@@ -67,6 +67,19 @@ exports.Heroes = {
 	},
 
 	findHeroesByScore: function (roleId) {
+
+		this.heroesInfos.sort(function (a, b) {
+			return a.infos.games - b.infos.games;
+		}).forEach((it, idx)=> {
+			it.infos.tierPosition = parseInt(idx+1);
+		});
+
+		this.heroesInfos.sort(function (a, b) {
+			return a.infos.winRate - b.infos.winRate;
+		}).forEach((it, idx)=> {
+			it.infos.tierPosition = parseInt(it.infos.tierPosition) + parseInt(idx+1);
+		})
+
 		let list = this.heroesInfos;
 
 		if (roleId != null) {
@@ -74,8 +87,8 @@ exports.Heroes = {
 		}
 
 		return list.sort(function (a, b) {
-			return a.infos.score - b.infos.score;
-		}).reverse().map(it => `${this.getHeroName(it)} - Score ${it.infos.score} Tier - ${it.infos.tierPosition}\n`).slice(0, 10).join('')
+			return a.infos.tierPosition - b.infos.tierPosition;
+		}).reverse().map(it => `${this.getHeroName(it)} - Score ${it.infos.tierPosition}\n`).splice(0,10).join('')
 	},
 
 	getRoleName: function (roleParam) {
