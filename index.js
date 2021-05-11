@@ -3,6 +3,7 @@ const { Client } = require("discord.js");
 const config = require("./config.json");
 require('dotenv').config({ path: './variables.env' });
 const Heroes = require('./heroes.js').Heroes;
+const StringUtils = require('./strings.js').StringUtils;
 const Maps = require('./maps.js').Maps;
 const puppeteer = require('puppeteer');
 const PromisePool = require('es6-promise-pool');
@@ -24,7 +25,7 @@ bot.on("message", function (message) {
 		handleCommand(args, receivedCommand);
 	} catch (e) {
 		process.stdout.write(`Exception: ${e.stack}\n`);
-		msg.reply('An exception occurred! ' + e)
+		msg.reply(StringUtils.get('exception.occurred', e))
 	}
 });
 
@@ -256,21 +257,21 @@ async function updateData() {
 			heroesInfos[index].infos.games = obj.games;		
 		}
 
-		writeFile('data/heroes-infos.json', heroesInfos);
 		
 		heroesInfos.sort(function (a, b) {
 			return a.infos.games - b.infos.games;
 		}).forEach((it, idx)=> {
-			it.tierPosition = idx+1;
+			it.infos.tierPosition = parseInt(idx+1);
 		});
 
 		heroesInfos.sort(function (a, b) {
 			return a.infos.winRate - b.infos.winRate;
 		}).forEach((it, idx)=> {
-			it.tierPosition = it.tierPosition + idx+1;
+			it.infos.tierPosition = parseInt(it.infos.tierPosition) + parseInt(idx+1);
 		})
 
 		Heroes.setHeroesInfos(heroesInfos);
+		writeFile('data/heroes-infos.json', heroesInfos);
 
 		let cacheBans = [];
 		tierList.filter(it => it.isTierS).forEach(it => {						
@@ -299,10 +300,10 @@ async function updateData() {
 			msg.reply(assembleUpdateReturnMessage((finishedTime - startTime) / 1000));
 		});
 	}).catch((e) => {
-		let replyMsg = 'I couldn\'t update the heroes data due to an error, check the logs to see what\'s going on ';
+		let replyMsg = StringUtils.get('could.not.update.data.check.logs');
 
 		if (e.stack.includes("Navigation timeout of 30000 ms exceeded")) {
-			replyMsg += '\nI\'ll try to update data again anyway';
+			replyMsg += StringUtils.get('try.to.update.again');
 			updateData();
 		}
 
@@ -343,14 +344,14 @@ function handleCommand(args, receivedCommand) {
 			reply = assembleHelpReturnMessage(args);
 		} else if (command.name === 'Update') {
 			if (updatingData) {
-				reply = 'Hold still, i\'m updating heroes data';
+				reply = StringUtils.get('hold.still.updating');
 			} else {
 				updateData();
-				reply = "The update process has started..."
+				reply = StringUtils.get('update.process.started');
 			}
 		}
 	} else {
-		reply = `The command ${receivedCommand} does not exists!\nType ${config.prefix}help to know more about commands`;
+		reply = StringUtils.get('command.not.exists', receivedCommand, config.prefix);
 	}
 	if (reply.image != null) {
 		msg.reply(reply.text, { split: true, files: [reply.image] })
@@ -361,7 +362,19 @@ function handleCommand(args, receivedCommand) {
 
 function findCommand(commandName) {
 	let commandNameToLowerCase = commandName.cleanVal();
-	return commands.find(command => (command.name.cleanVal() === commandNameToLowerCase || command.localizedName.cleanVal() === commandNameToLowerCase));
+	let commandEn = commands.find(command => (command.name.cleanVal() === commandNameToLowerCase));
+	let commandBr = commands.find(command => (command.localizedName.cleanVal() === commandNameToLowerCase));
+	
+	let language = StringUtils.language;
+	if(commandBr != null) {
+		language = "pt-br"
+	} else if (commandEn != null){
+		language = "en-us";
+	}
+
+	StringUtils.setLanguage(language);
+
+	return commandEn || commandBr
 }
 
 //Return messages
@@ -370,26 +383,28 @@ function assembleHelpReturnMessage(args) {
 	if (args != null && args != "null" && args != "") {
 		let command = findCommand(args);
 		reply += command.hint;
-		if (command.acceptParams) {
-			reply += `\nExample: ${config.prefix}${command.name.toLowerCase()} [argument] `;
+		if (command.acceptParams) {		
+			reply += StringUtils.get('command.example', config.prefix, command.name.toLowerCase());
 		}
 	} else {
-		reply = 'The available commands are:\n'
+	
+		reply = StringUtils.get('available.commands.are');
 		reply += commands.map(it => `${it.name} (${it.localizedName}) \n`).join('');
-		reply += '\nAll the commands above supports both english and portuguese names\n';
-		reply += 'All the data shown here is gathered from\n';
+		reply += StringUtils.get('all.commands.supported.both.languages');
+
+		reply += StringUtils.get('all.data.gathered.from');
 		reply += 'https://www.icy-veins.com/heroes/\n';
 		reply += 'https://www.heroesprofile.com\n';
 		reply += 'http://robogrub.com/silvertierlist_api\n';
-		reply += 'https://www.hotslogs.com/Sitewide/ScoreResultStatistics?GameMode=3';
-		reply += `If you want to know more about an specific command, type ${config.prefix}help [command]`;
-		reply += `\nVersion: ${config.version}`;
+		reply += 'https://www.hotslogs.com/Sitewide/ScoreResultStatistics?GameMode=3\n';
+		reply += StringUtils.get('if.want.to.know.more.about.specific.command', config.prefix);	
+		reply += StringUtils.get('version', config.version);
 	}
 	return reply;
 }
 
 function assembleUpdateReturnMessage(seconds) {
-	return `The update process has finished in ${seconds} seconds`;
+	return StringUtils.get('process.update.finished.time');
 }
 //end return messages
 
@@ -397,7 +412,7 @@ function writeFile(path, obj) {
 	fs.writeFile(path, JSON.stringify(obj), (e) => {
 		if (e != null) {
 			process.stdout.write('error: ' + e + "\n");
-			msg.reply('I couldn\'t write the heroes data due to an error, check the logs to see what\'s going on');
+			msg.reply(StringUtils.get('could.not.update.data.check.logs'));
 		}
 	});
 }

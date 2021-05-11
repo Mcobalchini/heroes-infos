@@ -1,6 +1,7 @@
 const fs = require('fs');
 const config = require("./config.json");
 const roles = JSON.parse(fs.readFileSync("./data/roles.json"), { encoding: 'utf8', flag: 'r' });
+const StringUtils = require('./strings.js').StringUtils;
 const heroesBase = JSON.parse(fs.readFileSync("./data/heroes-base.json"), { encoding: 'utf8', flag: 'r' });
 const SEPARATOR = "------------------------------------------------------------------------"
 let heroesInfos = [];
@@ -110,41 +111,37 @@ exports.Heroes = {
 	},
 
 	getHeroRole: function () {
-		return `${this.getHeroName(this.hero)} is a ${this.getRoleName(this.findRoleById(this.hero.role))}`;
+		return StringUtils.get('is.a', this.getHeroName(this.hero), this.getRoleName(this.findRoleById(this.hero.role)))		
 	},
 
 	getHeroUniverse: function () {
-		return ` from ${this.hero.universe} universe`;
+		return StringUtils.get('from.universe', this.hero.universe);
 	},
 
 	getHeroTierPosition: function () {
-		return `currently on ${this.hero.infos.tierPosition} tier position`;
+		return StringUtils.get('currently.on.tier', this.hero.infos.tierPosition);
 	},
 
-	getHeroScore: function () {
-		return `with ${this.hero.infos.score} score points`;
-	},
-
-	getHeroCounters: function () {
-		let reply = `${this.getHeroName(this.hero)} is countered by \n`;
+	getHeroCounters: function () {	
+		let reply = StringUtils.get('countered.by', this.getHeroName(this.hero));
 		reply += this.hero.infos.counters.map(counter => `${counter}\n`).join('');
 		return reply;
 	},
 
 	getHeroStrongerMaps: function () {
-		let reply = `${this.getHeroName(this.hero)} is usually stronger on these maps \n`;
+		let reply = StringUtils.get('usually.stronger.on.maps', this.getHeroName(this.hero));	
 		reply += this.hero.infos.strongerMaps.map(strongerMap => `${strongerMap}\n`).join('');
 		return reply;
 	},
 
 	getHeroSynergies: function () {
-		let reply = `${this.getHeroName(this.hero)} synergizes with \n`;
+		let reply = StringUtils.get('synergizes.with', this.getHeroName(this.hero));	
 		reply += this.hero.infos.synergies.map(synergy => synergy + '\n').join('')
 		return reply;
 	},
 
 	getHeroTips: function () {
-		let reply = `Here are some tips for ${this.getHeroName(this.hero)}\n`;
+		let reply = StringUtils.get('tips.for', this.getHeroName(this.hero));		
 		reply += this.hero.infos.tips + '\n';
 		return reply;
 	},
@@ -152,9 +149,8 @@ exports.Heroes = {
 	getHeroInfos: function () {
 		let reply = "\n" + this.getHeroRole() +
 			this.getHeroUniverse() +
-			"\n" + this.getHeroTierPosition() +
-			"\n" + this.getHeroScore() +
-			"\n\n" + this.getHeroBuilds() +
+			this.getHeroTierPosition() +		
+			"\n" + this.getHeroBuilds() +
 			SEPARATOR +
 			"\n" + this.getHeroSynergies() +
 			SEPARATOR +
@@ -233,7 +229,7 @@ exports.Heroes = {
 				}
 
 			} else {
-				reply = `The hero ${argument} was not found`;
+				reply = StringUtils.get('hero.not.found', argument);			
 			}
 		}
 
