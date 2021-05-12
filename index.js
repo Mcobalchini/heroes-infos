@@ -1,3 +1,5 @@
+const translate = require('@vitalets/google-translate-api');
+
 const fs = require('fs');
 const { Client } = require("discord.js");
 const config = require("./config.json");
@@ -21,7 +23,7 @@ bot.on("message", function (message) {
 	let receivedCommand = message.content.split(' ', 1)[0].substring(1);
 	let args = message.content.substring(receivedCommand.toLowerCase().length + 2);
 
-	try {
+	try {			
 		handleCommand(args, receivedCommand);
 	} catch (e) {
 		process.stdout.write(`Exception: ${e.stack}\n`);
@@ -118,13 +120,10 @@ async function gatherTierListInfo(browser) {
 	const page = await createPage(browser);
 
 	let result = ""
+	await page.goto(`https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`, { waitUntil: 'domcontentloaded' })
 
-	await page.goto(`http://robogrub.com/silvertierlist_api`);
-	result = await page.evaluate(() => {
-		let documentBody = JSON.parse(document.body.innerText);
-		return documentBody.s.concat(documentBody.s, documentBody.t1, documentBody.t2, documentBody.t3, documentBody.t4, documentBody.t5).map((it, idx) => {
-			return { name: it.name, position: idx + 1, isTierS: documentBody.s.filter(s => s.name === it.name ).length > 0 }
-		});
+	result = await page.evaluate(() => {		
+		return [...new Set(Array.from(document.querySelectorAll('.htl_ban_true')).map(nameElements => nameElements.nextElementSibling.innerText))];
 	});
 
 	await page.close();
@@ -251,13 +250,18 @@ async function updateData() {
 			heroesInfos[index].infos.counters = heroCounters;
 			heroesInfos[index].infos.strongerMaps = heroMaps;
 			heroesInfos[index].infos.tips = heroTips;
+
+			translate(heroTips.substring(0,5000), {to: 'pt'}).then(res => {
+				heroesInfos[index].infos.localizedTips = res.text;				
+			}).catch(err => {
+				console.error(err);
+			});
 			
 			let obj = popularityWinRate.find(it => { return it.name.cleanVal() == heroesInfos[index].name.cleanVal() });
 			heroesInfos[index].infos.winRate = obj.winRate;
 			heroesInfos[index].infos.games = obj.games;		
 		}
 
-		
 		heroesInfos.sort(function (a, b) {
 			return a.infos.games - b.infos.games;
 		}).forEach((it, idx)=> {
@@ -274,8 +278,8 @@ async function updateData() {
 		writeFile('data/heroes-infos.json', heroesInfos);
 
 		let cacheBans = [];
-		tierList.filter(it => it.isTierS).forEach(it => {						
-			cacheBans.push(Heroes.getHeroName(Heroes.findHero(it.name)));
+		tierList.forEach(it => {						
+			cacheBans.push(Heroes.getHeroName(Heroes.findHero(it)));
 		});
 		
 		Heroes.setBanHeroes(cacheBans);
@@ -292,7 +296,6 @@ async function updateData() {
 			}
 			
 			writeFile('data/freeweek.json', cacheFree);
-
 			
 			Heroes.setFreeHeroes(cacheFree);
 			updatingData = false;
@@ -377,14 +380,26 @@ function findCommand(commandName) {
 	return commandEn || commandBr
 }
 
+function findCommandHint(command) {
+	return StringUtils.language === "pt-br" ? command.localizedHint : command.hint
+}
+
+function findCommandName(command) {
+	return StringUtils.language === "pt-br" ? command.localizedName : command.name
+}
+
 //Return messages
-function assembleHelpReturnMessage(args) {
+function assembleHelpReturnMessage(commandName) {
 	let reply = "";
-	if (args != null && args != "null" && args != "") {
-		let command = findCommand(args);
-		reply += command.hint;
-		if (command.acceptParams) {		
-			reply += StringUtils.get('command.example', config.prefix, command.name.toLowerCase());
+	if (commandName != null && commandName != "null" && commandName != "") {
+		let command = findCommand(commandName);
+		if(command != null) {
+			reply += `${findCommandHint(command)}\n`;
+			if (command.acceptParams) {		
+				reply += StringUtils.get('command.example', config.prefix, findCommandName(command).toLowerCase());
+			}
+		} else {
+			reply = StringUtils.get('command.not.exists', commandName, config.prefix);
 		}
 	} else {
 	
@@ -404,7 +419,7 @@ function assembleHelpReturnMessage(args) {
 }
 
 function assembleUpdateReturnMessage(seconds) {
-	return StringUtils.get('process.update.finished.time');
+	return StringUtils.get('process.update.finished.time', seconds);
 }
 //end return messages
 
