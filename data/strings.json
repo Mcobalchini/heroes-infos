@@ -22,7 +22,14 @@
 			{ "hold.still.updating": "Aguarde um momento, ainda estou atualizando os dados dos heróis"},
 			{ "exception.occurred": "Ocorreu um erro inesperado! {0}"},
 			{ "process.update.finished.time": "O processo de atualização terminou em {0} segundos"},
-			{ "command.example" :"Exemplo: {0}{1} [argumento]"}
+			{ "command.example" :"Exemplo: {0}{1} [argumento]"},
+			{ "no.free.heroes": "Sem heróis de graça por enquanto ¯\\_(ツ)_/¯"},
+			{ "free.heroes": "Estes são os heróis da rotação gratuíta atualmente"},
+			{ "suggested.heroes": "Heróis sugeridos"},
+			{ "role.not.found": "A função {0} não foi encontrada"},
+			{ "suggested.bans": "Banimentos sugeridos"},
+			{ "available.builds": "Construções disponíveis para {0}"},
+			{ "hero.score": "{0} - Pontuação {1}"}
 			
 		],
 	"en-us" : 
@@ -48,6 +55,13 @@
 			{ "hold.still.updating": "Hold still, i\\'m updating heroes data"},
 			{ "exception.occurred": "An exception occurred! {0}"},
 			{ "process.update.finished.time": "The update process has finished in {0} seconds"},
-			{ "command.example" :"Example: {0}{1} [argument]"}
+			{ "command.example" :"Example: {0}{1} [argument]"},
+			{ "no.free.heroes": "There are no free heroes yet ¯\\_(ツ)_/¯"},
+			{ "free.heroes": "These are the currently free rotation heroes"},
+			{ "suggested.heroes": "Suggested heroes"},
+			{ "role.not.found": "The role {0} was not found"},
+			{ "suggested.bans": "Suggested bans"},
+			{ "available.builds": "Available build(s) for {0}"},
+			{ "hero.score": "{0} - Score {1}"}
 		]
 }

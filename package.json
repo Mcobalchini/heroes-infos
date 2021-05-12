@@ -4,6 +4,7 @@
     "fs": "0.0.1-security",
     "discord.js": "12.5.1",
     "dotenv": "8.2.0",
-    "es6-promise-pool": "2.5.0"
+    "es6-promise-pool": "2.5.0",
+    "@vitalets/google-translate-api": "^7.0.0"
   }
 }

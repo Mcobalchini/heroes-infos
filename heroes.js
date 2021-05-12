@@ -89,7 +89,7 @@ exports.Heroes = {
 
 		return list.sort(function (a, b) {
 			return a.infos.tierPosition - b.infos.tierPosition;
-		}).reverse().map(it => `${this.getHeroName(it)} - Score ${it.infos.tierPosition}\n`).splice(0,10).join('')
+		}).reverse().map(it => StringUtils.get('hero.score', this.getHeroName(it), it.infos.tierPosition)).splice(0,10).join('')
 	},
 
 	getRoleName: function (roleParam) {
@@ -105,7 +105,7 @@ exports.Heroes = {
 	},
 
 	getHeroBuilds: function () {
-		let reply = `Available build(s) for ${this.getHeroName(this.hero)}`;
+		let reply = StringUtils.get('available.builds', this.getHeroName(this.hero));
 		reply += this.hero.infos.builds.map(build => `\n${build.name}\n${build.skills}\n`).join('')
 		return reply
 	},
@@ -175,29 +175,29 @@ exports.Heroes = {
 	},
 
 	assembleBanListReturnMessage: function () {
-		let reply = `Suggested bans\n`;
+		let reply = StringUtils.get('suggested.bans');
 		reply += this.mustBanHeroes.map(ban => ban + '\n').join('');
 		return reply;
 	},
 
 	assembleFreeWeekHeroesReturnMessage: function () {
-		let reply = `There are no free heroes yet ¯\\_(ツ)_/¯`;
+		let reply = StringUtils.get('no.free.heroes');
 
 		if (this.freeHeroes.length > 0) {
-			reply = "These are the free rotation heroes\n";
+			reply = StringUtils.get('free.heroes');
 			reply += this.freeHeroes.map(freeHero => `${freeHero}\n`).join('');
 		}
 		return reply;
 	},
 
 	assembleSuggestHeroesReturnMessage: function (roleName) {
-		let reply = `Suggested heroes \n`;
+		let reply = StringUtils.get('suggested.heroes');
 		if (roleName != null && roleName != "") {
 			let role = this.findRoleByName(roleName)
 			if (role != null) {
 				reply += this.findHeroesByScore(parseInt(role.id))
 			} else {
-				reply = `The role ${roleName} was not found`
+				reply = StringUtils.get('role.not.found', roleName);
 			}
 		} else {
 			reply += this.findHeroesByScore()
