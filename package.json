@@ -4,7 +4,7 @@
   "description": "bot for hots infos",
   "main": "app.js",
   "scripts": {
-  "start": "node app"
+  "start": "node ."
   },
   "author": "Matheus Cobalchini",
   "dependencies": {
