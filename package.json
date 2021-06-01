@@ -1,4 +1,12 @@
 {
+  "name": "heroes-infos",
+  "version": "1.11.0",
+  "description": "bot for hots infos",
+  "main": "app.js",
+  "scripts": {
+  "start": "node app"
+  },
+  "author": "Matheus Cobalchini",
   "dependencies": {
     "puppeteer": "5.4.1",
     "fs": "0.0.1-security",
