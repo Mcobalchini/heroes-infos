@@ -15,7 +15,7 @@
 	},
 	{
 		"name": "Builds",
-		"localizedName": "Builds",
+		"localizedName": "Construções",
 		"hint": "Display the known builds for the specified hero!",
 		"localizedHint": "Mostra as construções de skills conhecidas para o herói especificado",
 		"acceptParams": true
@@ -52,7 +52,7 @@
 		"name": "Infos",
 		"localizedName": "Informações",
 		"hint": "Display information about the specified hero, like its universe, tier position, score, builds, counters, synergies and tips",
-		"localizedHint": "Mostra informações sobre o herói especificado, como seu universo de origem, posição no ranking, pontuação, construções, fraquezas, sinergias and dicas",
+		"localizedHint": "Mostra informações sobre o herói especificado, como seu universo de origem, posição no ranking, pontuação, construções, fraquezas, sinergias e dicas",
 		"acceptParams": true
 	},
 	{

@@ -23,7 +23,7 @@ bot.on("message", function (message) {
 	let receivedCommand = message.content.split(' ', 1)[0].substring(1);
 	let args = message.content.substring(receivedCommand.toLowerCase().length + 2);
 
-	try {			
+	try {				
 		handleCommand(args, receivedCommand);
 	} catch (e) {
 		process.stdout.write(`Exception: ${e.stack}\n`);
@@ -180,12 +180,12 @@ async function updateData() {
 			browser,
 			cookieValue) : null;
 	};
-
+	
 	let startTime = new Date();
 	process.stdout.write(`Started gathering process at ${startTime.toLocaleTimeString()}\n`);
 
 	const thread = new PromisePool(promiseProducer, 13);
-
+		
 	thread.start().then(() => {
 
 		let finishedTime = new Date();
@@ -250,13 +250,7 @@ async function updateData() {
 			heroesInfos[index].infos.counters = heroCounters;
 			heroesInfos[index].infos.strongerMaps = heroMaps;
 			heroesInfos[index].infos.tips = heroTips;
-
-			translate(heroTips.substring(0,5000), {to: 'pt'}).then(res => {
-				heroesInfos[index].infos.localizedTips = res.text;				
-			}).catch(err => {
-				console.error(err);
-			});
-			
+	
 			let obj = popularityWinRate.find(it => { return it.name.cleanVal() == heroesInfos[index].name.cleanVal() });
 			heroesInfos[index].infos.winRate = obj.winRate;
 			heroesInfos[index].infos.games = obj.games;		
@@ -275,8 +269,7 @@ async function updateData() {
 		})
 
 		Heroes.setHeroesInfos(heroesInfos);
-		writeFile('data/heroes-infos.json', heroesInfos);
-
+		
 		let cacheBans = [];
 		tierList.forEach(it => {						
 			cacheBans.push(Heroes.getHeroName(Heroes.findHero(it)));
@@ -300,7 +293,9 @@ async function updateData() {
 			Heroes.setFreeHeroes(cacheFree);
 			updatingData = false;
 
-			msg.reply(assembleUpdateReturnMessage((finishedTime - startTime) / 1000));
+			translateTips(heroesInfos).then((heroesTranslated) => {
+				msg.reply(assembleUpdateReturnMessage((finishedTime - startTime) / 1000));	
+			});
 		});
 	}).catch((e) => {
 		let replyMsg = StringUtils.get('could.not.update.data.check.logs');
@@ -314,6 +309,31 @@ async function updateData() {
 		msg.reply(replyMsg);
 		updatingData = false;
 	});
+}
+
+async function translateTips(heroesInfos) {
+	
+	let heroesAux = JSON.parse(JSON.stringify(heroesInfos));
+	let heroesCrawl = JSON.parse(JSON.stringify(heroesAux));
+	let heroesMap = new Map();
+
+	const translatePromiseProducer = () => {
+		const heroCrawlInfo = heroesCrawl.pop();
+		return heroCrawlInfo ? translate(heroCrawlInfo.infos.tips.substring(0, 5000), {to: 'pt'}).then(res => {
+			heroesMap.set(heroCrawlInfo.id, res.text);
+		}) : null;
+	};
+		
+	const translateThread = new PromisePool(translatePromiseProducer, 20);
+	translateThread.start().then(() => {
+		for (let [heroKey, heroData] of heroesMap) {
+			let index = heroesAux.findIndex(it => it.id == heroKey);
+			heroesAux[index].infos.localizedTips = heroData
+		}	
+	})
+	Heroes.setHeroesInfos(heroesAux);
+	writeFile('data/heroes-infos.json', heroesAux
+	);	
 }
 
 async function createPage(browser) {

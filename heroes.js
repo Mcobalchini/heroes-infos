@@ -141,8 +141,15 @@ exports.Heroes = {
 	},
 
 	getHeroTips: function () {
+		let tips = ""
+		if (StringUtils.language === "pt-br") {
+			tips = this.hero.infos.localizedTips;
+		} else {
+			tips = this.hero.infos.tips;
+		}
+
 		let reply = StringUtils.get('tips.for', this.getHeroName(this.hero));		
-		reply += this.hero.infos.tips + '\n';
+		reply += tips + '\n';
 		return reply;
 	},
 

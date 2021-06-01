@@ -20,7 +20,7 @@ exports.Maps = {
 				}
 				return this.assembleMapReturnMessage({ map: map, heroes: bestHeroes });
 			} else {
-				return `The specified map was not found\nType "${config.prefix}help <name of the map>" to get a list with the available maps`;
+				return `The specified map was not found\nType "${config.prefix}map <name of the map>" to get a list with the available maps`;
 			}
 		} else {
 			return this.assembleMapReturnMessage({ map: maps.map(it => this.getMapName(it)), heroes: [] })
