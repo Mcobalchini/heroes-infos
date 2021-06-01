@@ -154,7 +154,12 @@ async function updateData() {
 	updatingData = true;
 
 	//const browser = await puppeteer.launch({devtools: true});
-	const browser = await puppeteer.launch();
+	const browser = await puppeteer.launch({
+		args: [
+		  '--no-sandbox',
+		  '--disable-setuid-sandbox',
+		],
+	  });
 	const cookieValue = await createHeroesProfileSession(browser);	
 	const tierList = await gatherTierListInfo(browser);
 	const popularityWinRate = await gatherPopularityAndWinRateListInfo(browser);
