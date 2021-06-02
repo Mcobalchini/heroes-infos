@@ -305,7 +305,7 @@ async function updateData() {
 	}).catch((e) => {
 		let replyMsg = StringUtils.get('could.not.update.data.check.logs');
 
-		if (e.stack.includes("Navigation timeout of 30000 ms exceeded")) {
+		if (e.stack.includes("Navigation timeout of 30000 ms exceeded")	|| e.stack.includes("net::ERR_ABORTED")) {
 			replyMsg += StringUtils.get('try.to.update.again');
 			updateData();
 		}
