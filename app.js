@@ -151,16 +151,19 @@ async function gatherPopularityAndWinRateListInfo(browser) {
 }
 
 async function updateData() {
+
+	process.stdout.write(`Started updating data process at ${new Date().toLocaleTimeString()}\n`);
 	updatingData = true;
 
 	//const browser = await puppeteer.launch({devtools: true});
 	const browser = await puppeteer.launch({
+		headless: true,
 		args: [
 		  '--no-sandbox',
-		  '--disable-setuid-sandbox',
+		  '--disable-setuid-sandbox',		
 		],
 	  });
-	const cookieValue = await createHeroesProfileSession(browser);	
+	const cookieValue = await createHeroesProfileSession(browser);	 
 	const tierList = await gatherTierListInfo(browser);
 	const popularityWinRate = await gatherPopularityAndWinRateListInfo(browser);
 
