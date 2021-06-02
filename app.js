@@ -166,7 +166,11 @@ async function updateData() {
 	const cookieValue = await createHeroesProfileSession(browser);	 
 	const tierList = await gatherTierListInfo(browser);
 	const popularityWinRate = await gatherPopularityAndWinRateListInfo(browser);
-
+	
+	process.stdout.write(`Cookie Value ${cookieValue}\n`);
+	process.stdout.write(`Tier list = ${tierList.join(' ')}\n`);
+	process.stdout.write(`PopWinRate = ${popularityWinRate.map(it => `${it.name}\n ${it.winRate}\n ${it.games}\n`).join(' ')}\n`);
+	
 	let heroesMap = new Map();
 	let heroesIdAndUrls = [];
 	let heroesInfos = Heroes.findAllHeroes();
@@ -192,7 +196,7 @@ async function updateData() {
 	let startTime = new Date();
 	process.stdout.write(`Started gathering process at ${startTime.toLocaleTimeString()}\n`);
 
-	const thread = new PromisePool(promiseProducer, 13);
+	const thread = new PromisePool(promiseProducer, 5);
 		
 	thread.start().then(() => {
 
