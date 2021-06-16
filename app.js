@@ -169,17 +169,18 @@ async function updateData() {
 	
 	process.stdout.write(`Cookie Value ${cookieValue}\n`);
 	process.stdout.write(`Tier list = ${tierList.join(' ')}\n`);
-	process.stdout.write(`PopWinRate = ${popularityWinRate.map(it => `${it.name}\n ${it.winRate}\n ${it.games}\n`).join(' ')}\n`);
+	process.stdout.write(`PopWinRate\n ${popularityWinRate.map(it => `name=${it.name} winrate=${it.winRate} games=${it.games}\n`).join(' ')}\n`);
 	
 	let heroesMap = new Map();
 	let heroesIdAndUrls = [];
 	let heroesInfos = Heroes.findAllHeroes();
 
 	for (hero of heroesInfos) {
+		let normalizedName = hero.name.replace('/ /g', '+').replace('/\'/g', '%27');
 		heroesIdAndUrls.push({
 			heroId: hero.id,
 			icyUrl: `https://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`,
-			profileUrl: `https://www.heroesprofile.com/Global/Talents/getChartDataTalentBuilds.php?hero=${hero.name.replace('/ /g', '+').replace('/\'/g', '%27')}`
+			profileUrl: `https://www.heroesprofile.com/Global/Talents/getChartDataTalentBuilds.php?hero=${normalizedName}`
 		});
 	}
 
@@ -208,12 +209,12 @@ async function updateData() {
 		for (let [heroKey, heroData] of heroesMap) {
 			let index = heroesInfos.findIndex(it => it.id == heroKey);
 			let icyData = heroData.icyData
-			let profileData = heroData.profileData
+			let profileData = heroData.profileData		
 			let heroCounters = [];
 			let heroSynergies = [];
 			let heroMaps = [];
 			let heroTips = "";
-
+			
 			for (synergy of icyData.synergies) {
 				let synergyHero = Heroes.findHero(synergy);
 				if (synergyHero)
@@ -236,6 +237,10 @@ async function updateData() {
 
 			if (heroesInfos[index] == null) {
 				heroesInfos[index] = {};
+			}
+
+			if (profileData.builds.length == 0){
+				process.stdout.write(`No builds found for ${heroesInfos[index].name}\n`);
 			}
 
 			//Recupera os itens iguais
@@ -367,11 +372,7 @@ function handleCommand(args, receivedCommand) {
 	let reply = "";
 	let command = findCommand(receivedCommand);
 	if (command != null) {
-		if (command.name === 'Builds' || command.name === 'Counters' ||
-			command.name === 'Synergies' || command.name === 'Infos' ||
-			command.name === 'Tips' || command.name === 'FreeWeek' ||
-			command.name === 'Suggest' ||
-			command.name === 'Banlist') {
+		if (command.category === "HEROES") {
 			reply = Heroes.init(command, args);
 		} else if (command.name === 'Map') {
 			reply = Maps.init(args);
