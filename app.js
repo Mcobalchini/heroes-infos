@@ -150,6 +150,26 @@ async function gatherPopularityAndWinRateListInfo(browser) {
 	return result;
 }
 
+async function gatherCompositionInfo(browser) {
+	const page = await createPage(browser);
+
+	let result = ""
+
+	await page.goto(`https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1`);
+	result = await page.evaluate(() => {
+		return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {         
+			return {
+			   games: it.children[0].innerText,
+			   winRate: parseFloat(it.children[1].innerText.replace(",", ".")),
+			   roles: Array.from(it.children).filter(it => it.style.display === "none").map(it => it.innerText)
+		   }
+		});
+	});
+
+	await page.close();
+	return result;
+}
+
 async function updateData() {
 
 	process.stdout.write(`Started updating data process at ${new Date().toLocaleTimeString()}\n`);
@@ -163,14 +183,34 @@ async function updateData() {
 		  '--disable-setuid-sandbox',		
 		],
 	  });
+	  
 	const cookieValue = await createHeroesProfileSession(browser);	 
 	const tierList = await gatherTierListInfo(browser);
 	const popularityWinRate = await gatherPopularityAndWinRateListInfo(browser);
+	const compositions = await gatherCompositionInfo(browser);
 	
 	process.stdout.write(`Cookie Value ${cookieValue}\n`);
 	process.stdout.write(`Tier list = ${tierList.join(' ')}\n`);
 	process.stdout.write(`PopWinRate\n ${popularityWinRate.map(it => `name=${it.name} winrate=${it.winRate} games=${it.games}\n`).join(' ')}\n`);
+	process.stdout.write(`Compositions\n ${compositions.map(it => `winrate=${it.winRate} games=${it.games} roles=${it.roles.join(',')}\n`).join(' ')}\n`);
+
+	//grava compositions
+	compositions.sort(function (a, b) {
+		return a.games - b.games;
+	}).forEach((it, idx)=> {
+		it.tierPosition = parseInt(idx+1);
+	});
+
+	compositions.sort(function (a, b) {
+		return a.winRate - b.winRate;
+	}).forEach((it, idx)=> {
+		it.tierPosition = parseInt(it.tierPosition) + parseInt(idx+1);
+	});
 	
+	let sortedComposition = compositions.sort(function (a, b) {return a.tierPosition - b.tierPosition}).reverse();
+	Heroes.setCompositions(sortedComposition);
+	writeFile('data/compositions.json', sortedComposition);
+
 	let heroesMap = new Map();
 	let heroesIdAndUrls = [];
 	let heroesInfos = Heroes.findAllHeroes();
@@ -273,6 +313,16 @@ async function updateData() {
 			heroesInfos[index].infos.games = obj.games;		
 		}
 
+		Heroes.setHeroesInfos(heroesInfos);
+		
+		let cacheBans = [];
+		tierList.forEach(it => {						
+			cacheBans.push(Heroes.getHeroName(Heroes.findHero(it)));
+		});
+		
+		Heroes.setBanHeroes(cacheBans);
+		writeFile('data/banlist.json', cacheBans);
+
 		heroesInfos.sort(function (a, b) {
 			return a.infos.games - b.infos.games;
 		}).forEach((it, idx)=> {
@@ -284,16 +334,6 @@ async function updateData() {
 		}).forEach((it, idx)=> {
 			it.infos.tierPosition = parseInt(it.infos.tierPosition) + parseInt(idx+1);
 		})
-
-		Heroes.setHeroesInfos(heroesInfos);
-		
-		let cacheBans = [];
-		tierList.forEach(it => {						
-			cacheBans.push(Heroes.getHeroName(Heroes.findHero(it)));
-		});
-		
-		Heroes.setBanHeroes(cacheBans);
-		writeFile('data/banlist.json', cacheBans);
 		
 		accessSite(browser).then((value) => {
 
@@ -349,8 +389,7 @@ async function translateTips(heroesInfos) {
 		}	
 	})
 	Heroes.setHeroesInfos(heroesAux);
-	writeFile('data/heroes-infos.json', heroesAux
-	);	
+	writeFile('data/heroes-infos.json', heroesAux);	
 }
 
 async function createPage(browser) {

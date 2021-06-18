@@ -4,7 +4,7 @@ const strings = JSON.parse(fs.readFileSync("./data/strings.json"), { encoding: '
 exports.StringUtils = {
 	language: "en-us",
 
-	get: function (property, parameters) {
+	get: function (property) {
         var args = Array.prototype.slice.call(arguments, 1);
         
 		if (property != null) {

@@ -7,10 +7,12 @@ const SEPARATOR = "-------------------------------------------------------------
 let heroesInfos = [];
 let freeHeroes = [];
 let mustBanHeroes = [];
+let compositions = [];
 
 try {
 	heroesInfos = JSON.parse(fs.readFileSync("./data/heroes-infos.json"));
 	mustBanHeroes = JSON.parse(fs.readFileSync("./data/banlist.json"));
+	compositions = JSON.parse(fs.readFileSync("./data/compositions.json"));
 	freeHeroes = JSON.parse(fs.readFileSync("./data/freeweek.json"));
 } catch (e) {
 	process.stdout.write('error: ' + e + "\n");
@@ -22,6 +24,7 @@ exports.Heroes = {
 	mustBanHeroes: mustBanHeroes,
 	freeHeroes: freeHeroes,
 	heroesInfos: heroesInfos,
+	compositions: compositions,
 
 	init: function (command, heroName) {
 		return this.assembleReturnMessage(command, heroName);
@@ -69,19 +72,9 @@ exports.Heroes = {
 
 	findHeroesByScore: function (roleId) {
 
-		this.heroesInfos.sort(function (a, b) {
-			return a.infos.games - b.infos.games;
-		}).forEach((it, idx)=> {
-			it.infos.tierPosition = parseInt(idx+1);
+		let list = this.heroesInfos.sort(function (a, b) {
+			return a.infos.tierPosition - b.infos.tierPosition;
 		});
-
-		this.heroesInfos.sort(function (a, b) {
-			return a.infos.winRate - b.infos.winRate;
-		}).forEach((it, idx)=> {
-			it.infos.tierPosition = parseInt(it.infos.tierPosition) + parseInt(idx+1);
-		})
-
-		let list = this.heroesInfos;
 
 		if (roleId != null) {
 			list = list.filter(hero => (hero.role === roleId))
@@ -177,6 +170,10 @@ exports.Heroes = {
 		this.mustBanHeroes = heroesParam;
 	},
 
+	setCompositions: function (compositionsParam) {
+		this.compositions = compositionsParam;
+	},
+
 	setFreeHeroes: function (heroesParam) {
 		this.freeHeroes = heroesParam;
 	},
@@ -212,6 +209,35 @@ exports.Heroes = {
 		return reply;
 	},
 
+	assembleTeamReturnMessage: function (heroes) {
+		let heroesToPop = this.heroesInfos.sort(function (a, b) {
+			return a.infos.tierPosition - b.infos.tierPosition;
+		});
+
+		let heroesArray = heroes.split(' ');
+		let heroesFound = new Map();
+		
+		for (it of heroesArray) {
+			let hero = this.findHero(it);
+			 if (hero != null) {
+				if (heroesFound.size >= 5) {
+					break;
+				}
+				heroesFound.set(hero.id, hero);
+			}	
+		}
+		
+		if (heroesFound.size > 0) {
+			for (i of heroesFound.values()) {
+				heroesToPop = heroesToPop.filter(item => item.id !== i.id);				
+			}
+		}
+
+		let reply = `Você informou os herois ${ Array.from(heroesFound).map(([key, value]) => `${this.getHeroName(value)}`)}\n`
+		reply += `Compositions\n ${this.compositions.map(it => `score=${it.tierPosition} roles=(${it.roles.join(', ')})\n`).join(' ')}\n`;
+		return reply;
+	},
+
 	assembleReturnMessage: function (commandObj, argument) {
 		let reply = "";
 
@@ -221,6 +247,8 @@ exports.Heroes = {
 			reply = this.assembleFreeWeekHeroesReturnMessage();
 		} else if (commandObj.name === 'Suggest') {
 			reply = this.assembleSuggestHeroesReturnMessage(argument);
+		} else if (commandObj.name === 'Team') {
+			reply = this.assembleTeamReturnMessage(argument);
 		} else {
 			this.findHero(argument, true);
 			if (this.hero != null) {
