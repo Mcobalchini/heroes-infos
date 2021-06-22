@@ -211,42 +211,49 @@ exports.Heroes = {
 	},
 
 	assembleTeamReturnMessage: function (heroes) {
+
 		let heroesFiltered = JSON.parse(JSON.stringify(this.heroesInfos.sort(function (a, b) {
 			return a.infos.tierPosition - b.infos.tierPosition;
 		})));
 
+		
+		let currentCompRoles = [];
+		let possibleComps = [];
 		let heroesArray = heroes.split(' ');
-		let heroesFound = new Map();
+		let currentCompHeroes = new Map();
+		let remainingHeroes = 5 - currentCompHeroes.size;
 				
 		for (it of heroesArray) {
 			let hero = this.findHero(it, true);
 			 if (hero != null) {
-				if (heroesFound.size >= 5) {
+				if (currentCompHeroes.size >= 5) {
 					break;
 				}
-				heroesFound.set(hero.id, hero);
+				currentCompHeroes.set(hero.id, hero);
 			}	
 		}
 		
-		if (heroesFound.size > 0) {
-			for (i of heroesFound.values()) {
-				heroesFiltered = heroesFiltered.filter(item => item.id !== i.id);				
+		if (currentCompHeroes.size > 0) {
+			for (i of currentCompHeroes.values()) {
+				heroesFiltered = heroesFiltered.filter(item => item.id !== i.id);
+				currentCompRoles.push(this.findRoleById(i.role).name);
 			}
+
+			possibleComps = this.compositions.map(it => it.roles).filter(roles => roles.includes(...currentCompRoles))
+			
+			for (i of currentCompHeroes.values()) {
+				let synergies = i.infos.synergies.map(it => this.findHero(it));
+				synergies.forEach((synergy) => {			
+					let hero = heroesFiltered.find(it => it.id == synergy.id)
+					if (hero != null)
+						hero.infos.tierPosition = hero.infos.tierPosition * 2;
+				});	
+			}
+
 		}
 
-		for (i of heroesFound.values()) {
-			let synergies = i.infos.synergies.map(it => this.findHero(it));
-			synergies.forEach((synergy) => {			
-				let hero = heroesFiltered.find(it => it.id == synergy.id)
-				if (hero != null)
-					hero.infos.tierPosition = hero.infos.tierPosition * 2;
-			});
-		}
-	
-		let remainingHeroes = 5 - heroesFound.size;
-
-		let reply = `Você informou os herois ${Array.from(heroesFound).map(([key, value]) => `${this.getHeroName(value)}`)}\n`
-
+		let reply = `Você informou os herois ${Array.from(currentCompHeroes).map(([key, value]) => `${this.getHeroName(value)}`)}\n`
+		reply += possibleComps.join(' ')
 		reply += heroesFiltered.sort(function (a, b) {
 			return a.infos.tierPosition - b.infos.tierPosition;
 		}).reverse().map(it => StringUtils.get('hero.score', this.getHeroName(it), it.infos.tierPosition)).splice(0,remainingHeroes).join('');
