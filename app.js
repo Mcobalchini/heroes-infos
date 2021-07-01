@@ -135,7 +135,7 @@ async function gatherPopularityAndWinRateListInfo(browser) {
 
 	let result = ""
 
-	await page.goto(`https://www.hotslogs.com/Sitewide/ScoreResultStatistics?GameMode=3`);
+	await page.goto(`https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2`);
 	result = await page.evaluate(() => {
 		return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
 			return {
@@ -483,7 +483,7 @@ function assembleHelpReturnMessage(commandName) {
 		reply += 'https://www.icy-veins.com/heroes/\n';
 		reply += 'https://www.heroesprofile.com\n';
 		reply += 'http://robogrub.com/silvertierlist_api\n';
-		reply += 'https://www.hotslogs.com/Sitewide/ScoreResultStatistics?GameMode=3\n';
+		reply += 'https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2\n';
 		reply += StringUtils.get('if.want.to.know.more.about.specific.command', config.prefix);	
 		reply += StringUtils.get('version', config.version);
 	}

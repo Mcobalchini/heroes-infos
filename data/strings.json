@@ -29,7 +29,8 @@
 			{ "role.not.found": "A função {0} não foi encontrada"},
 			{ "suggested.bans": "Banimentos sugeridos"},
 			{ "available.builds": "Construções disponíveis para {0}"},
-			{ "hero.score": "{0} - Pontuação {1}"}
+			{ "hero.score": "{0} - Pontuação {1}"},
+			{ "current.team": "Sua equipe atual é composta por {0}"}
 			
 		],
 	"en-us" : 
@@ -62,6 +63,7 @@
 			{ "role.not.found": "The role {0} was not found"},
 			{ "suggested.bans": "Suggested bans"},
 			{ "available.builds": "Available build(s) for {0}"},
-			{ "hero.score": "{0} - Score {1}"}
+			{ "hero.score": "{0} - Score {1}"},
+			{ "current.team": "Your current composition is {0}"}
 		]
 }

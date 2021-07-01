@@ -212,16 +212,18 @@ exports.Heroes = {
 
 	assembleTeamReturnMessage: function (heroes) {
 
+		let reply = "";
+
 		let heroesFiltered = JSON.parse(JSON.stringify(this.heroesInfos.sort(function (a, b) {
 			return a.infos.tierPosition - b.infos.tierPosition;
 		})));
-
-		
+	
 		let currentCompRoles = [];
-		let possibleComps = [];
+		let possibleComps = [];		
 		let heroesArray = heroes.split(' ');
 		let currentCompHeroes = new Map();
-		let remainingHeroes = 5 - currentCompHeroes.size;
+		const remainingHeroes = 5 - currentCompHeroes.size;
+		let suggested = [];
 				
 		for (it of heroesArray) {
 			let hero = this.findHero(it, true);
@@ -234,15 +236,17 @@ exports.Heroes = {
 		}
 		
 		if (currentCompHeroes.size > 0) {
-			for (i of currentCompHeroes.values()) {
-				heroesFiltered = heroesFiltered.filter(item => item.id !== i.id);
-				currentCompRoles.push(this.findRoleById(i.role).name);
-			}
 
-			possibleComps = this.compositions.map(it => it.roles).filter(roles => roles.includes(...currentCompRoles))
-			
-			for (i of currentCompHeroes.values()) {
-				let synergies = i.infos.synergies.map(it => this.findHero(it));
+			const missingRolesMap = new Map()
+
+			for (currentCompHero of currentCompHeroes.values()) {
+				heroesFiltered = heroesFiltered.filter(item => item.id !== currentCompHero.id);
+				currentCompRoles.push(this.findRoleById(currentCompHero.role).name);
+			}
+			currentCompRoles = currentCompRoles.sort();
+
+			for (currentCompHero of currentCompHeroes.values()) {
+				let synergies = currentCompHero.infos.synergies.map(it => this.findHero(it));
 				synergies.forEach((synergy) => {			
 					let hero = heroesFiltered.find(it => it.id == synergy.id)
 					if (hero != null)
@@ -250,13 +254,50 @@ exports.Heroes = {
 				});	
 			}
 
-		}
+			//sorted filtered heroes
+			heroesFiltered = heroesFiltered.sort(function (a, b) {
+				return a.infos.tierPosition - b.infos.tierPosition;
+			}).reverse();
 
-		let reply = `Você informou os herois ${Array.from(currentCompHeroes).map(([key, value]) => `${this.getHeroName(value)}`)}\n`
-		reply += possibleComps.join(' ')
-		reply += heroesFiltered.sort(function (a, b) {
-			return a.infos.tierPosition - b.infos.tierPosition;
-		}).reverse().map(it => StringUtils.get('hero.score', this.getHeroName(it), it.infos.tierPosition)).splice(0,remainingHeroes).join('');
+			let metaCompsRoles = this.compositions.map(it => it.roles.sort());
+			
+			for (role of currentCompRoles) {
+				let index = currentCompRoles.indexOf(role);
+				if (index !== -1) {
+					if (currentCompRoles[index + 1] === role){
+						//is a duplicate
+						metaCompsRoles = metaCompsRoles.filter(it => it.toString().includes(role + ',' + role));
+					}
+				}
+				metaCompsRoles = metaCompsRoles.filter(it => it.includes(role));
+			}
+
+			metaCompsRoles = metaCompsRoles.splice(0,3);
+							
+			if (metaCompsRoles.length > 0) {
+				for (comp of metaCompsRoles) {
+					missingRolesMap.set(comp, comp.filter(compIterator => !currentCompRoles.includes(compIterator)));					
+				}
+			}
+
+			//filter missing role heroes only
+			for (let [key, value] of missingRolesMap.entries()) {	
+				for (missingRole of value) {
+					let role = this.findRoleByName(missingRole);
+					let hero = heroesFiltered.filter(heroToShift => heroToShift.role == role.id).shift();
+					heroesFiltered = heroesFiltered.filter(heroFiltered => heroFiltered.id != hero.id);
+			
+					suggested.push(hero);
+				}						
+				missingRolesMap.set(key, suggested);
+				suggested = [];
+			}
+
+			reply = `${StringUtils.get('current.team', Array.from(currentCompHeroes).map(([key, value]) => `${this.getHeroName(value)}`).join(', '))}`
+			reply += Array.from(missingRolesMap).map(([key, value]) => `${key.join(', ')} \n- ${value.map(it => `${this.getHeroName(it)}\n`).join('- ')}${SEPARATOR}\n`).join('');
+			reply += possibleComps.join(' ')	
+		}
+	
 		return reply;
 	},
 
