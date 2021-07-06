@@ -273,10 +273,18 @@ exports.Heroes = {
 			}
 
 			metaCompsRoles = metaCompsRoles.splice(0,3);
-							
 			if (metaCompsRoles.length > 0) {
+
 				for (comp of metaCompsRoles) {
-					missingRolesMap.set(comp, comp.filter(compIterator => !currentCompRoles.includes(compIterator)));					
+					let missingRoles = JSON.parse(JSON.stringify(comp));
+										
+					for (currentRole of currentCompRoles) {
+						let index = missingRoles.indexOf(currentRole);
+						if (index != -1)
+							missingRoles.splice(missingRoles.indexOf(currentRole), 1);
+					}			
+
+					missingRolesMap.set(comp, missingRoles);					
 				}
 			}
 
@@ -294,7 +302,7 @@ exports.Heroes = {
 			}
 
 			reply = `${StringUtils.get('current.team', Array.from(currentCompHeroes).map(([key, value]) => `${this.getHeroName(value)}`).join(', '))}`
-			reply += Array.from(missingRolesMap).map(([key, value]) => `${key.join(', ')} \n- ${value.map(it => `${this.getHeroName(it)}\n`).join('- ')}${SEPARATOR}\n`).join('');
+			reply += Array.from(missingRolesMap).map(([key, value]) => `${key.join(', ')} \n- ${value.map(it => `${this.getHeroName(it)} - ${this.getRoleName(this.findRoleById(it.role))}\n`).join('- ')}${SEPARATOR}\n`).join('');
 			reply += possibleComps.join(' ')	
 		}
 	
