@@ -100,8 +100,17 @@ exports.Heroes = {
 
 	getHeroBuilds: function () {
 		let reply = StringUtils.get('available.builds', this.getHeroName(this.hero));
-		reply += this.hero.infos.builds.map(build => `\n${build.name}\n${build.skills}\n`).join('')
-		return reply
+		reply += this.hero.infos.builds.map(build => `\n${build.name}\n${build.skills}\n`).join('')	
+		return { 
+			reply: reply, 
+			component: this.hero.infos.builds.map(build => {
+							return {
+								label: build.name,
+								description: build.skills,
+								value: build.skills
+							}							
+						})
+		};
 	},
 
 	getHeroRole: function () {
@@ -148,10 +157,11 @@ exports.Heroes = {
 	},
 
 	getHeroInfos: function () {
+		let buildsComp = this.getHeroBuilds();
 		let reply = "\n" + this.getHeroRole() +
 			this.getHeroUniverse() +
 			this.getHeroTierPosition() +		
-			"\n" + this.getHeroBuilds() +
+			"\n" + buildsComp.reply +
 			SEPARATOR +
 			"\n" + this.getHeroSynergies() +
 			SEPARATOR +
@@ -160,7 +170,7 @@ exports.Heroes = {
 			"\n" + this.getHeroStrongerMaps() +
 			SEPARATOR +
 			"\n" + this.getHeroTips();
-		return reply
+		return { reply:reply, component: buildsComp.component };
 	},
 
 	setHeroesInfos: function (heroesParam) {
@@ -214,7 +224,7 @@ exports.Heroes = {
 
 		let reply = "";
 
-		let heroesFiltered = JSON.parse(JSON.stringify(this.heroesInfos.sort(function (a, b) {
+		let heroesSorted = JSON.parse(JSON.stringify(this.heroesInfos.sort(function (a, b) {
 			return a.infos.tierPosition - b.infos.tierPosition;
 		})));
 	
@@ -222,7 +232,7 @@ exports.Heroes = {
 		let possibleComps = [];		
 		let heroesArray = heroes.split(' ');
 		let currentCompHeroes = new Map();
-		const remainingHeroes = 5 - currentCompHeroes.size;
+		const remainingHeroes = 5 - currentCompHeroes.size;	
 		let suggested = [];
 				
 		for (it of heroesArray) {
@@ -240,7 +250,7 @@ exports.Heroes = {
 			const missingRolesMap = new Map()
 
 			for (currentCompHero of currentCompHeroes.values()) {
-				heroesFiltered = heroesFiltered.filter(item => item.id !== currentCompHero.id);
+				heroesSorted = heroesSorted.filter(item => item.id !== currentCompHero.id);
 				currentCompRoles.push(this.findRoleById(currentCompHero.role).name);
 			}
 			currentCompRoles = currentCompRoles.sort();
@@ -248,14 +258,14 @@ exports.Heroes = {
 			for (currentCompHero of currentCompHeroes.values()) {
 				let synergies = currentCompHero.infos.synergies.map(it => this.findHero(it));
 				synergies.forEach((synergy) => {			
-					let hero = heroesFiltered.find(it => it.id == synergy.id)
+					let hero = heroesSorted.find(it => it.id == synergy.id)
 					if (hero != null)
 						hero.infos.tierPosition = hero.infos.tierPosition * 2;
 				});	
 			}
 
 			//sorted filtered heroes
-			heroesFiltered = heroesFiltered.sort(function (a, b) {
+			heroesSorted = heroesSorted.sort(function (a, b) {
 				return a.infos.tierPosition - b.infos.tierPosition;
 			}).reverse();
 
@@ -292,8 +302,8 @@ exports.Heroes = {
 			for (let [key, value] of missingRolesMap.entries()) {	
 				for (missingRole of value) {
 					let role = this.findRoleByName(missingRole);
-					let hero = heroesFiltered.filter(heroToShift => heroToShift.role == role.id).shift();
-					heroesFiltered = heroesFiltered.filter(heroFiltered => heroFiltered.id != hero.id);
+					let hero = heroesSorted.filter(heroToShift => heroToShift.role == role.id).shift();
+					heroesSorted = heroesSorted.filter(heroFiltered => heroFiltered.id != hero.id);
 			
 					suggested.push(hero);
 				}						
@@ -326,9 +336,11 @@ exports.Heroes = {
 				if (this.hero.infos != null && (this.hero.infos.counters.length > 0 &&
 					this.hero.infos.synergies.length > 0 &&
 					this.hero.infos.builds.length > 0)) {
+					let returnedValues = eval(`this.getHero${commandObj.name}()`);
 					reply = {
-						text: eval(`this.getHero${commandObj.name}()`),
-						image: `images/${this.hero.name.cleanVal()}.png`
+						text: returnedValues.reply ? returnedValues.reply : returnedValues,
+						image: `images/${this.hero.name.cleanVal()}.png`,
+						component: returnedValues.component
 					};
 				} else {
 					reply = `There was not enough info found for the hero ${argument} \nPlease, call the ${config.prefix}update command to search for them`;

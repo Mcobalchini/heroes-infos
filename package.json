@@ -4,14 +4,15 @@
   "description": "bot for hots infos",
   "main": "app.js",
   "scripts": {
-  "start": "node ."
+    "start": "node ."
   },
   "author": "Matheus Cobalchini",
   "dependencies": {
     "puppeteer": "5.4.1",
     "fs": "0.0.1-security",
-    "discord.js": "12.5.1",
+    "discord.js": "13.1.0",
     "dotenv": "8.2.0",
+    "clipboardy": "2.3.0" ,
     "es6-promise-pool": "2.5.0",
     "@vitalets/google-translate-api": "^7.0.0"
   }

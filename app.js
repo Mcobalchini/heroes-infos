@@ -1,7 +1,7 @@
 const translate = require('@vitalets/google-translate-api');
 
 const fs = require('fs');
-const { Client } = require("discord.js");
+const { Client, MessageActionRow, MessageSelectMenu , Intents, Util: { splitMessage } } = require("discord.js");
 const config = require("./config.json");
 require('dotenv').config({ path: './variables.env' });
 const Heroes = require('./heroes.js').Heroes;
@@ -11,11 +11,12 @@ const puppeteer = require('puppeteer');
 const PromisePool = require('es6-promise-pool');
 const commands = JSON.parse(fs.readFileSync("./data/commands.json"));
 const prefix = config.prefix;
-const bot = new Client();
+const bot = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+const clipboardy = require('clipboardy');
 let msg = null;
 let updatingData = false;
 
-bot.on("message", function (message) {
+bot.on("messageCreate", message => {
 	if (message.author.bot) return;
 	if (!message.content.startsWith(prefix)) return;
 	msg = message;
@@ -29,6 +30,13 @@ bot.on("message", function (message) {
 		process.stdout.write(`Exception: ${e.stack}\n`);
 		msg.reply(StringUtils.get('exception.occurred', e))
 	}
+});
+
+bot.on('interactionCreate', interaction => {
+	if (!interaction.isSelectMenu()) return;
+	let build = interaction.values[0]	
+	clipboardy.writeSync(build);
+	interaction.reply({ content: build })
 });
 
 async function accessSite(browser) {
@@ -428,8 +436,28 @@ function handleCommand(args, receivedCommand) {
 	} else {
 		reply = StringUtils.get('command.not.exists', receivedCommand, config.prefix);
 	}
+
 	if (reply.image != null) {
-		msg.reply(reply.text, { split: true, files: [reply.image] })
+		returnObject = {		
+			content: customSplitMessage(reply.text)[0],				
+			split: true,
+			files: [reply.image] 
+		}
+		if (reply.component != null){
+			const row = new MessageActionRow()
+			.addComponents(
+				new MessageSelectMenu()
+					.setCustomId('select')
+					.setPlaceholder('Nothing selected')
+					.setMinValues(1)
+					.setMaxValues(1)
+					.addOptions(reply.component),
+			);
+			returnObject.components = [row];
+		}
+
+		msg.reply(returnObject);
+
 	} else {
 		msg.reply(reply, { split: true })
 	}
@@ -503,6 +531,11 @@ function writeFile(path, obj) {
 		}
 	});
 }
+
+const customSplitMessage = (text) => [
+	text.substring(0, 2000),
+	text.substring(2000, text.length),
+  ];
 
 bot.on("ready", function () {
 
