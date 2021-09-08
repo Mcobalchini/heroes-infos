@@ -15,5 +15,8 @@
     "clipboardy": "2.3.0" ,
     "es6-promise-pool": "2.5.0",
     "@vitalets/google-translate-api": "^7.0.0"
+  },
+  "engines": {
+    "node": "16.9.0"
   }
 }
