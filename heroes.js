@@ -99,17 +99,21 @@ exports.Heroes = {
 	},
 
 	getHeroBuilds: function () {
-		let reply = StringUtils.get('available.builds', this.getHeroName(this.hero));
-		reply += this.hero.infos.builds.map(build => `\n${build.name}\n${build.skills}\n`).join('')	
+		let reply = " ";
 		return { 
 			reply: reply, 
-			component: this.hero.infos.builds.map(build => {
-							return {
-								label: build.name,
-								description: build.skills,
-								value: build.skills
-							}							
-						})
+			embedReply: {				
+				data: {
+					hero: this.getHeroName(this.hero),
+					builds: this.hero.infos.builds.map(build => {
+						return {
+							name: build.name,
+							value: build.skills,
+							inline: false
+						}							
+					})
+				}				
+			}
 		};
 	},
 
@@ -161,7 +165,7 @@ exports.Heroes = {
 		let reply = "\n" + this.getHeroRole() +
 			this.getHeroUniverse() +
 			this.getHeroTierPosition() +		
-			"\n" + buildsComp.reply +
+			buildsComp.reply +
 			SEPARATOR +
 			"\n" + this.getHeroSynergies() +
 			SEPARATOR +
@@ -170,7 +174,7 @@ exports.Heroes = {
 			"\n" + this.getHeroStrongerMaps() +
 			SEPARATOR +
 			"\n" + this.getHeroTips();
-		return { reply:reply, component: buildsComp.component };
+		return { reply:reply, embedReply: buildsComp.embedReply };
 	},
 
 	setHeroesInfos: function (heroesParam) {
@@ -340,7 +344,7 @@ exports.Heroes = {
 					reply = {
 						text: returnedValues.reply ? returnedValues.reply : returnedValues,
 						image: `images/${this.hero.name.cleanVal()}.png`,
-						component: returnedValues.component
+						embedReply: returnedValues.embedReply
 					};
 				} else {
 					reply = `There was not enough info found for the hero ${argument} \nPlease, call the ${config.prefix}update command to search for them`;

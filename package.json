@@ -11,8 +11,7 @@
     "puppeteer": "5.4.1",
     "fs": "0.0.1-security",
     "discord.js": "13.1.0",
-    "dotenv": "8.2.0",
-    "clipboardy": "2.3.0" ,
+    "dotenv": "8.2.0",    
     "es6-promise-pool": "2.5.0",
     "@vitalets/google-translate-api": "^7.0.0"
   }
