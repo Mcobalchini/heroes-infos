@@ -37,19 +37,19 @@ exports.Heroes = {
 		return heroesBase;
 	},
 
-	findHero: function (heroName, searchInfos) {
+	findHero: function (heroName, searchInfos, evaluateThis) {
 		let hero = heroesBase.find(hero => (hero.name.cleanVal() === heroName.cleanVal() ||
 			hero.localizedName.cleanVal() === heroName.cleanVal() ||
 			hero.accessLink.cleanVal() === heroName.cleanVal() ||
 			hero.id.cleanVal() === heroName.cleanVal() ||
 			(hero.name.cleanVal() + " (" + hero.localizedName.cleanVal() + ")" === heroName.cleanVal())));
-
-		this.hero = hero;
-
+			
 		if (hero != null && searchInfos)
-			this.hero = this.findHeroInfos(this.hero.id);
-
-		return this.hero;
+			hero = this.findHeroInfos(hero.id);
+		if (evaluateThis) {
+			this.hero = hero;
+		}
+		return hero
 	},
 
 	findHeroInfos: function (idParam) {
@@ -98,83 +98,119 @@ exports.Heroes = {
 		return heroName
 	},
 
-	getHeroBuilds: function () {
-		let reply = " ";
+	getHeroBuilds: function () {		
 		return { 
-			reply: reply, 
-			embedReply: {				
-				data: {
-					hero: this.getHeroName(this.hero),
-					builds: this.hero.infos.builds.map(build => {
-						return {
-							name: build.name,
-							value: build.skills,
-							inline: false
-						}							
-					})
-				}				
-			}
+			featureName: StringUtils.get('builds'),
+			builds: this.hero.infos.builds.map(build => {
+				return {
+					name: build.name,
+					value: build.skills,
+					inline: false
+				}
+			})
 		};
 	},
 
 	getHeroRole: function () {
-		return StringUtils.get('is.a', this.getHeroName(this.hero), this.getRoleName(this.findRoleById(this.hero.role)))		
+		return this.getRoleName(this.findRoleById(this.hero.role));
 	},
 
 	getHeroUniverse: function () {
-		return StringUtils.get('from.universe', this.hero.universe);
+		return this.hero.universe;
 	},
 
 	getHeroTierPosition: function () {
-		return StringUtils.get('currently.on.tier', this.hero.infos.tierPosition);
+		return this.hero.infos.tierPosition;
 	},
 
 	getHeroCounters: function () {	
-		let reply = StringUtils.get('countered.by', this.getHeroName(this.hero));
-		reply += this.hero.infos.counters.map(counter => `${counter}\n`).join('');
-		return reply;
+		return { 
+			featureName: StringUtils.get('counters'),
+			counter: this.hero.infos.counters.map(counter => {
+				return {
+					name: counter,
+					value: this.getRoleName(this.findRoleById(this.findHero(counter, true, false).role)),
+					inline: false
+				}
+			})
+		};
 	},
 
 	getHeroStrongerMaps: function () {
-		let reply = StringUtils.get('usually.stronger.on.maps', this.getHeroName(this.hero));	
-		reply += this.hero.infos.strongerMaps.map(strongerMap => `${strongerMap}\n`).join('');
-		return reply;
+		return { 
+			featureName: StringUtils.get('stronger.maps'),
+			strongerMaps: this.hero.infos.strongerMaps.map(strongerMap => {
+				return {
+					name: strongerMap,
+					value: strongerMap,
+					inline: false
+				}
+			})
+		};
 	},
 
 	getHeroSynergies: function () {
-		let reply = StringUtils.get('synergizes.with', this.getHeroName(this.hero));	
-		reply += this.hero.infos.synergies.map(synergy => synergy + '\n').join('')
-		return reply;
+		return { 
+			featureName: StringUtils.get('synergies'),
+			synergies: this.hero.infos.synergies.map(synergy => {
+				return {
+					name: synergy,
+					value: this.getRoleName(this.findRoleById(this.findHero(synergy, true, false).role)),
+					inline: false
+				}
+			})
+		};
 	},
 
 	getHeroTips: function () {
 		let tips = ""
 		if (StringUtils.language === "pt-br") {
-			tips = this.hero.infos.localizedTips;
+			tips = this.hero.infos.localizedTips ? this.hero.infos.localizedTips : " ";
 		} else {
 			tips = this.hero.infos.tips;
 		}
+		
+		return {
+			featureName: StringUtils.get('tips'),
+			description: tips
+		}
+	},
 
-		let reply = StringUtils.get('tips.for', this.getHeroName(this.hero));		
-		reply += tips + '\n';
-		return reply;
+	getHeroOverview: function () {
+		return {
+			featureName: "",
+			overview: [
+				{
+					name: StringUtils.get('role'),
+					value: this.getHeroRole(),
+					inline: false
+				},
+				{
+					name: StringUtils.get('universe'),
+					value: this.getHeroUniverse(),
+					inline: true
+				},
+				{
+					name: StringUtils.get('tier.position'),
+					value: this.getHeroTierPosition().toString(),
+					inline: true
+				}
+			]			
+		}
 	},
 
 	getHeroInfos: function () {
-		let buildsComp = this.getHeroBuilds();
-		let reply = "\n" + this.getHeroRole() +
-			this.getHeroUniverse() +
-			this.getHeroTierPosition() +		
-			buildsComp.reply +
-			SEPARATOR +
-			"\n" + this.getHeroSynergies() +
-			SEPARATOR +
-			"\n" + this.getHeroCounters() +
-			SEPARATOR +
-			"\n" + this.getHeroStrongerMaps() +
-			SEPARATOR +
-			"\n" + this.getHeroTips();
-		return { reply:reply, embedReply: buildsComp.embedReply };
+		let data = {
+			featureName: " ",			
+			overview: this.getHeroOverview().overview,
+			heroBuilds: this.getHeroBuilds(), 		
+			heroSynergies: this.getHeroSynergies(),
+			heroCounters: this.getHeroCounters(),
+			heroStrongerMaps: this.getHeroStrongerMaps(),
+			heroTips: this.getHeroTips()
+		}
+		
+		return data;
 	},
 
 	setHeroesInfos: function (heroesParam) {
@@ -240,7 +276,7 @@ exports.Heroes = {
 		let suggested = [];
 				
 		for (it of heroesArray) {
-			let hero = this.findHero(it, true);
+			let hero = this.findHero(it, true, false);
 			 if (hero != null) {
 				if (currentCompHeroes.size >= 5) {
 					break;
@@ -260,7 +296,7 @@ exports.Heroes = {
 			currentCompRoles = currentCompRoles.sort();
 
 			for (currentCompHero of currentCompHeroes.values()) {
-				let synergies = currentCompHero.infos.synergies.map(it => this.findHero(it));
+				let synergies = currentCompHero.infos.synergies.map(it => this.findHero(it, false, true));
 				synergies.forEach((synergy) => {			
 					let hero = heroesSorted.find(it => it.id == synergy.id)
 					if (hero != null)
@@ -335,16 +371,16 @@ exports.Heroes = {
 		} else if (commandObj.name === 'Team') {
 			reply = this.assembleTeamReturnMessage(argument);
 		} else {
-			this.findHero(argument, true);
+			this.findHero(argument, true, true);
 			if (this.hero != null) {
 				if (this.hero.infos != null && (this.hero.infos.counters.length > 0 &&
 					this.hero.infos.synergies.length > 0 &&
 					this.hero.infos.builds.length > 0)) {
 					let returnedValues = eval(`this.getHero${commandObj.name}()`);
-					reply = {
-						text: returnedValues.reply ? returnedValues.reply : returnedValues,
+					reply = {						
 						image: `images/${this.hero.name.cleanVal()}.png`,
-						embedReply: returnedValues.embedReply
+						heroName: this.getHeroName(this.hero),
+						data: returnedValues
 					};
 				} else {
 					reply = `There was not enough info found for the hero ${argument} \nPlease, call the ${config.prefix}update command to search for them`;

@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { Client, MessageActionRow, MessageSelectMenu , Intents, Util: { splitMessage }, MessageEmbed  } = require("discord.js");
+const { Client, Intents, Util: { splitMessage }, MessageEmbed  } = require("discord.js");
 const config = require("./config.json");
 require('dotenv').config({ path: './variables.env' });
 const Heroes = require('./heroes.js').Heroes;
@@ -10,7 +10,6 @@ const Maps = require('./maps.js').Maps;
 const commands = JSON.parse(fs.readFileSync("./data/commands.json"));
 const prefix = config.prefix;
 const bot = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
-const clipboardy = require('clipboardy');
 let msg = null;
 
 bot.on("messageCreate", message => {
@@ -29,12 +28,6 @@ bot.on("messageCreate", message => {
 	}
 });
 
-bot.on('interactionCreate', interaction => {
-	if (!interaction.isSelectMenu()) return;
-	let build = interaction.values[0]	
-	clipboardy.writeSync(build);
-	//interaction.reply({ content: build })
-});
 
 
 function handleCommand(args, receivedCommand) {
@@ -61,31 +54,50 @@ function handleCommand(args, receivedCommand) {
 	}
 
 	if (reply.image != null) {
-		returnObject = {		
-			content: customSplitMessage(reply.text)[0],				
+
+		returnObject = {				
 			split: true,
 			files: [reply.image] 
 		}
-		 //will be used in the future, for now, there's no usage for that
-		if (reply.embedReply != null) {
+		 
+		if (reply.data != null) {
 			let attachment = 'attachment://'+reply.image.replace('images/','');
-			const embedBuilds = new MessageEmbed()			
-			.setColor('#0099ff')
-			.setTitle('Builds')	
-			.setAuthor(reply.embedReply.data.hero, attachment, 'https://www.icy-veins.com/heroes/')
-			.setDescription(StringUtils.get('available.builds', reply.embedReply.data.hero))
-			.addFields(reply.embedReply.data.builds)
-			.setThumbnail(attachment)
-			.setFooter("-".repeat(115))			
-			embedBuilds.type = 'image'
-			returnObject.embeds = [embedBuilds];
+			let embeds = createEmbeds(reply.data, reply.heroName, attachment);
+			
+			embeds[0].setThumbnail(attachment)
+							
+			returnObject.embeds = embeds;		
+
+			msg.reply(returnObject);
 		}
-
-		msg.reply(returnObject);
-
 	} else {
 		msg.reply(reply, { split: true })
 	}
+}
+
+function createEmbeds(object, heroName, attachment) {
+	let embeds = [];
+	Object.keys(object).forEach(function(key, index) {	
+		if (object[key].toString() === '[object Object]' && !Array.isArray(object[key])) {
+			embeds.push(...createEmbeds(object[key], heroName, attachment))
+		} else {
+			if (key !== 'featureName') {
+				const embed = new MessageEmbed()
+				.setColor('#0099ff')
+				.setTitle(object.featureName)
+				.setAuthor(heroName, attachment, 'https://www.icy-veins.com/heroes/')									
+				.setFooter("-".repeat(115));
+				if (Array.isArray(object[key])) {
+					embed.addFields(object[key])
+				} else {
+					embed.setDescription(object[key])
+				}
+				
+				embeds.push(embed);
+			}
+		}		
+	});
+	return embeds;
 }
 
 function findCommand(commandName) {
@@ -149,11 +161,6 @@ function assembleUpdateReturnMessage(message) {
 }
 
 //end return messages
-
-const customSplitMessage = (text) => [
-	text.substring(0, 2000),
-	text.substring(2000, text.length),
-];
 
 bot.on("ready", function () {
 

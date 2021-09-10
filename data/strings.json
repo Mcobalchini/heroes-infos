@@ -29,6 +29,14 @@
 			{ "role.not.found": "A função {0} não foi encontrada"},
 			{ "suggested.bans": "Banimentos sugeridos"},
 			{ "available.builds": "Construções disponíveis para {0}"},
+			{ "builds": "Construções"},
+			{ "synergies": "Sinergias"},
+			{ "counters": "É mais fraco contra"},
+			{ "stronger.maps": "Mais forte nos mapas"},
+			{ "tier.position": "Posição no Ranking"},
+			{ "universe": "Universo"},
+			{ "role": "Função"},
+			{ "tips": "Dicas"},
 			{ "hero.score": "{0} - Pontuação {1}"},
 			{ "current.team": "Sua equipe atual é composta por {0}"}
 			
@@ -63,6 +71,14 @@
 			{ "role.not.found": "The role {0} was not found"},
 			{ "suggested.bans": "Suggested bans"},
 			{ "available.builds": "Available build(s) for {0}"},
+			{ "builds": "Builds"},
+			{ "synergies": "Synergies"},
+			{ "counters": "Counters"},
+			{ "stronger.maps": "Stronger Maps"},
+			{ "tier.position": "Tier Position"},
+			{ "universe": "Universe"},
+			{ "role": "Role"},
+			{ "tips": "Tips"},
 			{ "hero.score": "{0} - Score {1}"},
 			{ "current.team": "Your current composition is {0}"}
 		]

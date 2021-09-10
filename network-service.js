@@ -233,13 +233,13 @@ exports.Network = {
                 let heroTips = "";
                 
                 for (synergy of icyData.synergies) {
-                    let synergyHero = Heroes.findHero(synergy);
+                    let synergyHero = Heroes.findHero(synergy, false, true);
                     if (synergyHero)
                         heroSynergies.push(Heroes.getHeroName(synergyHero));
                 }
 
                 for (counter of icyData.counters) {
-                    let counterHero = Heroes.findHero(counter);
+                    let counterHero = Heroes.findHero(counter, false, true);
                     if (counterHero)
                         heroCounters.push(Heroes.getHeroName(counterHero));
                 }
@@ -278,7 +278,7 @@ exports.Network = {
 
                 heroesInfos[index].infos = {};
                 heroesInfos[index].id = heroKey;
-                heroesInfos[index].name = Heroes.findHero(heroKey).name;
+                heroesInfos[index].name = Heroes.findHero(heroKey, false, true).name;
                 heroesInfos[index].infos.builds = heroBuilds;
                 heroesInfos[index].infos.synergies = heroSynergies;
                 heroesInfos[index].infos.counters = heroCounters;
@@ -294,7 +294,7 @@ exports.Network = {
             
             let cacheBans = [];
             tierList.forEach(it => {						
-                cacheBans.push(Heroes.getHeroName(Heroes.findHero(it)));
+                cacheBans.push(Heroes.getHeroName(Heroes.findHero(it, false, true)));
             });
             
             Heroes.setBanHeroes(cacheBans);
@@ -318,7 +318,7 @@ exports.Network = {
                 let freeHeroes = value;
         
                 for (heroName of freeHeroes) {
-                    let freeHero = Heroes.findHero(heroName);
+                    let freeHero = Heroes.findHero(heroName, false, true);
                     cacheFree.push(Heroes.getHeroName(freeHero));
                 }
                 
