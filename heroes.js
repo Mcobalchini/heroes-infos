@@ -37,13 +37,17 @@ exports.Heroes = {
 		return heroesBase;
 	},
 
+	sortByTierPosition: function (a, b) {
+		return a.infos.tierPosition - b.infos.tierPosition;
+	},
+
 	findHero: function (heroName, searchInfos, evaluateThis) {
 		let hero = heroesBase.find(hero => (hero.name.cleanVal() === heroName.cleanVal() ||
 			hero.localizedName.cleanVal() === heroName.cleanVal() ||
 			hero.accessLink.cleanVal() === heroName.cleanVal() ||
 			hero.id.cleanVal() === heroName.cleanVal() ||
 			(hero.name.cleanVal() + " (" + hero.localizedName.cleanVal() + ")" === heroName.cleanVal())));
-			
+
 		if (hero != null && searchInfos)
 			hero = this.findHeroInfos(hero.id);
 		if (evaluateThis) {
@@ -72,18 +76,13 @@ exports.Heroes = {
 	},
 
 	findHeroesByScore: function (roleId) {
-
-		let list = this.heroesInfos.sort(function (a, b) {
-			return a.infos.tierPosition - b.infos.tierPosition;
-		});
+		let list = this.heroesInfos.sort(this.sortByTierPosition);
 
 		if (roleId != null) {
 			list = list.filter(hero => (hero.role === roleId))
 		}
 
-		return list.sort(function (a, b) {
-			return a.infos.tierPosition - b.infos.tierPosition;
-		}).reverse().map(it => StringUtils.get('hero.score', this.getHeroName(it), it.infos.tierPosition)).splice(0,10).join('')
+		return list.sort(this.sortByTierPosition).reverse().map(it => StringUtils.get('hero.score', this.getHeroName(it), it.infos.tierPosition)).splice(0, 10).join('')
 	},
 
 	getRoleName: function (roleParam) {
@@ -98,8 +97,8 @@ exports.Heroes = {
 		return heroName
 	},
 
-	getHeroBuilds: function () {		
-		return { 
+	getHeroBuilds: function () {
+		return {
 			featureName: StringUtils.get('builds'),
 			builds: this.hero.infos.builds.map(build => {
 				return {
@@ -123,8 +122,8 @@ exports.Heroes = {
 		return this.hero.infos.tierPosition;
 	},
 
-	getHeroCounters: function () {	
-		return { 
+	getHeroCounters: function () {
+		return {
 			featureName: StringUtils.get('counters'),
 			counter: this.hero.infos.counters.map(counter => {
 				return {
@@ -137,7 +136,7 @@ exports.Heroes = {
 	},
 
 	getHeroStrongerMaps: function () {
-		return { 
+		return {
 			featureName: StringUtils.get('stronger.maps'),
 			strongerMaps: this.hero.infos.strongerMaps.map(strongerMap => {
 				return {
@@ -150,7 +149,7 @@ exports.Heroes = {
 	},
 
 	getHeroSynergies: function () {
-		return { 
+		return {
 			featureName: StringUtils.get('synergies'),
 			synergies: this.hero.infos.synergies.map(synergy => {
 				return {
@@ -169,7 +168,7 @@ exports.Heroes = {
 		} else {
 			tips = this.hero.infos.tips;
 		}
-		
+
 		return {
 			featureName: StringUtils.get('tips'),
 			description: tips
@@ -195,21 +194,21 @@ exports.Heroes = {
 					value: this.getHeroTierPosition().toString(),
 					inline: true
 				}
-			]			
+			]
 		}
 	},
 
 	getHeroInfos: function () {
 		let data = {
-			featureName: " ",			
+			featureName: " ",
 			overview: this.getHeroOverview().overview,
-			heroBuilds: this.getHeroBuilds(), 		
+			heroBuilds: this.getHeroBuilds(),
 			heroSynergies: this.getHeroSynergies(),
 			heroCounters: this.getHeroCounters(),
 			heroStrongerMaps: this.getHeroStrongerMaps(),
 			heroTips: this.getHeroTips()
 		}
-		
+
 		return data;
 	},
 
@@ -261,30 +260,24 @@ exports.Heroes = {
 	},
 
 	assembleTeamReturnMessage: function (heroes) {
+		let heroesSorted = JSON.parse(JSON.stringify(this.heroesInfos.sort(this.sortByTierPosition)));
 
-		let reply = "";
-
-		let heroesSorted = JSON.parse(JSON.stringify(this.heroesInfos.sort(function (a, b) {
-			return a.infos.tierPosition - b.infos.tierPosition;
-		})));
-	
-		let currentCompRoles = [];
-		let possibleComps = [];		
+		let currentCompRoles = [];		
 		let heroesArray = heroes.split(' ');
 		let currentCompHeroes = new Map();
-		const remainingHeroes = 5 - currentCompHeroes.size;	
+		const remainingHeroes = 5 - currentCompHeroes.size;
 		let suggested = [];
-				
+
 		for (it of heroesArray) {
 			let hero = this.findHero(it, true, false);
-			 if (hero != null) {
+			if (hero != null) {
 				if (currentCompHeroes.size >= 5) {
 					break;
 				}
 				currentCompHeroes.set(hero.id, hero);
-			}	
+			}
 		}
-		
+
 		if (currentCompHeroes.size > 0) {
 
 			const missingRolesMap = new Map()
@@ -297,24 +290,22 @@ exports.Heroes = {
 
 			for (currentCompHero of currentCompHeroes.values()) {
 				let synergies = currentCompHero.infos.synergies.map(it => this.findHero(it, false, true));
-				synergies.forEach((synergy) => {			
+				synergies.forEach((synergy) => {
 					let hero = heroesSorted.find(it => it.id == synergy.id)
 					if (hero != null)
 						hero.infos.tierPosition = hero.infos.tierPosition * 2;
-				});	
+				});
 			}
 
 			//sorted filtered heroes
-			heroesSorted = heroesSorted.sort(function (a, b) {
-				return a.infos.tierPosition - b.infos.tierPosition;
-			}).reverse();
+			heroesSorted = heroesSorted.sort(this.sortByTierPosition).reverse();
 
 			let metaCompsRoles = this.compositions.map(it => it.roles.sort());
-			
+
 			for (role of currentCompRoles) {
 				let index = currentCompRoles.indexOf(role);
 				if (index !== -1) {
-					if (currentCompRoles[index + 1] === role){
+					if (currentCompRoles[index + 1] === role) {
 						//is a duplicate
 						metaCompsRoles = metaCompsRoles.filter(it => it.toString().includes(role + ',' + role));
 					}
@@ -322,41 +313,52 @@ exports.Heroes = {
 				metaCompsRoles = metaCompsRoles.filter(it => it.includes(role));
 			}
 
-			metaCompsRoles = metaCompsRoles.splice(0,3);
+			metaCompsRoles = metaCompsRoles.splice(0, 3);
 			if (metaCompsRoles.length > 0) {
 
 				for (comp of metaCompsRoles) {
 					let missingRoles = JSON.parse(JSON.stringify(comp));
-										
+
 					for (currentRole of currentCompRoles) {
 						let index = missingRoles.indexOf(currentRole);
 						if (index != -1)
 							missingRoles.splice(missingRoles.indexOf(currentRole), 1);
-					}			
+					}
 
-					missingRolesMap.set(comp, missingRoles);					
+					missingRolesMap.set(comp, missingRoles);
 				}
 			}
 
 			//filter missing role heroes only
-			for (let [key, value] of missingRolesMap.entries()) {	
+			for (let [key, value] of missingRolesMap.entries()) {
 				for (missingRole of value) {
 					let role = this.findRoleByName(missingRole);
 					let hero = heroesSorted.filter(heroToShift => heroToShift.role == role.id).shift();
 					heroesSorted = heroesSorted.filter(heroFiltered => heroFiltered.id != hero.id);
-			
+
 					suggested.push(hero);
-				}						
+				}
 				missingRolesMap.set(key, suggested);
 				suggested = [];
 			}
 
-			reply = `${StringUtils.get('current.team', Array.from(currentCompHeroes).map(([key, value]) => `${this.getHeroName(value)}`).join(', '))}`
-			reply += Array.from(missingRolesMap).map(([key, value]) => `${key.join(', ')} \n- ${value.map(it => `${this.getHeroName(it)} - ${this.getRoleName(this.findRoleById(it.role))}\n`).join('- ')}${SEPARATOR}\n`).join('');
-			reply += possibleComps.join(' ')	
+			if (Array.from(missingRolesMap.values())[0].length > 0) {
+				return {
+					data : {
+						featureName: StringUtils.get('suggested.team'),
+						featureDescription: `${StringUtils.get('current.team', Array.from(currentCompHeroes).map(([_, value]) => `${this.getHeroName(value)}`).join(', '))}`,
+						suggestedHeroes: Array.from(missingRolesMap).map(([key, value]) => {
+							return {
+								name: key.join(', '),
+								value: value.map(it => `${this.getHeroName(it)} - ${this.getRoleName(this.findRoleById(it.role))}\n`).join(''),
+								inline: false,
+							}
+						})
+					}			
+				};
+			}
+			return 'Full team'
 		}
-	
-		return reply;
 	},
 
 	assembleReturnMessage: function (commandObj, argument) {
@@ -368,7 +370,7 @@ exports.Heroes = {
 			reply = this.assembleFreeWeekHeroesReturnMessage();
 		} else if (commandObj.name === 'Suggest') {
 			reply = this.assembleSuggestHeroesReturnMessage(argument);
-		} else if (commandObj.name === 'Team') {
+		} else if (commandObj.name === 'Team') {			
 			reply = this.assembleTeamReturnMessage(argument);
 		} else {
 			this.findHero(argument, true, true);
@@ -377,7 +379,7 @@ exports.Heroes = {
 					this.hero.infos.synergies.length > 0 &&
 					this.hero.infos.builds.length > 0)) {
 					let returnedValues = eval(`this.getHero${commandObj.name}()`);
-					reply = {						
+					reply = {
 						image: `images/${this.hero.name.cleanVal()}.png`,
 						heroName: this.getHeroName(this.hero),
 						data: returnedValues
@@ -387,7 +389,7 @@ exports.Heroes = {
 				}
 
 			} else {
-				reply = StringUtils.get('hero.not.found', argument);			
+				reply = StringUtils.get('hero.not.found', argument);
 			}
 		}
 

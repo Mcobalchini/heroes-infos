@@ -30,7 +30,7 @@
 		"localizedHint": "Mostra dicas úteis para o herói especificado",
 		"acceptParams": true,
 		"category": "HEROES"
-	},	
+	},
 	{
 		"name": "Infos",
 		"localizedName": "Informações",
@@ -41,7 +41,7 @@
 	},
 	{
 		"name": "Suggest",
-		"localizedName": "Sugerir",	
+		"localizedName": "Sugerir",
 		"hint": "Find the top 10 heroes by filters sorted by their score based on QUICKMATCH",
 		"localizedHint": "Encontra os 10 melhores heróis por filtros recebidos, ordenando-os pela sua pontuação baseada em Jogos Rápidos",
 		"acceptParams": true,
@@ -49,7 +49,7 @@
 	},
 	{
 		"name": "Team",
-		"localizedName": "Equipe",	
+		"localizedName": "Equipe",
 		"hint": "Suggest a team based on top comp tier",
 		"localizedHint": "Sugere uma equipe baseada nas melhores composições",
 		"acceptParams": true,
