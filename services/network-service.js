@@ -293,8 +293,12 @@ exports.Network = {
             Heroes.setHeroesInfos(heroesInfos);
             
             let cacheBans = [];
-            tierList.forEach(it => {						
-                cacheBans.push(Heroes.getHeroName(Heroes.findHero(it, false, true)));
+            tierList.forEach(it => {
+                let banHero = Heroes.findHero(it, false, true);
+                cacheBans.push( {
+                    name: Heroes.getHeroName(banHero),
+                    role: Heroes.getRoleName(Heroes.findRoleById(banHero.role))
+                });
             });
             
             Heroes.setBanHeroes(cacheBans);
@@ -319,13 +323,16 @@ exports.Network = {
         
                 for (heroName of freeHeroes) {
                     let freeHero = Heroes.findHero(heroName, false, true);
-                    cacheFree.push(Heroes.getHeroName(freeHero));
+                    cacheFree.push( {
+                        name: Heroes.getHeroName(freeHero),
+                        role: Heroes.getRoleName(Heroes.findRoleById(freeHero.role))
+                    });
                 }
                 
                 this.writeFile('data/freeweek.json', cacheFree);
                 
                 Heroes.setFreeHeroes(cacheFree);
-                updatingData = false;
+                this.updatingData = false;
 
                 this.translateTips(heroesInfos).then(() => {
                     this.updatingData = false;

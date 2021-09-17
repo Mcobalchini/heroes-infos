@@ -1,5 +1,5 @@
 {
-	"pt-br": 
+	"pt-br":
 		[
 			{ "update.process.started": "O processo de atualização iniciou..."},
 			{ "hold.still.updating.data": "Aguarde, ainda estou atualizando os dados dos heróis"},
@@ -22,7 +22,8 @@
 			{ "hold.still.updating": "Aguarde um momento, ainda estou atualizando os dados dos heróis"},
 			{ "exception.occurred": "Ocorreu um erro inesperado! {0}"},
 			{ "process.update.finished.time": "O processo de atualização terminou em {0} segundos"},
-			{ "command.example" :"Exemplo: {0}{1} [argumento]"},
+			{ "example": "Exemplo"},
+			{ "command.example": "{0}{1} [argumento]"},
 			{ "no.free.heroes": "Sem heróis de graça por enquanto ¯\\_(ツ)_/¯"},
 			{ "free.heroes": "Estes são os heróis da rotação gratuíta atualmente"},
 			{ "suggested.heroes": "Heróis sugeridos"},
@@ -37,15 +38,17 @@
 			{ "universe": "Universo"},
 			{ "role": "Função"},
 			{ "tips": "Dicas"},
-			{ "hero.score": "{0} - Pontuação {1}"},
+			{ "score": "Pontuação"},
+			{ "hero.score": "Pontuação {0}"},
 			{ "current.team": "Sua equipe atual é composta por {0}"},
 			{ "suggested.team": "Sugestão de composição de equipe"},
 			{ "stronger.map.heroes": "Estes são os melhores heróis para o mapa {0}"},
 			{ "available.maps": "Estes são os mapas disponíveis"},
 			{ "map.not.found": "O mapa específicado não foi encontrado, \nDigite \"{0}mapa <nome do mapa>\" para ver a lista completa com todos os mapas disponíveis"},
-			{ "no.best.heroes.for.map": "Não foram encontrados melhores heróis para o mapa {0}"}
+			{ "no.best.heroes.for.map": "Não foram encontrados melhores heróis para o mapa {0}"},
+            { "help": "Ajuda"}
 		],
-	"en-us" : 
+	"en-us" :
 		[
 			{ "update.process.started": "The update process has started..."},
 			{ "hold.still.updating.data": "Hold still, i\\'m updating heroes data"},
@@ -68,7 +71,8 @@
 			{ "hold.still.updating": "Hold still, i\\'m updating heroes data"},
 			{ "exception.occurred": "An exception occurred! {0}"},
 			{ "process.update.finished.time": "The update process has finished in {0} seconds"},
-			{ "command.example" :"Example: {0}{1} [argument]"},
+			{ "example": "Exemple"},
+			{ "command.example": "{0}{1} [argument]"},
 			{ "no.free.heroes": "There are no free heroes yet ¯\\_(ツ)_/¯"},
 			{ "free.heroes": "These are the currently free rotation heroes"},
 			{ "suggested.heroes": "Suggested heroes"},
@@ -83,12 +87,15 @@
 			{ "universe": "Universe"},
 			{ "role": "Role"},
 			{ "tips": "Tips"},
-			{ "hero.score": "{0} - Score {1}"},
+			{ "score": "Score"},
+			{ "hero.score": "Score {0}"},
 			{ "current.team": "Your current composition is {0}"},
 			{ "suggested.team": "Team composition suggestion"},
 			{ "stronger.map.heroes": "These are the heroes that are usually stronger on {0}"},
 			{ "available.maps": "These are the available maps"},
 			{ "map.not.found": "The specified map was not found\nType \"{0}map <name of the map>\" to get a full list with all the available maps"},
-			{ "no.best.heroes.for.map": "There are no best heroes for the map {0}"}
+			{ "no.best.heroes.for.map": "There are no best heroes for the map {0}"},
+			{ "help": "Help"}
+
 		]
 }

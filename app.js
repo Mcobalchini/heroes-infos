@@ -1,13 +1,12 @@
 const fs = require('fs');
-const { Client, Intents, Util: { splitMessage }, MessageEmbed } = require("discord.js");
+const { Client, Intents, MessageEmbed } = require("discord.js");
 const config = require("./config.json");
+const {Commands} = require("./services/commands");
 require('dotenv').config({ path: './variables.env' });
-const Heroes = require('./heroes.js').Heroes;
-const Network = require('./network-service.js').Network;
-const StringUtils = require('./strings.js').StringUtils;
-const Maps = require('./maps.js').Maps;
-
-const commands = JSON.parse(fs.readFileSync("./data/commands.json"));
+const {Heroes} = require('./services/heroes.js');
+const {Network} = require('./services/network-service.js');
+const {StringUtils} = require('./services/strings.js');
+const {Maps} = require('./services/maps.js');
 const prefix = config.prefix;
 const bot = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 let msg = null;
@@ -31,14 +30,14 @@ bot.on("messageCreate", message => {
 
 function handleCommand(args, receivedCommand) {
 	let reply = "";
-	let command = findCommand(receivedCommand);
+	let command = Commands.findCommand(receivedCommand);
 	if (command != null) {
 		if (command.category === "HEROES") {
 			reply = Heroes.init(command, args);
 		} else if (command.name === 'Map') {
 			reply = Maps.init(args);
 		} else if (command.name === 'Help') {
-			reply = assembleHelpReturnMessage(args);
+			reply = Commands.assembleHelpReturnMessage(args);
 		} else if (command.name === 'Update') {
 			if (Network.updatingData) {
 				reply = StringUtils.get('hold.still.updating');
@@ -54,16 +53,22 @@ function handleCommand(args, receivedCommand) {
 
 	if (reply.image != null || reply.data != null) {
 		let attachment = null;
-		returnObject = {}
+		let returnObject = {}
 
+		returnObject.files = ['images/footer.png']
 		if (reply.image != null) {
 			attachment = 'attachment://' + reply.image.replace('images/', '');
-			returnObject.files = [reply.image]
+			returnObject.files.push(reply.image);
 		}
 
 		if (reply.data != null) {
 			let embeds = createEmbeds(reply.data, reply.heroName, attachment);
 			embeds[0].setThumbnail(attachment)
+			if (attachment === null) {
+				attachment = 'attachment://hots.png';
+				returnObject.files.push('images/hots.png');
+			}
+			embeds.forEach(it => it.setAuthor(it.author.name ? it.author.name : "Heroes Infos", attachment, it.author.url))
 			returnObject.embeds = embeds;
 		}
 
@@ -88,7 +93,7 @@ function createEmbeds(object, heroName, attachment) {
 					.setColor('#0099ff')
 					.setTitle(object.featureName)
 					.setAuthor(embedHeroName, embedAttachment, 'https://www.icy-veins.com/heroes/')
-					.setFooter("-".repeat(115));					
+					.setImage('attachment://footer.png');
 
 				if (Array.isArray(object[key])) {
 					embed.addFields(object[key])
@@ -105,66 +110,12 @@ function createEmbeds(object, heroName, attachment) {
 	return embeds;
 }
 
-function findCommand(commandName) {
-	let commandNameToLowerCase = commandName.cleanVal();
-	let commandEn = commands.find(command => (command.name.cleanVal() === commandNameToLowerCase));
-	let commandBr = commands.find(command => (command.localizedName.cleanVal() === commandNameToLowerCase));
-
-	let language = StringUtils.language;
-	if (commandBr != null) {
-		language = "pt-br"
-	} else if (commandEn != null) {
-		language = "en-us";
-	}
-
-	StringUtils.setLanguage(language);
-
-	return commandEn || commandBr
-}
-
-function findCommandHint(command) {
-	return StringUtils.language === "pt-br" ? command.localizedHint : command.hint
-}
-
-function findCommandName(command) {
-	return StringUtils.language === "pt-br" ? command.localizedName : command.name
-}
-
 //Return messages
-function assembleHelpReturnMessage(commandName) {
-	let reply = "";
-	if (commandName != null && commandName != "null" && commandName != "") {
-		let command = findCommand(commandName);
-		if (command != null) {
-			reply += `${findCommandHint(command)}\n`;
-			if (command.acceptParams) {
-				reply += StringUtils.get('command.example', config.prefix, findCommandName(command).toLowerCase());
-			}
-		} else {
-			reply = StringUtils.get('command.not.exists', commandName, config.prefix);
-		}
-	} else {
-
-		reply = StringUtils.get('available.commands.are');
-		reply += commands.map(it => `${it.name} (${it.localizedName}) \n`).join('');
-		reply += StringUtils.get('all.commands.supported.both.languages');
-
-		reply += StringUtils.get('all.data.gathered.from');
-		reply += 'https://www.icy-veins.com/heroes/\n';
-		reply += 'https://www.heroesprofile.com\n';
-		reply += 'http://robogrub.com/silvertierlist_api\n';
-		reply += 'https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2\n';
-		reply += StringUtils.get('if.want.to.know.more.about.specific.command', config.prefix);
-		reply += StringUtils.get('version', config.version);
-	}
-	return reply;
-}
 
 function assembleUpdateReturnMessage(message) {
 	Network.replyTo.reply(message);
 	Network.replyTo = null;
 }
-
 //end return messages
 
 bot.on("ready", function () {
@@ -177,7 +128,7 @@ bot.on("ready", function () {
 		configurable: true
 	});
 
-	process.stdout.write('Application ready!\n');
+	process.stdout.write(`Application ready! - ${new Date()}\n`);
 	bot.user.setActivity("Heroes of the Storm", {
 		type: "PLAYING",
 		url: "https://heroesofthestorm.com/"
