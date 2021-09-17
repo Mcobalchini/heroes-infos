@@ -57,7 +57,6 @@ exports.Heroes = {
 
     findHero: function (heroName, searchInfos, evaluateThis) {
         let hero = heroesBase.find(hero =>
-            heroName.length > 2 &&
             (hero.name.cleanVal() === heroName.cleanVal() ||
                 hero.localizedName.cleanVal() === heroName.cleanVal() ||
                 hero.accessLink.cleanVal() === heroName.cleanVal() ||
