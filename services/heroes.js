@@ -356,7 +356,7 @@ exports.Heroes = {
 
                     for (currentRole of currentCompRoles) {
                         let index = missingRoles.indexOf(currentRole);
-                        if (index != -1)
+                        if (index !== -1)
                             missingRoles.splice(missingRoles.indexOf(currentRole), 1);
                     }
 
@@ -394,6 +394,7 @@ exports.Heroes = {
             }
             return 'Full team'
         }
+        return 'No team'
     },
 
     assembleReturnMessage: function (commandObj, argument) {
