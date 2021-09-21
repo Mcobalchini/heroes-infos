@@ -24,6 +24,14 @@
 		"category": "HEROES"
 	},
 	{
+		"name": "Overview",
+		"localizedName": "Geral",
+		"hint": "Display a simple overview for the specified hero!",
+		"localizedHint": "Mostra uma visão geral simples do herói especificado",
+		"acceptParams": true,
+		"category": "HEROES"
+	},
+	{
 		"name": "Tips",
 		"localizedName": "Dicas",
 		"hint": "Display useful tips for the hero",

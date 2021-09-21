@@ -186,7 +186,7 @@ exports.Heroes = {
 
     getHeroOverview: function () {
         return {
-            featureName: "",
+            featureName: StringUtils.get('overview'),
             overview: [
                 {
                     name: StringUtils.get('role'),
@@ -210,7 +210,7 @@ exports.Heroes = {
     getHeroInfos: function () {
         return {
             featureName: " ",
-            overview: this.getHeroOverview().overview,
+            overview: this.getHeroOverview(),
             heroBuilds: this.getHeroBuilds(),
             heroSynergies: this.getHeroSynergies(),
             heroCounters: this.getHeroCounters(),
