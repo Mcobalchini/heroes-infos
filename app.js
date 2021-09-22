@@ -118,9 +118,9 @@ function periodicCheck() {
 
 bot.on("ready", function () {
     StringUtils.defineCleanVal();
+    setBotStatus("Heroes of the Storm", "PLAYING");
     periodicCheck();
     setInterval(periodicCheck, 100000);
-    setBotStatus("Heroes of the Storm", "PLAYING");
     process.stdout.write(`Application ready! - ${new Date()}\n`);
 });
 
