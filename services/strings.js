@@ -5,7 +5,7 @@ exports.StringUtils = {
 	language: "en-us",
 
 	get: function (property) {
-        var args = Array.prototype.slice.call(arguments, 1);
+        let args = Array.prototype.slice.call(arguments, 1);
         
 		if (property != null) {
 			let string = property
@@ -23,5 +23,17 @@ exports.StringUtils = {
 
 	setLanguage: function (language) {
 		this.language = language
+	},
+
+	defineCleanVal: function () {
+		if(!String().cleanVal) {
+			Object.defineProperty(String.prototype, "cleanVal", {
+				value: function cleanVal() {
+					return this.split("\'").join("").split(".").join("").toLowerCase().split("-").join(" ");
+				},
+				writable: true,
+				configurable: true
+			});
+		}
 	}
 };

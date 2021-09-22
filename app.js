@@ -1,138 +1,127 @@
-const fs = require('fs');
-const { Client, Intents, MessageEmbed } = require("discord.js");
+const {Client, Intents, MessageEmbed} = require("discord.js");
 const config = require("./config.json");
 const {Commands} = require("./services/commands");
-require('dotenv').config({ path: './variables.env' });
-const {Heroes} = require('./services/heroes.js');
+require('dotenv').config({path: './variables.env'});
 const {Network} = require('./services/network-service.js');
 const {StringUtils} = require('./services/strings.js');
-const {Maps} = require('./services/maps.js');
 const prefix = config.prefix;
-const bot = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+const bot = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]});
 let msg = null;
 
 bot.on("messageCreate", message => {
-	if (message.author.bot) return;
-	if (!message.content.startsWith(prefix)) return;
-	msg = message;
+    if (message.author.bot) return;
+    if (!message.content.startsWith(prefix)) return;
+    msg = message;
 
-	let receivedCommand = message.content.split(' ', 1)[0].substring(1);
-	let args = message.content.substring(receivedCommand.toLowerCase().length + 2);
+    let receivedCommand = message.content.split(' ', 1)[0].substring(1);
+    let args = message.content.substring(receivedCommand.toLowerCase().length + 2);
 
-	try {
-		handleCommand(args, receivedCommand);
-	} catch (e) {
-		process.stdout.write(`Exception: ${e.stack}\n`);
-		msg.reply(StringUtils.get('exception.occurred', e))
-	}
+    try {
+        handleResponse(args, receivedCommand);
+    } catch (e) {
+        process.stdout.write(`Exception: ${e.stack}\n`);
+        msg.reply(StringUtils.get('exception.occurred', e))
+    }
 });
 
+function handleResponse(args, receivedCommand) {
+    let reply = Commands.handleCommand(args, receivedCommand, msg);
+    let replyObject = {}
+    let embeds = [];
 
-function handleCommand(args, receivedCommand) {
-	let reply = "";
-	let command = Commands.findCommand(receivedCommand);
-	if (command != null) {
-		if (command.category === "HEROES") {
-			reply = Heroes.init(command, args);
-		} else if (command.name === 'Map') {
-			reply = Maps.init(args);
-		} else if (command.name === 'Help') {
-			reply = Commands.assembleHelpReturnMessage(args);
-		} else if (command.name === 'Update') {
-			if (Network.updatingData) {
-				reply = StringUtils.get('hold.still.updating');
-			} else {
-				Network.replyTo = msg;
-				Network.updateData(assembleUpdateReturnMessage);
-				reply = StringUtils.get('update.process.started');
-			}
-		}
-	} else {
-		reply = StringUtils.get('command.not.exists', receivedCommand, config.prefix);
-	}
+    if (reply.image != null || reply.data != null) {
+        let attachment = null;
 
-	if (reply.image != null || reply.data != null) {
-		let attachment = null;
-		let returnObject = {}
+        replyObject.files = ['images/footer.png']
+        if (reply.image != null) {
+            attachment = 'attachment://' + reply.image.replace('images/', '');
+            replyObject.files.push(reply.image);
+        }
 
-		returnObject.files = ['images/footer.png']
-		if (reply.image != null) {
-			attachment = 'attachment://' + reply.image.replace('images/', '');
-			returnObject.files.push(reply.image);
-		}
+        if (reply.data != null) {
+            embeds.push(...createEmbeds(reply.data, reply.heroName, attachment));
+            embeds[0].setThumbnail(attachment)
+            if (attachment === null) {
+                attachment = 'attachment://hots.png';
+                replyObject.files.push('images/hots.png');
+            }
+            embeds.forEach(it => it.setAuthor(it.author.name ? it.author.name : "Heroes Infos", attachment, it.author.url))
+        }
+    } else {
+        replyObject.content = reply;
+    }
 
-		if (reply.data != null) {
-			let embeds = createEmbeds(reply.data, reply.heroName, attachment);
-			embeds[0].setThumbnail(attachment)
-			if (attachment === null) {
-				attachment = 'attachment://hots.png';
-				returnObject.files.push('images/hots.png');
-			}
-			embeds.forEach(it => it.setAuthor(it.author.name ? it.author.name : "Heroes Infos", attachment, it.author.url))
-			returnObject.embeds = embeds;
-		}
+    if (Network.isUpdatingData) {
+        let updatingWarningEmbed = createEmbeds({
+            featureName: "Note",
+            test: "i'm updating heroes data"
+        }, "Heroes Infos", 'attachment://hots.png')[0];
 
-		msg.reply(returnObject);
-	} else {
-		msg.reply(reply, { split: true })
-	}
+        updatingWarningEmbed.setThumbnail('attachment://download.png');
+        embeds.push(updatingWarningEmbed);
+        if (replyObject.files != null) {
+            replyObject.files.push('images/hots.png', 'images/download.png');
+        } else {
+            replyObject.files = ['images/footer.png', 'images/hots.png', 'images/download.png'];
+        }
+    }
+    replyObject.embeds = embeds;
+    msg.reply(replyObject);
 }
+
 
 function createEmbeds(object, heroName, attachment) {
-	let embedHeroName = heroName ? heroName : ""
-	let embedAttachment = attachment ? attachment : ""
-	let embeds = [];
+    let embedHeroName = heroName ? heroName : ""
+    let embedAttachment = attachment ? attachment : ""
+    let embeds = [];
 
-	Object.keys(object).forEach(function (key, _) {
-		if (object[key].toString() === '[object Object]' && !Array.isArray(object[key])) {
-			embeds.push(...createEmbeds(object[key], embedHeroName, embedAttachment))
-		} else {
-			if (key !== 'featureName' && key !== 'featureDescription') {
-				let featureDesc = object.featureDescription ? object.featureDescription : "";
-				const embed = new MessageEmbed()
-					.setColor('#0099ff')
-					.setTitle(object.featureName)
-					.setAuthor(embedHeroName, embedAttachment, 'https://www.icy-veins.com/heroes/')
-					.setImage('attachment://footer.png');
+    Object.keys(object).forEach(function (key, _) {
+        if (object[key].toString() === '[object Object]' && !Array.isArray(object[key])) {
+            embeds.push(...createEmbeds(object[key], embedHeroName, embedAttachment))
+        } else {
+            if (key !== 'featureName' && key !== 'featureDescription') {
+                let featureDesc = object.featureDescription ? object.featureDescription : "";
+                const embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setTitle(object.featureName)
+                    .setAuthor(embedHeroName, embedAttachment, 'https://www.icy-veins.com/heroes/')
+                    .setImage('attachment://footer.png');
 
-				if (Array.isArray(object[key])) {
-					embed.addFields(object[key])
-					embed.setDescription(featureDesc)
-				} else {
-					let desc = object[key]
-					embed.setDescription(desc ? desc : featureDesc)
-				}
+                if (Array.isArray(object[key])) {
+                    embed.addFields(object[key])
+                    embed.setDescription(featureDesc)
+                } else {
+                    let desc = object[key]
+                    embed.setDescription(desc ? desc : featureDesc)
+                }
 
-				embeds.push(embed);
-			}
-		}
-	});
-	return embeds;
+                embeds.push(embed);
+            }
+        }
+    });
+    return embeds;
 }
 
-//Return messages
-
-function assembleUpdateReturnMessage(message) {
-	Network.replyTo.reply(message);
-	Network.replyTo = null;
+function setBotStatus(name, type) {
+    bot.user.setActivity(name, {
+        type: type,
+        url: "https://heroesofthestorm.com/"
+    });
 }
-//end return messages
+
+function periodicCheck() {
+    if (Network.isUpdateNeeded()) {
+        setBotStatus("Updating", "WATCHING")
+        Network.updateData(() => setBotStatus("Heroes of the Storm", "PLAYING"));
+    }
+}
 
 bot.on("ready", function () {
-
-	Object.defineProperty(String.prototype, "cleanVal", {
-		value: function cleanVal() {
-			return this.split("\'").join("").split(".").join("").toLowerCase().split("-").join(" ");
-		},
-		writable: true,
-		configurable: true
-	});
-
-	process.stdout.write(`Application ready! - ${new Date()}\n`);
-	bot.user.setActivity("Heroes of the Storm", {
-		type: "PLAYING",
-		url: "https://heroesofthestorm.com/"
-	})
+    StringUtils.defineCleanVal();
+    periodicCheck();
+    setInterval(periodicCheck, 100000);
+    setBotStatus("Heroes of the Storm", "PLAYING");
+    process.stdout.write(`Application ready! - ${new Date()}\n`);
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN);

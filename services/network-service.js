@@ -1,6 +1,6 @@
 const translate = require('@vitalets/google-translate-api');
 const fs = require('fs');
-require('dotenv').config({ path: './variables.env' });
+require('dotenv').config({path: './variables.env'});
 const Heroes = require('./heroes.js').Heroes;
 const StringUtils = require('./strings.js').StringUtils;
 const Maps = require('./maps.js').Maps;
@@ -10,18 +10,18 @@ let msg = null;
 
 exports.Network = {
 
-    updatingData: false,
+    isUpdatingData: false,
     replyTo: null,
 
-    gatherHeroesRotation: async function(browser) {
+    gatherHeroesRotation: async function (browser) {
 
         const page = await this.createPage(browser);
 
         let result = ""
 
         await page.goto(`https://nexuscompendium.com/api/currently/RotationHero`);
-        result = await page.evaluate(() => {		
-            return JSON.parse(document.body.innerText).RotationHero.Heroes.map(it => it.ID)	
+        result = await page.evaluate(() => {
+            return JSON.parse(document.body.innerText).RotationHero.Heroes.map(it => it.ID)
         });
 
         await browser.close();
@@ -92,7 +92,7 @@ exports.Network = {
         await page.close();
     },
 
-    createHeroesProfileSession: async function(browser) {
+    createHeroesProfileSession: async function (browser) {
         const page = await this.createPage(browser);
         const response = await page.goto('https://www.heroesprofile.com/Global/Talents/');
         return response._headers["set-cookie"];
@@ -102,9 +102,9 @@ exports.Network = {
         const page = await this.createPage(browser);
 
         let result = ""
-        await page.goto(`https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`, { waitUntil: 'domcontentloaded' })
+        await page.goto(`https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`, {waitUntil: 'domcontentloaded'})
 
-        result = await page.evaluate(() => {		
+        result = await page.evaluate(() => {
             return [...new Set(Array.from(document.querySelectorAll('.htl_ban_true')).map(nameElements => nameElements.nextElementSibling.innerText))];
         });
 
@@ -139,12 +139,12 @@ exports.Network = {
 
         await page.goto(`https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1`);
         result = await page.evaluate(() => {
-            return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {         
+            return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
                 return {
-                games: it.children[0].innerText,
-                winRate: parseFloat(it.children[1].innerText.replace(",", ".")),
-                roles: Array.from(it.children).filter(it => it.style.display === "none").map(it => it.innerText)
-            }
+                    games: it.children[0].innerText,
+                    winRate: parseFloat(it.children[1].innerText.replace(",", ".")),
+                    roles: Array.from(it.children).filter(it => it.style.display === "none").map(it => it.innerText)
+                }
             });
         });
 
@@ -152,39 +152,41 @@ exports.Network = {
         return result;
     },
 
-    updateData: async function(callbackFunction) {
+    updateData: async function (callbackFunction) {
 
         process.stdout.write(`Started updating data process at ${new Date().toLocaleTimeString()}\n`);
-        this.updatingData = true;
+        this.isUpdatingData = true;
 
         //const browser = await puppeteer.launch({devtools: true});
         const browser = await puppeteer.launch({
             headless: true,
             args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',		
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
             ],
         });
-        
-        const cookieValue = await this.createHeroesProfileSession(browser);	 
+
+        const cookieValue = await this.createHeroesProfileSession(browser);
         const tierList = await this.gatherTierListInfo(browser);
         const popularityWinRate = await this.gatherPopularityAndWinRateInfo(browser);
         const compositions = await this.gatherCompositionsInfo(browser);
-        
+
         //stores compositions
         compositions.sort(function (a, b) {
             return a.games - b.games;
-        }).forEach((it, idx)=> {
-            it.tierPosition = parseInt(idx+1);
+        }).forEach((it, idx) => {
+            it.tierPosition = parseInt(idx + 1);
         });
 
         compositions.sort(function (a, b) {
             return a.winRate - b.winRate;
-        }).forEach((it, idx)=> {
-            it.tierPosition = parseInt(it.tierPosition) + parseInt(idx+1);
+        }).forEach((it, idx) => {
+            it.tierPosition = parseInt(it.tierPosition) + parseInt(idx + 1);
         });
-        
-        let sortedComposition = compositions.sort(function (a, b) {return a.tierPosition - b.tierPosition}).reverse();
+
+        let sortedComposition = compositions.sort(function (a, b) {
+            return a.tierPosition - b.tierPosition
+        }).reverse();
         Heroes.setCompositions(sortedComposition);
         this.writeFile('data/compositions.json', sortedComposition);
 
@@ -210,12 +212,12 @@ exports.Network = {
                 browser,
                 cookieValue) : null;
         };
-        
+
         let startTime = new Date();
         process.stdout.write(`Started gathering process at ${startTime.toLocaleTimeString()}\n`);
 
         const thread = new PromisePool(promiseProducer, 5);
-            
+
         thread.start().then(() => {
 
             let finishedTime = new Date();
@@ -226,12 +228,12 @@ exports.Network = {
             for (let [heroKey, heroData] of heroesMap) {
                 let index = heroesInfos.findIndex(it => it.id == heroKey);
                 let icyData = heroData.icyData
-                let profileData = heroData.profileData		
+                let profileData = heroData.profileData
                 let heroCounters = [];
                 let heroSynergies = [];
                 let heroMaps = [];
                 let heroTips = "";
-                
+
                 for (synergy of icyData.synergies) {
                     let synergyHero = Heroes.findHero(synergy, false, true);
                     if (synergyHero)
@@ -256,7 +258,7 @@ exports.Network = {
                     heroesInfos[index] = {};
                 }
 
-                if (profileData.builds.length == 0){
+                if (profileData.builds.length == 0) {
                     process.stdout.write(`No builds found for ${heroesInfos[index].name}\n`);
                 }
 
@@ -284,76 +286,82 @@ exports.Network = {
                 heroesInfos[index].infos.counters = heroCounters;
                 heroesInfos[index].infos.strongerMaps = heroMaps;
                 heroesInfos[index].infos.tips = heroTips;
-        
-                let obj = popularityWinRate.find(it => { return it.name.cleanVal() == heroesInfos[index].name.cleanVal() });
+
+                let obj = popularityWinRate.find(it => {
+                    return it.name.cleanVal() == heroesInfos[index].name.cleanVal()
+                });
                 heroesInfos[index].infos.winRate = obj.winRate;
-                heroesInfos[index].infos.games = obj.games;		
+                heroesInfos[index].infos.games = obj.games;
             }
 
             Heroes.setHeroesInfos(heroesInfos);
-            
+
             let cacheBans = [];
             tierList.forEach(it => {
                 let banHero = Heroes.findHero(it, false, true);
-                cacheBans.push( {
+                cacheBans.push({
                     name: Heroes.getHeroName(banHero),
                     role: Heroes.getRoleName(Heroes.findRoleById(banHero.role))
                 });
             });
-            
+
             Heroes.setBanHeroes(cacheBans);
             this.writeFile('data/banlist.json', cacheBans);
 
             heroesInfos.sort(function (a, b) {
                 return a.infos.games - b.infos.games;
-            }).forEach((it, idx)=> {
-                it.infos.tierPosition = parseInt(idx+1);
+            }).forEach((it, idx) => {
+                it.infos.tierPosition = parseInt(idx + 1);
             });
 
             heroesInfos.sort(function (a, b) {
                 return a.infos.winRate - b.infos.winRate;
-            }).forEach((it, idx)=> {
-                it.infos.tierPosition = parseInt(it.infos.tierPosition) + parseInt(idx+1);
+            }).forEach((it, idx) => {
+                it.infos.tierPosition = parseInt(it.infos.tierPosition) + parseInt(idx + 1);
             })
-            
+
             this.gatherHeroesRotation(browser).then((value) => {
 
                 let cacheFree = [];
                 let freeHeroes = value;
-        
+
                 for (heroName of freeHeroes) {
                     let freeHero = Heroes.findHero(heroName, false, true);
-                    cacheFree.push( {
+                    cacheFree.push({
                         name: Heroes.getHeroName(freeHero),
                         role: Heroes.getRoleName(Heroes.findRoleById(freeHero.role))
                     });
                 }
-                
+
                 this.writeFile('data/freeweek.json', cacheFree);
-                
+
                 Heroes.setFreeHeroes(cacheFree);
-                this.updatingData = false;
+                this.isUpdatingData = false;
 
                 this.translateTips(heroesInfos).then(() => {
-                    this.updatingData = false;
+                    this.isUpdatingData = false;
                     callbackFunction(StringUtils.get('process.update.finished.time', (finishedTime - startTime) / 1000));
                 });
             });
         }).catch((e) => {
-            let replyMsg = StringUtils.get('could.not.update.data.check.logs');
+            let replyMsg = StringUtils.get('could.not.update.data.try.again');
 
-            if (e.stack.includes("Navigation timeout of 30000 ms exceeded")	|| e.stack.includes("net::ERR_ABORTED")) {
+            if (e.stack.includes("Navigation timeout of 30000 ms exceeded") || e.stack.includes("net::ERR_ABORTED")) {
                 replyMsg += StringUtils.get('try.to.update.again');
                 this.updateData(callbackFunction);
-            }            
+            }
             process.stdout.write(e.stack);
-            this.updatingData = false;
+            this.isUpdatingData = false;
             callbackFunction(replyMsg);
         });
     },
+    
+    isUpdateNeeded: function () {
+        return !Heroes.findHero("1", true)?.infos?.builds?.length > 0
+    },
 
     translateTips: async function (heroesInfos) {
-        
+
         let heroesAux = JSON.parse(JSON.stringify(heroesInfos));
         let heroesCrawl = JSON.parse(JSON.stringify(heroesAux));
         let heroesMap = new Map();
@@ -364,16 +372,16 @@ exports.Network = {
                 heroesMap.set(heroCrawlInfo.id, res.text);
             }) : null;
         };
-            
+
         const translateThread = new PromisePool(translatePromiseProducer, 20);
         translateThread.start().then(() => {
             for (let [heroKey, heroData] of heroesMap) {
-                let index = heroesAux.findIndex(it => it.id == heroKey);
+                let index = heroesAux.findIndex(it => it.id === heroKey);
                 heroesAux[index].infos.localizedTips = heroData
-            }	
+            }
         })
         Heroes.setHeroesInfos(heroesAux);
-        this.writeFile('data/heroes-infos.json', heroesAux);	
+        this.writeFile('data/heroes-infos.json', heroesAux);
     },
 
     createPage: async function (browser) {
@@ -395,7 +403,7 @@ exports.Network = {
         fs.writeFile(path, JSON.stringify(obj), (e) => {
             if (e != null) {
                 process.stdout.write('error: ' + e + "\n");
-                msg.reply(StringUtils.get('could.not.update.data.check.logs'));
+                msg.reply(StringUtils.get('could.not.update.data.try.again'));
             }
         });
     }

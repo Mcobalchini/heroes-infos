@@ -1,6 +1,9 @@
 const fs = require('fs');
 const config = require("../config.json");
 const {StringUtils} = require("./strings.js");
+const {Heroes} = require("./heroes.js");
+const {Maps} = require("./maps.js");
+const {Network} = require("./network-service.js");
 const commands = JSON.parse(fs.readFileSync("./data/commands.json"), {encoding: 'utf8', flag: 'r'});
 
 exports.Commands = {
@@ -28,6 +31,36 @@ exports.Commands = {
 
     getCommandName: function (command) {
         return StringUtils.language === "pt-br" ? command.localizedName : command.name
+    },
+
+    handleCommand: function (args, receivedCommand, msg) {
+        let reply = "";
+        let command = this.findCommand(receivedCommand);
+        if (command != null) {
+            if (command.category === "HEROES") {
+                reply = Heroes.init(command, args);
+            } else if (command.name === 'Map') {
+                reply = Maps.init(args);
+            } else if (command.name === 'Help') {
+                reply = this.assembleHelpReturnMessage(args);
+            } else if (command.name === 'Update') {
+                if (Network.isUpdatingData) {
+                    reply = StringUtils.get('hold.still.updating');
+                } else {
+                    Network.replyTo = msg;
+                    Network.updateData(this.assembleUpdateReturnMessage);
+                    reply = StringUtils.get('update.process.started');
+                }
+            }
+        } else {
+            reply = StringUtils.get('command.not.exists', receivedCommand, config.prefix);
+        }
+        return reply;
+    },
+
+    assembleUpdateReturnMessage: function (message) {
+        Network.replyTo.reply(message);
+        Network.replyTo = null;
     },
 
     assembleHelpReturnMessage: function (commandName) {
