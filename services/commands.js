@@ -4,10 +4,10 @@ const {StringUtils} = require("./strings.js");
 const {Heroes} = require("./heroes.js");
 const {Maps} = require("./maps.js");
 const {Network} = require("./network-service.js");
+const {SlashCommandBuilder} = require('@discordjs/builders');
 const commands = JSON.parse(fs.readFileSync("./data/commands.json"), {encoding: 'utf8', flag: 'r'});
 
 exports.Commands = {
-
     findCommand: function (commandName) {
         let commandNameToLowerCase = commandName.cleanVal();
         let commandEn = commands.find(command => (command.name.cleanVal() === commandNameToLowerCase));
@@ -31,6 +31,46 @@ exports.Commands = {
 
     getCommandName: function (command) {
         return StringUtils.language === "pt-br" ? command.localizedName : command.name
+    },
+
+    assembleSlashCommands: async function () {
+        process.stdout.write('Started refreshing application (/) commands.\n');
+
+        try {
+            for (let it of commands) {
+
+                let commandSlashBuilder = new SlashCommandBuilder()
+                    .setName(it.name.toLowerCase())
+                    .setDescription(it.hint.substring(0, 100));
+
+                if (it.acceptParams) {
+
+                    let argumentName = "argument"
+                    let descriptionArgument = "some name"
+                    let requiredParameter = false;
+
+                    if (it.category === "HEROES") {
+                        argumentName = "hero"
+                        descriptionArgument = "Hero name or part of it's name"
+                    }
+
+                    if (it.requiredParam) {
+                        requiredParameter = true;
+                    }
+
+                    commandSlashBuilder.addStringOption(option =>
+                        option.setName(argumentName)
+                            .setDescription(descriptionArgument)
+                            .setRequired(requiredParameter));
+                }
+
+                await Network.postSlashCommandsToAPI(commandSlashBuilder);
+            }
+
+            process.stdout.write('Successfully reloaded application (/) commands.\n');
+        } catch (error) {
+            process.stdout.write(`Error while reloading / commands ${error}`);
+        }
     },
 
     handleCommand: function (args, receivedCommand, msg) {

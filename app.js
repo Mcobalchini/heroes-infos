@@ -8,6 +8,7 @@ const prefix = config.prefix;
 const bot = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]});
 let msg = null;
 
+
 bot.on("messageCreate", message => {
     if (message.author.bot) return;
     if (!message.content.startsWith(prefix)) return;
@@ -17,14 +18,20 @@ bot.on("messageCreate", message => {
     let args = message.content.substring(receivedCommand.toLowerCase().length + 2);
 
     try {
-        handleResponse(args, receivedCommand);
+        handleResponse(args, receivedCommand, msg);
     } catch (e) {
         process.stdout.write(`Exception: ${e.stack}\n`);
         msg.reply(StringUtils.get('exception.occurred', e))
     }
 });
 
-function handleResponse(args, receivedCommand) {
+bot.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand()) return;
+    await interaction.deferReply();
+    await handleResponse(interaction.options?.data?.map(it => it.value).join(' '), interaction.commandName.toString(), interaction)
+});
+
+function handleResponse(args, receivedCommand, msg) {
     let reply = Commands.handleCommand(args, receivedCommand, msg);
     let replyObject = {}
     let embeds = [];
@@ -66,9 +73,13 @@ function handleResponse(args, receivedCommand) {
         }
     }
     replyObject.embeds = embeds;
-    msg.reply(replyObject);
-}
 
+    if (msg.isCommand) {
+        msg.editReply(replyObject);
+    } else {
+        msg.reply(replyObject);
+    }
+}
 
 function createEmbeds(object, heroName, attachment) {
     let embedHeroName = heroName ? heroName : ""
@@ -109,19 +120,20 @@ function setBotStatus(name, type) {
     });
 }
 
-function periodicCheck() {
+function periodicUpdateCheck() {
     if (Network.isUpdateNeeded()) {
         setBotStatus("Updating", "WATCHING")
         Network.updateData(() => setBotStatus("Heroes of the Storm", "PLAYING"));
     }
 }
 
-bot.on("ready", function () {
+bot.once("ready", function () {
     StringUtils.defineCleanVal();
     setBotStatus("Heroes of the Storm", "PLAYING");
-    periodicCheck();
-    setInterval(periodicCheck, 100000);
+    periodicUpdateCheck();
+    setInterval(periodicUpdateCheck, 100000);
     process.stdout.write(`Application ready! - ${new Date()}\n`);
+    Commands.assembleSlashCommands();
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN);

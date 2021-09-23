@@ -6,7 +6,10 @@ const StringUtils = require('./strings.js').StringUtils;
 const Maps = require('./maps.js').Maps;
 const puppeteer = require('puppeteer');
 const PromisePool = require('es6-promise-pool');
+const {Routes} = require("discord-api-types/v9");
+const {REST} = require("@discordjs/rest");
 let msg = null;
+const rest = new REST({ version: '9' }).setToken(process.env.HEROES_INFOS_TOKEN);
 
 exports.Network = {
 
@@ -17,7 +20,7 @@ exports.Network = {
 
         const page = await this.createPage(browser);
 
-        let result = ""
+        let result
 
         await page.goto(`https://nexuscompendium.com/api/currently/RotationHero`);
         result = await page.evaluate(() => {
@@ -92,16 +95,10 @@ exports.Network = {
         await page.close();
     },
 
-    createHeroesProfileSession: async function (browser) {
-        const page = await this.createPage(browser);
-        const response = await page.goto('https://www.heroesprofile.com/Global/Talents/');
-        return response._headers["set-cookie"];
-    },
-
     gatherTierListInfo: async function (browser) {
         const page = await this.createPage(browser);
 
-        let result = ""
+        let result
         await page.goto(`https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`, {waitUntil: 'domcontentloaded'})
 
         result = await page.evaluate(() => {
@@ -115,7 +112,7 @@ exports.Network = {
     gatherPopularityAndWinRateInfo: async function (browser) {
         const page = await this.createPage(browser);
 
-        let result = ""
+        let result
 
         await page.goto(`https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2`);
         result = await page.evaluate(() => {
@@ -135,7 +132,7 @@ exports.Network = {
     gatherCompositionsInfo: async function (browser) {
         const page = await this.createPage(browser);
 
-        let result = ""
+        let result
 
         await page.goto(`https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1`);
         result = await page.evaluate(() => {
@@ -194,7 +191,7 @@ exports.Network = {
         let heroesIdAndUrls = [];
         let heroesInfos = Heroes.findAllHeroes();
 
-        for (hero of heroesInfos) {
+        for (let hero of heroesInfos) {
             let normalizedName = hero.name.replace('/ /g', '+').replace('/\'/g', '%27');
             heroesIdAndUrls.push({
                 heroId: hero.id,
@@ -226,7 +223,7 @@ exports.Network = {
             process.stdout.write(`${(finishedTime - startTime) / 1000} seconds has passed\n`);
 
             for (let [heroKey, heroData] of heroesMap) {
-                let index = heroesInfos.findIndex(it => it.id == heroKey);
+                let index = heroesInfos.findIndex(it => it.id === heroKey);
                 let icyData = heroData.icyData
                 let profileData = heroData.profileData
                 let heroCounters = [];
@@ -258,7 +255,7 @@ exports.Network = {
                     heroesInfos[index] = {};
                 }
 
-                if (profileData.builds.length == 0) {
+                if (profileData.builds.length === 0) {
                     process.stdout.write(`No builds found for ${heroesInfos[index].name}\n`);
                 }
 
@@ -268,7 +265,7 @@ exports.Network = {
                 //applies winrate on known builds names
                 icyData.builds.forEach(it => {
                     for (item of repeatedBuilds) {
-                        if (item.skills == it.skills) {
+                        if (item.skills === it.skills) {
                             it.name = `${it.name} (${item.name.match(/([0-9.]%*)/g, '').join('')} win rate)`
                         }
                     }
@@ -288,7 +285,7 @@ exports.Network = {
                 heroesInfos[index].infos.tips = heroTips;
 
                 let obj = popularityWinRate.find(it => {
-                    return it.name.cleanVal() == heroesInfos[index].name.cleanVal()
+                    return it.name.cleanVal() === heroesInfos[index].name.cleanVal()
                 });
                 heroesInfos[index].infos.winRate = obj.winRate;
                 heroesInfos[index].infos.games = obj.games;
@@ -323,9 +320,8 @@ exports.Network = {
             this.gatherHeroesRotation(browser).then((value) => {
 
                 let cacheFree = [];
-                let freeHeroes = value;
 
-                for (heroName of freeHeroes) {
+                for (let heroName of value) {
                     let freeHero = Heroes.findHero(heroName, false, true);
                     cacheFree.push({
                         name: Heroes.getHeroName(freeHero),
@@ -355,7 +351,13 @@ exports.Network = {
             callbackFunction(replyMsg);
         });
     },
-    
+
+    postSlashCommandsToAPI: async function(commandObj) {
+        await rest.post(
+            Routes.applicationCommands(process.env.CLIENT_ID), { body:commandObj },
+        );
+    },
+
     isUpdateNeeded: function () {
         return !Heroes.findHero("1", true)?.infos?.builds?.length > 0
     },
@@ -382,6 +384,12 @@ exports.Network = {
         })
         Heroes.setHeroesInfos(heroesAux);
         this.writeFile('data/heroes-infos.json', heroesAux);
+    },
+
+    createHeroesProfileSession: async function (browser) {
+        const page = await this.createPage(browser);
+        const response = await page.goto('https://www.heroesprofile.com/Global/Talents/');
+        return response._headers["set-cookie"];
     },
 
     createPage: async function (browser) {
