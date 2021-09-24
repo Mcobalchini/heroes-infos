@@ -75,6 +75,7 @@ function handleResponse(args, receivedCommand, msg) {
     replyObject.embeds = embeds;
 
     if (msg.isCommand) {
+        replyObject.ephemeral = true;
         msg.editReply(replyObject);
     } else {
         msg.reply(replyObject);
