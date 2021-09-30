@@ -98,6 +98,15 @@
     "category": "MAP"
   },
   {
+    "name": "News",
+    "localizedName": "Notícias",
+    "hint": "Display the latest news of the game",
+    "localizedHint": "Mostra as últimas notícias do jogo",
+    "acceptParams":false,
+    "requiredParam": false,
+    "category": "GENERAL"
+  },
+  {
     "name": "Help",
     "localizedName": "Ajuda",
     "hint": "Display useful hints for all commands",

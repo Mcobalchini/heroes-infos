@@ -47,7 +47,8 @@
 			{ "map.not.found": "O mapa específicado não foi encontrado, \nDigite \"{0}mapa <nome do mapa>\" para ver a lista completa com todos os mapas disponíveis"},
 			{ "no.best.heroes.for.map": "Não foram encontrados melhores heróis para o mapa {0}"},
             { "help": "Ajuda"},
-            { "overview": "Visão geral"}
+            { "overview": "Visão geral"},
+            { "news": "Notícias"}
 		],
 	"en-us" :
 		[
@@ -97,6 +98,7 @@
 			{ "map.not.found": "The specified map was not found\nType \"{0}map <name of the map>\" to get a full list with all the available maps"},
 			{ "no.best.heroes.for.map": "There are no best heroes for the map {0}"},
 			{ "help": "Help"},
-			{ "overview": "Overview"}
+			{ "overview": "Overview"},
+			{ "news": "News"}
 		]
 }

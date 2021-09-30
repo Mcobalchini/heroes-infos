@@ -15,10 +15,21 @@ exports.Network = {
 
     isUpdatingData: false,
     replyTo: null,
+    browser: null,
 
-    gatherHeroesRotation: async function (browser) {
+    setBrowser: async function() {
+        this.browser = await puppeteer.launch({
+            headless: true,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+            ],
+        })
+    },
 
-        const page = await this.createPage(browser);
+    gatherHeroesRotation: async function () {
+
+        const page = await this.createPage();
 
         let result
 
@@ -27,13 +38,30 @@ exports.Network = {
             return JSON.parse(document.body.innerText).RotationHero.Heroes.map(it => it.ID)
         });
 
-        await browser.close();
+        await this.browser.close();
         return result;
     },
 
-    gatherHeroStats: async function (icyUrl, heroId, profileUrl, heroesMap, browser, cookie) {
+    gatherNews: async function () {
+        await this.setBrowser();
+        const page = await this.createPage();
 
-        const page = await this.createPage(browser);
+        let result
+
+        await page.goto(`https://news.blizzard.com/pt-br/heroes-of-the-storm`);
+        result = await page.evaluate(() => {
+            return Array.from(document.querySelectorAll('.ArticleListItem article')).slice(0,5).map(it => {
+                return { header: it.firstChild.innerText, link: it.firstChild.href }
+            })
+        });
+
+        await this.browser.close();
+        return result;
+    },
+
+    gatherHeroStats: async function (icyUrl, heroId, profileUrl, heroesMap, cookie) {
+
+        const page = await this.createPage();
 
         await page.setExtraHTTPHeaders({
             'Cookie': cookie,
@@ -95,8 +123,8 @@ exports.Network = {
         await page.close();
     },
 
-    gatherTierListInfo: async function (browser) {
-        const page = await this.createPage(browser);
+    gatherTierListInfo: async function () {
+        const page = await this.createPage();
 
         let result
         await page.goto(`https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`, {waitUntil: 'domcontentloaded'})
@@ -109,8 +137,8 @@ exports.Network = {
         return result;
     },
 
-    gatherPopularityAndWinRateInfo: async function (browser) {
-        const page = await this.createPage(browser);
+    gatherPopularityAndWinRateInfo: async function () {
+        const page = await this.createPage();
 
         let result
 
@@ -129,8 +157,8 @@ exports.Network = {
         return result;
     },
 
-    gatherCompositionsInfo: async function (browser) {
-        const page = await this.createPage(browser);
+    gatherCompositionsInfo: async function () {
+        const page = await this.createPage();
 
         let result
 
@@ -150,23 +178,16 @@ exports.Network = {
     },
 
     updateData: async function (callbackFunction) {
-
+        await this.setBrowser();
         process.stdout.write(`Started updating data process at ${new Date().toLocaleTimeString()}\n`);
         this.isUpdatingData = true;
 
         //const browser = await puppeteer.launch({devtools: true});
-        const browser = await puppeteer.launch({
-            headless: true,
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-            ],
-        });
 
-        const cookieValue = await this.createHeroesProfileSession(browser);
-        const tierList = await this.gatherTierListInfo(browser);
-        const popularityWinRate = await this.gatherPopularityAndWinRateInfo(browser);
-        const compositions = await this.gatherCompositionsInfo(browser);
+        const cookieValue = await this.createHeroesProfileSession();
+        const tierList = await this.gatherTierListInfo();
+        const popularityWinRate = await this.gatherPopularityAndWinRateInfo();
+        const compositions = await this.gatherCompositionsInfo();
 
         //stores compositions
         compositions.sort(function (a, b) {
@@ -206,7 +227,6 @@ exports.Network = {
                 heroCrawlInfo.heroId,
                 heroCrawlInfo.profileUrl,
                 heroesMap,
-                browser,
                 cookieValue) : null;
         };
 
@@ -317,7 +337,7 @@ exports.Network = {
                 it.infos.tierPosition = parseInt(it.infos.tierPosition) + parseInt(idx + 1);
             })
 
-            this.gatherHeroesRotation(browser).then((value) => {
+            this.gatherHeroesRotation().then((value) => {
 
                 let cacheFree = [];
 
@@ -386,15 +406,15 @@ exports.Network = {
         this.writeFile('data/heroes-infos.json', heroesAux);
     },
 
-    createHeroesProfileSession: async function (browser) {
-        const page = await this.createPage(browser);
+    createHeroesProfileSession: async function () {
+        const page = await this.createPage();
         const response = await page.goto('https://www.heroesprofile.com/Global/Talents/');
         return response._headers["set-cookie"];
     },
 
-    createPage: async function (browser) {
+    createPage: async function () {
 
-        const page = await browser.newPage();
+        const page = await this.browser.newPage();
         await page.setRequestInterception(true);
 
         page.on('request', (request) => {

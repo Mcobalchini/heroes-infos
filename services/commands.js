@@ -73,7 +73,7 @@ exports.Commands = {
         }
     },
 
-    handleCommand: function (args, receivedCommand, msg) {
+    handleCommand: async function (args, receivedCommand, msg) {
         let reply = "";
         let command = this.findCommand(receivedCommand);
         if (command != null) {
@@ -83,6 +83,8 @@ exports.Commands = {
                 reply = Maps.init(args);
             } else if (command.name === 'Help') {
                 reply = this.assembleHelpReturnMessage(args);
+            } else if (command.name === 'News') {
+                reply = this.assembleNewsReturnMessage();
             } else if (command.name === 'Update') {
                 if (Network.isUpdatingData) {
                     reply = StringUtils.get('hold.still.updating');
@@ -150,5 +152,24 @@ exports.Commands = {
             },
             image: 'images/hots.png'
         }
+    },
+
+    assembleNewsReturnMessage() {
+        return Network.gatherNews().then(
+            returnedNews => {
+                return {
+                    data: {
+                        featureName: StringUtils.get('news'),
+                        news: returnedNews.map(it => {
+                            return {
+                                name: it.header,
+                                value: it.link,
+                                inline: false
+                            };
+                        })
+                    }
+                }
+            }
+        )
     }
 };

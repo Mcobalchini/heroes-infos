@@ -31,8 +31,8 @@ bot.on('interactionCreate', async interaction => {
     await handleResponse(interaction.options?.data?.map(it => it.value).join(' '), interaction.commandName.toString(), interaction)
 });
 
-function handleResponse(args, receivedCommand, msg) {
-    let reply = Commands.handleCommand(args, receivedCommand, msg);
+async function handleResponse(args, receivedCommand, msg) {
+    let reply = await Commands.handleCommand(args, receivedCommand, msg);
     let replyObject = {}
     let embeds = [];
 
