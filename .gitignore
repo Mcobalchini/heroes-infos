@@ -111,3 +111,5 @@ data/freeweek.json
 data/compositions.json
 data/banlist.json
 package-lock.json
+
+.idea

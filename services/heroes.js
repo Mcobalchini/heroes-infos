@@ -300,7 +300,7 @@ exports.Heroes = {
         let currentCompRoles = [];
         let heroesArray = heroes.split(' ');
         let currentCompHeroes = new Map();
-        const remainingHeroes = 5 - currentCompHeroes.size;
+        let remainingHeroes = 5;
         let suggested = [];
 
         for (it of heroesArray) {
@@ -314,7 +314,7 @@ exports.Heroes = {
         }
 
         if (currentCompHeroes.size > 0) {
-
+            remainingHeroes -= currentCompHeroes.size;
             const missingRolesMap = new Map()
 
             for (currentCompHero of currentCompHeroes.values()) {
@@ -377,7 +377,7 @@ exports.Heroes = {
                 suggested = [];
             }
 
-            if (Array.from(missingRolesMap.values())[0].length > 0) {
+            if (Array.from(missingRolesMap.values())[0]?.length) {
                 return {
                     data: {
                         featureName: StringUtils.get('suggested.team'),
@@ -391,8 +391,21 @@ exports.Heroes = {
                         })
                     }
                 };
-            }
-            return 'Full team'
+            } else {
+                return {
+                    data: {
+                        featureName: StringUtils.get('suggested.team'),
+                        featureDescription: `${StringUtils.get('current.team', Array.from(currentCompHeroes).map(([_, value]) => `${this.getHeroName(value)}`).join(', '))}`,
+                        suggestedHeroes: Array.from(heroesSorted.splice(0, remainingHeroes)).map(it => {
+                            return {
+                                name: this.getHeroName(it),
+                                value: this.getRoleName(this.findRoleById(it.role)),
+                                inline: false,
+                            }
+                        })
+                    }
+                };  
+            }              
         }
         return 'No team'
     },
