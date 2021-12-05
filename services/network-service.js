@@ -251,19 +251,19 @@ exports.Network = {
                 let heroMaps = [];
                 let heroTips = "";
 
-                for (synergy of icyData.synergies) {
+                for (let synergy of icyData.synergies) {
                     let synergyHero = Heroes.findHero(synergy, false, true);
                     if (synergyHero)
                         heroSynergies.push(Heroes.getHeroName(synergyHero));
                 }
 
-                for (counter of icyData.counters) {
+                for (let counter of icyData.counters) {
                     let counterHero = Heroes.findHero(counter, false, true);
                     if (counterHero)
                         heroCounters.push(Heroes.getHeroName(counterHero));
                 }
 
-                for (strongerMap of icyData.strongerMaps) {
+                for (let strongerMap of icyData.strongerMaps) {
                     let heroMap = Maps.findMap(strongerMap);
                     if (heroMap)
                         heroMaps.push(`${heroMap.name} (${heroMap.localizedName})`);
@@ -292,7 +292,7 @@ exports.Network = {
                 });
 
                 //removes the duplicate items
-                profileData.builds = profileData.builds.filter(item => !repeatedBuilds.includes(item))
+                profileData.builds = profileData.builds.filter(item => !repeatedBuilds.includes(item));
                 let heroBuilds = icyData.builds.concat(profileData.builds);
 
                 heroesInfos[index].infos = {};
@@ -310,6 +310,7 @@ exports.Network = {
                 heroesInfos[index].infos.winRate = obj.winRate;
                 heroesInfos[index].infos.games = obj.games;
             }
+
 
             Heroes.setHeroesInfos(heroesInfos);
 
@@ -356,7 +357,8 @@ exports.Network = {
 
                 this.translateTips(heroesInfos).then(() => {
                     this.isUpdatingData = false;
-                    callbackFunction(StringUtils.get('process.update.finished.time', (finishedTime - startTime) / 1000));
+                    if (callbackFunction)
+                        callbackFunction(StringUtils.get('process.update.finished.time', (finishedTime - startTime) / 1000));
                 });
             });
         }).catch((e) => {
@@ -368,8 +370,13 @@ exports.Network = {
             }
             process.stdout.write(e.stack);
             this.isUpdatingData = false;
-            callbackFunction(replyMsg);
+            if (callbackFunction)
+                callbackFunction(replyMsg);
         });
+    },
+
+    postUpdateStuff: async function() {
+
     },
 
     postSlashCommandsToAPI: async function(commandObj) {

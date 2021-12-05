@@ -73,7 +73,7 @@ exports.Commands = {
         }
     },
 
-    handleCommand: async function (args, receivedCommand, msg) {
+    handleCommand: async function (args, receivedCommand, msg, isInteraction) {
         let reply = "";
         let command = this.findCommand(receivedCommand);
         if (command != null) {
@@ -90,7 +90,11 @@ exports.Commands = {
                     reply = StringUtils.get('hold.still.updating');
                 } else {
                     Network.replyTo = msg;
-                    Network.updateData(this.assembleUpdateReturnMessage);
+                    let callBackMessage = null;
+                    if (!isInteraction)
+                        callBackMessage = this.assembleUpdateReturnMessage
+
+                    Network.updateData(callBackMessage);
                     reply = StringUtils.get('update.process.started');
                 }
             }

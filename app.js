@@ -28,11 +28,11 @@ bot.on("messageCreate", message => {
 bot.on('interactionCreate', async interaction => {
     if (!interaction.isCommand()) return;
     await interaction.deferReply();
-    await handleResponse(interaction.options?.data?.map(it => it.value).join(' '), interaction.commandName.toString(), interaction)
+    await handleResponse(interaction.options?.data?.map(it => it.value).join(' '), interaction.commandName.toString(), interaction, true)
 });
 
-async function handleResponse(args, receivedCommand, msg) {
-    let reply = await Commands.handleCommand(args, receivedCommand, msg);
+async function handleResponse(args, receivedCommand, msg, isInteraction = false) {
+    let reply = await Commands.handleCommand(args, receivedCommand, msg, isInteraction);
     let replyObject = {}
     let embeds = [];
 
