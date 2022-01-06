@@ -38,33 +38,34 @@ exports.Commands = {
 
         try {
             for (let it of commands) {
+                if (!it.hidden) {
+                    let commandSlashBuilder = new SlashCommandBuilder()
+                        .setName(it.name.toLowerCase())
+                        .setDescription(it.hint.substring(0, 100));
 
-                let commandSlashBuilder = new SlashCommandBuilder()
-                    .setName(it.name.toLowerCase())
-                    .setDescription(it.hint.substring(0, 100));
+                    if (it.acceptParams) {
 
-                if (it.acceptParams) {
+                        let argumentName = "argument"
+                        let descriptionArgument = "some name"
+                        let requiredParameter = false;
 
-                    let argumentName = "argument"
-                    let descriptionArgument = "some name"
-                    let requiredParameter = false;
+                        if (it.category === "HEROES") {
+                            argumentName = "hero"
+                            descriptionArgument = "Hero name or part of it's name"
+                        }
 
-                    if (it.category === "HEROES") {
-                        argumentName = "hero"
-                        descriptionArgument = "Hero name or part of it's name"
+                        if (it.requiredParam) {
+                            requiredParameter = true;
+                        }
+
+                        commandSlashBuilder.addStringOption(option =>
+                            option.setName(argumentName)
+                                .setDescription(descriptionArgument)
+                                .setRequired(requiredParameter));
                     }
 
-                    if (it.requiredParam) {
-                        requiredParameter = true;
-                    }
-
-                    commandSlashBuilder.addStringOption(option =>
-                        option.setName(argumentName)
-                            .setDescription(descriptionArgument)
-                            .setRequired(requiredParameter));
+                    await Network.postSlashCommandsToAPI(commandSlashBuilder);
                 }
-
-                await Network.postSlashCommandsToAPI(commandSlashBuilder);
             }
 
             process.stdout.write('Successfully reloaded application (/) commands.\n');
@@ -85,7 +86,9 @@ exports.Commands = {
                 reply = this.assembleHelpReturnMessage(args);
             } else if (command.name === 'News') {
                 reply = this.assembleNewsReturnMessage();
-            } else if (command.name === 'Update' && msg.author.id === '342078021227905026') {
+            } else if (command.name === 'Update' &&
+                (msg.author != null && msg.author.id === '342078021227905026' ||
+                msg.user != null && msg.user.id === '342078021227905026')) {
                 if (Network.isUpdatingData) {
                     reply = StringUtils.get('hold.still.updating');
                 } else {
@@ -114,7 +117,7 @@ exports.Commands = {
         let list = [];
         if (commandName != null && commandName !== "null" && commandName !== "") {
             let command = this.findCommand(commandName);
-            if (command != null) {
+            if (command != null && !command.hidden) {
                 reply += `${this.getCommandHint(command)}\n`;
                 if (command.acceptParams) {
                     list = [{
