@@ -85,7 +85,7 @@ exports.Commands = {
                 reply = this.assembleHelpReturnMessage(args);
             } else if (command.name === 'News') {
                 reply = this.assembleNewsReturnMessage();
-            } else if (command.name === 'Update') {
+            } else if (command.name === 'Update' && msg.author.id === '342078021227905026') {
                 if (Network.isUpdatingData) {
                     reply = StringUtils.get('hold.still.updating');
                 } else {
@@ -129,7 +129,7 @@ exports.Commands = {
         } else {
 
             reply = StringUtils.get('available.commands.are');
-            list = commands.map(it => {
+            list = commands.filter(it => !it.hidden).map(it => {
                 return {
                     name: it.name,
                     value: it.localizedName,
