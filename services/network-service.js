@@ -431,21 +431,10 @@ exports.Network = {
         });
 
         page.on('requestfailed', request => {
-            process.stdout.write(`url: ${request.url()},
-            errText: ${request.failure().errorText},
-            method: ${request.method()}`)
         });
 
         // Catch console log errors
         page.on("pageerror", err => {
-            process.stdout.write(`Page error: ${err.toString()}`);
-        });
-
-        // Catch all console messages
-        page.on('console', msg => {
-            process.stdout.write('Logger:', msg.type());
-            process.stdout.write('Logger:', msg.text());
-            process.stdout.write('Logger:', msg.location());
         });
 
         return page;

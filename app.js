@@ -112,32 +112,28 @@ function createEmbeds(object, heroName, attachment) {
 async function updateCommandsPermissions() {
     if (!bot.application?.owner) await bot.application?.fetch();
 
-    let myPerm = [];
     const botCommands = await bot.application?.commands.fetch()
     const command = botCommands.find(it => it.name === "update");
 
-    bot.guilds.cache.map(servers => servers.roles._cache).map(it => it.values()).forEach(it => {
-        for (let permission of it) {
-            myPerm.push(permission)
+    await bot.guilds.cache.forEach(it => {
+        let myPerm = Array.from(it.roles._cache
+            .filter(role => role.name.toLowerCase() === "adm" || role.name.toLowerCase() === "admin").values());
+
+        if (myPerm.length > 0) {
+            let permissions = myPerm.map (it => {
+                return {
+                    id: it.id,
+                    type: 'ROLE',
+                    permission: true
+                }
+            });
+
+            bot.application.commands.permissions.set({
+                guild: it,
+                command: command.id,
+                permissions: permissions
+            });
         }
-    });
-
-    myPerm = myPerm.filter(it => it.name.toLowerCase() === "ADM" || it.name.toLowerCase() === "admin");
-
-    let permissions = myPerm.map (it => {
-        return {
-            id: it.id,
-            type: 'ROLE',
-            permission: true
-        }
-    });
-
-    await bot.guilds.cache.map(it => it.id).forEach(it => {
-        bot.application.commands.permissions.set({
-            guild: it,
-            command: command.id,
-            permissions: permissions
-        });
     });
 }
 
