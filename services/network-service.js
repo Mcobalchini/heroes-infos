@@ -8,6 +8,7 @@ const puppeteer = require('puppeteer');
 const PromisePool = require('es6-promise-pool');
 const {Routes} = require("discord-api-types/v9");
 const {REST} = require("@discordjs/rest");
+const {Network} = require("./network-service");
 let msg = null;
 const rest = new REST({ version: '9' }).setToken(process.env.HEROES_INFOS_TOKEN);
 
@@ -78,7 +79,7 @@ exports.Network = {
             const tips = Array.from(document.querySelectorAll('.heroes_tips li')).map(i => i.innerText.trim().replaceAll('  ', ' '));
 
             const builds = [];
-            for (i in names) {
+            for (let i in names) {
                 builds.push({
                     name: names[i],
                     skills: skills[i]
@@ -227,7 +228,8 @@ exports.Network = {
                 heroCrawlInfo.heroId,
                 heroCrawlInfo.profileUrl,
                 heroesMap,
-                cookieValue) : null;
+                cookieValue)
+                .catch(err => this.updateData(callbackFunction)) : null;
         };
 
         let startTime = new Date();
@@ -433,7 +435,6 @@ exports.Network = {
         page.on('requestfailed', request => {
         });
 
-        // Catch console log errors
         page.on("pageerror", err => {
         });
 
