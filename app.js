@@ -126,7 +126,7 @@ async function updateCommandsPermissions() {
 
     let permissions = myPerm.map (it => {
         return {
-            id: it,
+            id: it.id,
             type: 'ROLE',
             permission: true
         }
