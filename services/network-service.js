@@ -184,9 +184,13 @@ exports.Network = {
 
         //const browser = await puppeteer.launch({devtools: true});
 
+        process.stdout.write(`Creating heroes profile session at ${new Date().toLocaleTimeString()}\n`);
         const cookieValue = await this.createHeroesProfileSession();
+        process.stdout.write(`Gathering tier list at ${new Date().toLocaleTimeString()}\n`);
         const tierList = await this.gatherTierListInfo();
+        process.stdout.write(`Gathering win rate at ${new Date().toLocaleTimeString()}\n`);
         const popularityWinRate = await this.gatherPopularityAndWinRateInfo();
+        process.stdout.write(`Gathering compositions at ${new Date().toLocaleTimeString()}\n`);
         const compositions = await this.gatherCompositionsInfo();
 
         //stores compositions
@@ -207,6 +211,7 @@ exports.Network = {
         }).reverse();
         Heroes.setCompositions(sortedComposition);
         this.writeFile('data/compositions.json', sortedComposition);
+        process.stdout.write(`Stored compositions on json at ${new Date().toLocaleTimeString()}\n`);
 
         let heroesMap = new Map();
         let heroesIdAndUrls = [];
@@ -236,146 +241,148 @@ exports.Network = {
 
         const thread = new PromisePool(promiseProducer, 5);
 
-        thread.start().then(() => {
+        try {
+            thread.start().then(() => {
 
-            let finishedTime = new Date();
+                let finishedTime = new Date();
 
-            process.stdout.write(`Finished gathering process at ${finishedTime.toLocaleTimeString()}\n`);
-            process.stdout.write(`${(finishedTime - startTime) / 1000} seconds has passed\n`);
+                process.stdout.write(`Finished gathering process at ${finishedTime.toLocaleTimeString()}\n`);
+                process.stdout.write(`${(finishedTime - startTime) / 1000} seconds has passed\n`);
 
-            for (let [heroKey, heroData] of heroesMap) {
-                let index = heroesInfos.findIndex(it => it.id === heroKey);
-                let icyData = heroData.icyData
-                let profileData = heroData.profileData
-                let heroCounters = [];
-                let heroSynergies = [];
-                let heroMaps = [];
-                let heroTips = "";
+                for (let [heroKey, heroData] of heroesMap) {
+                    let index = heroesInfos.findIndex(it => it.id === heroKey);
+                    let icyData = heroData.icyData
+                    let profileData = heroData.profileData
+                    let heroCounters = [];
+                    let heroSynergies = [];
+                    let heroMaps = [];
+                    let heroTips = "";
 
-                for (let synergy of icyData.synergies) {
-                    let synergyHero = Heroes.findHero(synergy, false, true);
-                    if (synergyHero)
-                        heroSynergies.push(Heroes.getHeroName(synergyHero));
-                }
-
-                for (let counter of icyData.counters) {
-                    let counterHero = Heroes.findHero(counter, false, true);
-                    if (counterHero)
-                        heroCounters.push(Heroes.getHeroName(counterHero));
-                }
-
-                for (let strongerMap of icyData.strongerMaps) {
-                    let heroMap = Maps.findMap(strongerMap);
-                    if (heroMap)
-                        heroMaps.push(`${heroMap.name} (${heroMap.localizedName})`);
-                }
-
-                heroTips += icyData.tips.map(tip => `${tip}\n`).join('');
-
-                if (heroesInfos[index] == null) {
-                    heroesInfos[index] = {};
-                }
-
-                if (profileData.builds.length === 0) {
-                    process.stdout.write(`No builds found for ${heroesInfos[index].name}\n`);
-                }
-
-                //retrieves the duplicate items
-                let repeatedBuilds = profileData.builds.filter(item => (icyData.builds.map(it => it.skills).includes(item.skills)));
-
-                //applies winrate on known builds names
-                icyData.builds.forEach(it => {
-                    for (item of repeatedBuilds) {
-                        if (item.skills === it.skills) {
-                            it.name = `${it.name} (${item.name.match(/([0-9.]%*)/g, '').join('')} win rate)`
-                        }
+                    for (let synergy of icyData.synergies) {
+                        let synergyHero = Heroes.findHero(synergy, false, true);
+                        if (synergyHero)
+                            heroSynergies.push(Heroes.getHeroName(synergyHero));
                     }
-                });
 
-                //removes the duplicate items
-                profileData.builds = profileData.builds.filter(item => !repeatedBuilds.includes(item));
-                let heroBuilds = icyData.builds.concat(profileData.builds);
+                    for (let counter of icyData.counters) {
+                        let counterHero = Heroes.findHero(counter, false, true);
+                        if (counterHero)
+                            heroCounters.push(Heroes.getHeroName(counterHero));
+                    }
 
-                heroesInfos[index].infos = {};
-                heroesInfos[index].id = heroKey;
-                heroesInfos[index].name = Heroes.findHero(heroKey, false, true).name;
-                heroesInfos[index].infos.builds = heroBuilds;
-                heroesInfos[index].infos.synergies = heroSynergies;
-                heroesInfos[index].infos.counters = heroCounters;
-                heroesInfos[index].infos.strongerMaps = heroMaps;
-                heroesInfos[index].infos.tips = heroTips;
+                    for (let strongerMap of icyData.strongerMaps) {
+                        let heroMap = Maps.findMap(strongerMap);
+                        if (heroMap)
+                            heroMaps.push(`${heroMap.name} (${heroMap.localizedName})`);
+                    }
 
-                let obj = popularityWinRate.find(it => {
-                    return it.name.cleanVal() === heroesInfos[index].name.cleanVal()
-                });
-                heroesInfos[index].infos.winRate = obj.winRate;
-                heroesInfos[index].infos.games = obj.games;
-            }
+                    heroTips += icyData.tips.map(tip => `${tip}\n`).join('');
 
+                    if (heroesInfos[index] == null) {
+                        heroesInfos[index] = {};
+                    }
 
-            Heroes.setHeroesInfos(heroesInfos);
+                    if (profileData.builds.length === 0) {
+                        process.stdout.write(`No builds found for ${heroesInfos[index].name}\n`);
+                    }
 
-            let cacheBans = [];
-            tierList.forEach(it => {
-                let banHero = Heroes.findHero(it, false, true);
-                cacheBans.push({
-                    name: Heroes.getHeroName(banHero),
-                    role: Heroes.getRoleName(Heroes.findRoleById(banHero.role))
-                });
-            });
+                    //retrieves the duplicate items
+                    let repeatedBuilds = profileData.builds.filter(item => (icyData.builds.map(it => it.skills).includes(item.skills)));
 
-            Heroes.setBanHeroes(cacheBans);
-            this.writeFile('data/banlist.json', cacheBans);
-
-            heroesInfos.sort(function (a, b) {
-                return a.infos.games - b.infos.games;
-            }).forEach((it, idx) => {
-                it.infos.tierPosition = parseInt(idx + 1);
-            });
-
-            heroesInfos.sort(function (a, b) {
-                return a.infos.winRate - b.infos.winRate;
-            }).forEach((it, idx) => {
-                it.infos.tierPosition = parseInt(it.infos.tierPosition) + parseInt(idx + 1);
-            })
-
-            this.gatherHeroesRotation().then((value) => {
-
-                let cacheFree = [];
-
-                for (let heroName of value) {
-                    let freeHero = Heroes.findHero(heroName, false, true);
-                    cacheFree.push({
-                        name: Heroes.getHeroName(freeHero),
-                        role: Heroes.getRoleName(Heroes.findRoleById(freeHero.role))
+                    //applies winrate on known builds names
+                    icyData.builds.forEach(it => {
+                        for (item of repeatedBuilds) {
+                            if (item.skills === it.skills) {
+                                it.name = `${it.name} (${item.name.match(/([0-9.]%*)/g, '').join('')} win rate)`
+                            }
+                        }
                     });
+
+                    //removes the duplicate items
+                    profileData.builds = profileData.builds.filter(item => !repeatedBuilds.includes(item));
+                    let heroBuilds = icyData.builds.concat(profileData.builds);
+
+                    heroesInfos[index].infos = {};
+                    heroesInfos[index].id = heroKey;
+                    heroesInfos[index].name = Heroes.findHero(heroKey, false, true).name;
+                    heroesInfos[index].infos.builds = heroBuilds;
+                    heroesInfos[index].infos.synergies = heroSynergies;
+                    heroesInfos[index].infos.counters = heroCounters;
+                    heroesInfos[index].infos.strongerMaps = heroMaps;
+                    heroesInfos[index].infos.tips = heroTips;
+
+                    let obj = popularityWinRate.find(it => {
+                        return it.name.cleanVal() === heroesInfos[index].name.cleanVal()
+                    });
+                    heroesInfos[index].infos.winRate = obj.winRate;
+                    heroesInfos[index].infos.games = obj.games;
                 }
 
-                this.writeFile('data/freeweek.json', cacheFree);
 
-                Heroes.setFreeHeroes(cacheFree);
-                this.isUpdatingData = false;
+                Heroes.setHeroesInfos(heroesInfos);
 
-                this.translateTips(heroesInfos).then(() => {
+                let cacheBans = [];
+                tierList.forEach(it => {
+                    let banHero = Heroes.findHero(it, false, true);
+                    cacheBans.push({
+                        name: Heroes.getHeroName(banHero),
+                        role: Heroes.getRoleName(Heroes.findRoleById(banHero.role))
+                    });
+                });
+
+                Heroes.setBanHeroes(cacheBans);
+                this.writeFile('data/banlist.json', cacheBans);
+
+                heroesInfos.sort(function (a, b) {
+                    return a.infos.games - b.infos.games;
+                }).forEach((it, idx) => {
+                    it.infos.tierPosition = parseInt(idx + 1);
+                });
+
+                heroesInfos.sort(function (a, b) {
+                    return a.infos.winRate - b.infos.winRate;
+                }).forEach((it, idx) => {
+                    it.infos.tierPosition = parseInt(it.infos.tierPosition) + parseInt(idx + 1);
+                })
+
+                this.gatherHeroesRotation().then((value) => {
+
+                    let cacheFree = [];
+
+                    for (let heroName of value) {
+                        let freeHero = Heroes.findHero(heroName, false, true);
+                        cacheFree.push({
+                            name: Heroes.getHeroName(freeHero),
+                            role: Heroes.getRoleName(Heroes.findRoleById(freeHero.role))
+                        });
+                    }
+
+                    this.writeFile('data/freeweek.json', cacheFree);
+
+                    Heroes.setFreeHeroes(cacheFree);
                     this.isUpdatingData = false;
-                    if (callbackFunction)
-                        callbackFunction(StringUtils.get('process.update.finished.time', (finishedTime - startTime) / 1000));
+
+                    this.translateTips(heroesInfos).then(() => {
+                        this.isUpdatingData = false;
+                        if (callbackFunction)
+                            callbackFunction(StringUtils.get('process.update.finished.time', (finishedTime - startTime) / 1000));
+                    });
                 });
             });
-        }).catch((e) => {
+        } catch(e) {
             let replyMsg = StringUtils.get('could.not.update.data.try.again');
 
             if (e.stack.includes("Navigation timeout of 30000 ms exceeded")
                 || e.stack.includes("net::ERR_ABORTED")
                 || e.stack.includes("net::ERR_NETWORK_CHANGED")) {
                 replyMsg += StringUtils.get('try.to.update.again');
-                this.updateData(callbackFunction);
+                await this.updateData(callbackFunction);
             }
             process.stdout.write(e.stack);
             this.isUpdatingData = false;
             if (callbackFunction)
                 callbackFunction(replyMsg);
-        });
+        }
     },
 
     postSlashCommandsToAPI: async function(commandObj) {
