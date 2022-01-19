@@ -64,7 +64,7 @@ async function handleResponse(args, receivedCommand, msg, isInteraction = false)
 
     if (msg.isCommand) {
         replyObject.ephemeral = true;
-        await msg.editReply(replyObject);
+        msg.editReply(replyObject);
     } else {
         msg.reply(replyObject);
     }
