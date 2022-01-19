@@ -1,3 +1,7 @@
+exports.App = {
+    setBotStatus: setBotStatus
+};
+
 const {Client, Intents, MessageEmbed} = require("discord.js");
 const config = require("./config.json");
 const {Commands} = require("./services/commands");
@@ -8,28 +12,12 @@ const prefix = config.prefix;
 const bot = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]});
 let msg = null;
 
-
-bot.on("messageCreate", message => {
-    if (message.author.bot) return;
-    if (!message.content.startsWith(prefix)) return;
-    msg = message;
-
-    let receivedCommand = message.content.split(' ', 1)[0].substring(1);
-    let args = message.content.substring(receivedCommand.toLowerCase().length + 2);
-
-    try {
-        handleResponse(args, receivedCommand, msg);
-    } catch (e) {
-        process.stdout.write(`Exception: ${e.stack}\n`);
-        msg.reply(StringUtils.get('exception.occurred', e))
-    }
-});
-
-bot.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand()) return;
-    await interaction.deferReply();
-    await handleResponse(interaction.options?.data?.map(it => it.value).join(' '), interaction.commandName.toString(), interaction, true)
-});
+function setBotStatus(name, type) {
+    bot.user.setActivity(name, {
+        type: type,
+        url: "https://heroesofthestorm.com/"
+    });
+}
 
 async function handleResponse(args, receivedCommand, msg, isInteraction = false) {
     let reply = await Commands.handleCommand(args, receivedCommand, msg, isInteraction);
@@ -76,9 +64,16 @@ async function handleResponse(args, receivedCommand, msg, isInteraction = false)
 
     if (msg.isCommand) {
         replyObject.ephemeral = true;
-        msg.editReply(replyObject);
+        await msg.editReply(replyObject);
     } else {
         msg.reply(replyObject);
+    }
+}
+
+function periodicUpdateCheck() {
+    if (Network.isUpdateNeeded()) {
+        setBotStatus("Updating", "WATCHING")
+        Network.updateData(() => setBotStatus("Heroes of the Storm", "PLAYING"));
     }
 }
 
@@ -114,19 +109,63 @@ function createEmbeds(object, heroName, attachment) {
     return embeds;
 }
 
-function setBotStatus(name, type) {
-    bot.user.setActivity(name, {
-        type: type,
-        url: "https://heroesofthestorm.com/"
+async function updateCommandsPermissions() {
+    if (!bot.application?.owner) await bot.application?.fetch();
+
+    let myPerm = [];
+    const botCommands = await bot.application?.commands.fetch()
+    const command = botCommands.find(it => it.name === "update");
+
+    bot.guilds.cache.map(servers => servers.roles._cache).map(it => it.values()).forEach(it => {
+        for (let permission of it) {
+            myPerm.push(permission)
+        }
+    });
+
+    myPerm = myPerm.filter(it => it.name.toLowerCase() === "ADM" || it.name.toLowerCase() === "admin");
+
+    let permissions = myPerm.map (it => {
+        return {
+            id: it,
+            type: 'ROLE',
+            permission: true
+        }
+    });
+
+    await bot.guilds.cache.map(it => it.id).forEach(it => {
+        bot.application.commands.permissions.set({
+            guild: it,
+            command: command.id,
+            permissions: permissions
+        });
     });
 }
 
-function periodicUpdateCheck() {
-    if (Network.isUpdateNeeded()) {
-        setBotStatus("Updating", "WATCHING")
-        Network.updateData(() => setBotStatus("Heroes of the Storm", "PLAYING"));
+bot.on("messageCreate", message => {
+    if (message.author.bot) return;
+    if (!message.content.startsWith(prefix)) return;
+    msg = message;
+
+    let receivedCommand = message.content.split(' ', 1)[0].substring(1);
+    let args = message.content.substring(receivedCommand.toLowerCase().length + 2);
+
+    try {
+        handleResponse(args, receivedCommand, msg);
+    } catch (e) {
+        process.stdout.write(`Exception: ${e.stack}\n`);
+        msg.reply(StringUtils.get('exception.occurred', e))
     }
-}
+});
+
+bot.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand()) return;
+    try {
+        await interaction.deferReply();
+        await handleResponse(interaction.options?.data?.map(it => it.value).join(' '), interaction.commandName.toString(), interaction, true)
+    } catch (e) {
+        process.stdout.write(`Exception: ${e.stack}\n`);
+    }
+});
 
 bot.once("ready", function () {
     StringUtils.defineCleanVal();
@@ -134,7 +173,7 @@ bot.once("ready", function () {
     periodicUpdateCheck();
     setInterval(periodicUpdateCheck, 100000);
     process.stdout.write(`Application ready! - ${new Date()}\n`);
-    Commands.assembleSlashCommands();
+    Commands.assembleSlashCommands().then(updateCommandsPermissions());
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN);

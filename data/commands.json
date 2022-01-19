@@ -6,7 +6,7 @@
     "localizedHint": "Mostra quais heróis atingem os pontos fracos do herói especificado",
     "acceptParams": true,
     "requiredParam": true,
-    "hidden": false,
+    "defaultPermission": true,
     "category": "HEROES"
   },
   {
@@ -16,7 +16,7 @@
     "localizedHint": "Mostra quem tem sinergia com o herói especificado",
     "acceptParams": true,
     "requiredParam": true,
-    "hidden": false,
+    "defaultPermission": true,
     "category": "HEROES"
   },
   {
@@ -27,7 +27,7 @@
     "acceptParams": true,
     "requiredParam": true,
     "requiredParam": true,
-    "hidden": false,
+    "defaultPermission": true,
     "category": "HEROES"
   },
   {
@@ -37,7 +37,7 @@
     "localizedHint": "Mostra uma visão geral simples do herói especificado",
     "acceptParams": true,
     "requiredParam": true,
-    "hidden": false,
+    "defaultPermission": true,
     "category": "HEROES"
   },
   {
@@ -47,7 +47,7 @@
     "localizedHint": "Mostra dicas úteis para o herói especificado",
     "acceptParams": true,
     "requiredParam": true,
-    "hidden": false,
+    "defaultPermission": true,
     "category": "HEROES"
   },
   {
@@ -57,7 +57,7 @@
     "localizedHint": "Mostra informações sobre o herói especificado, como seu universo de origem, posição no ranking, pontuação, construções, fraquezas, sinergias e dicas",
     "acceptParams": true,
     "requiredParam": true,
-    "hidden": false,
+    "defaultPermission": true,
     "category": "HEROES"
   },
   {
@@ -67,7 +67,7 @@
     "localizedHint": "Encontra os 10 melhores heróis por filtros recebidos, ordenando-os pela sua pontuação baseada em Jogos Rápidos",
     "acceptParams": true,
     "requiredParam": true,
-    "hidden": false,
+    "defaultPermission": true,
     "category": "HEROES"
   },
   {
@@ -77,7 +77,7 @@
     "localizedHint": "Sugere uma equipe baseada nas melhores composições",
     "acceptParams": true,
     "requiredParam": true,
-    "hidden": false,
+    "defaultPermission": true,
     "category": "HEROES"
   },
   {
@@ -86,7 +86,7 @@
     "hint": "Display suggested heroes to ban on ranked",
     "localizedHint": "Mostra quais heróis banir no jogo ranqueado",
     "acceptParams": false,
-    "hidden": false,
+    "defaultPermission": true,
     "category": "HEROES"
   },
   {
@@ -95,7 +95,7 @@
     "hint": "Display which heroes are currently free rotation",
     "localizedHint": "Mostra quais heróis estão disponíveis na rotação gratuíta",
     "acceptParams": false,
-    "hidden": false,
+    "defaultPermission": true,
     "category": "HEROES"
   },
   {
@@ -105,7 +105,7 @@
     "localizedHint": "Mostra todos os mapas disponíveis, ou os heróis que geralmente são mais fortes em algum mapa especificado, dependendo dos parâmetros recebidos",
     "acceptParams": true,
     "requiredParam": false,
-    "hidden": false,
+    "defaultPermission": true,
     "category": "MAP"
   },
   {
@@ -115,7 +115,7 @@
     "localizedHint": "Mostra as últimas notícias do jogo",
     "acceptParams":false,
     "requiredParam": false,
-    "hidden": false,
+    "defaultPermission": true,
     "category": "GENERAL"
   },
   {
@@ -125,7 +125,7 @@
     "localizedHint": "Mostra dicas úteis para todos os comandos",
     "acceptParams": true,
     "requiredParam": false,
-    "hidden": false,
+    "defaultPermission": true,
     "category": "GENERAL"
   },
   {
@@ -134,7 +134,7 @@
     "hint": "Update all bot database",
     "localizedHint": "Atualiza todo o banco de dados do bot",
     "acceptParams": false,
-    "hidden": true,
+    "defaultPermission": false,
     "category": "GENERAL"
   }
 ]

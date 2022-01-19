@@ -5,6 +5,7 @@ const {Heroes} = require("./heroes.js");
 const {Maps} = require("./maps.js");
 const {Network} = require("./network-service.js");
 const {SlashCommandBuilder} = require('@discordjs/builders');
+const {App} = require("../app.js");
 const commands = JSON.parse(fs.readFileSync("./data/commands.json"), {encoding: 'utf8', flag: 'r'});
 
 exports.Commands = {
@@ -38,34 +39,33 @@ exports.Commands = {
 
         try {
             for (let it of commands) {
-                if (!it.hidden) {
-                    let commandSlashBuilder = new SlashCommandBuilder()
-                        .setName(it.name.toLowerCase())
-                        .setDescription(it.hint.substring(0, 100));
+                let commandSlashBuilder = new SlashCommandBuilder()
+                    .setName(it.name.toLowerCase())
+                    .setDefaultPermission(it.defaultPermission)
+                    .setDescription(it.hint.substring(0, 100));
 
-                    if (it.acceptParams) {
+                if (it.acceptParams) {
 
-                        let argumentName = "argument"
-                        let descriptionArgument = "some name"
-                        let requiredParameter = false;
+                    let argumentName = "argument"
+                    let descriptionArgument = "some name"
+                    let requiredParameter = false;
 
-                        if (it.category === "HEROES") {
-                            argumentName = "hero"
-                            descriptionArgument = "Hero name or part of it's name"
-                        }
-
-                        if (it.requiredParam) {
-                            requiredParameter = true;
-                        }
-
-                        commandSlashBuilder.addStringOption(option =>
-                            option.setName(argumentName)
-                                .setDescription(descriptionArgument)
-                                .setRequired(requiredParameter));
+                    if (it.category === "HEROES") {
+                        argumentName = "hero"
+                        descriptionArgument = "Hero name or part of it's name"
                     }
 
-                    await Network.postSlashCommandsToAPI(commandSlashBuilder);
+                    if (it.requiredParam) {
+                        requiredParameter = true;
+                    }
+
+                    commandSlashBuilder.addStringOption(option =>
+                        option.setName(argumentName)
+                            .setDescription(descriptionArgument)
+                            .setRequired(requiredParameter));
                 }
+
+                await Network.postSlashCommandsToAPI(commandSlashBuilder);
             }
 
             process.stdout.write('Successfully reloaded application (/) commands.\n');
@@ -87,11 +87,11 @@ exports.Commands = {
             } else if (command.name === 'News') {
                 reply = this.assembleNewsReturnMessage();
             } else if (command.name === 'Update' &&
-                (msg.author != null && msg.author.id === '342078021227905026' ||
-                msg.user != null && msg.user.id === '342078021227905026')) {
+                (msg.author != null && msg.member.guild.roles._cache.find(it => it.name.toLowerCase() === "admin"))) {
                 if (Network.isUpdatingData) {
                     reply = StringUtils.get('hold.still.updating');
                 } else {
+                    App.setBotStatus("Updating", "WATCHING");
                     Network.replyTo = msg;
                     let callBackMessage = null;
                     if (!isInteraction)
@@ -117,7 +117,7 @@ exports.Commands = {
         let list = [];
         if (commandName != null && commandName !== "null" && commandName !== "") {
             let command = this.findCommand(commandName);
-            if (command != null && !command.hidden) {
+            if (command != null) {
                 reply += `${this.getCommandHint(command)}\n`;
                 if (command.acceptParams) {
                     list = [{
@@ -132,7 +132,7 @@ exports.Commands = {
         } else {
 
             reply = StringUtils.get('available.commands.are');
-            list = commands.filter(it => !it.hidden).map(it => {
+            list = commands.map(it => {
                 return {
                     name: it.name,
                     value: it.localizedName,

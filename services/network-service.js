@@ -101,7 +101,7 @@ exports.Network = {
             const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `Popular build (${it.innerText}% win rate)`)
             const skills = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .build-code')).map(it => it.innerText)
             const builds = [];
-            for (i in names) {
+            for (let i in names) {
                 builds.push({
                     name: names[i],
                     skills: skills[i]
@@ -364,7 +364,9 @@ exports.Network = {
         }).catch((e) => {
             let replyMsg = StringUtils.get('could.not.update.data.try.again');
 
-            if (e.stack.includes("Navigation timeout of 30000 ms exceeded") || e.stack.includes("net::ERR_ABORTED")) {
+            if (e.stack.includes("Navigation timeout of 30000 ms exceeded")
+                || e.stack.includes("net::ERR_ABORTED")
+                || e.stack.includes("net::ERR_NETWORK_CHANGED")) {
                 replyMsg += StringUtils.get('try.to.update.again');
                 this.updateData(callbackFunction);
             }
@@ -373,10 +375,6 @@ exports.Network = {
             if (callbackFunction)
                 callbackFunction(replyMsg);
         });
-    },
-
-    postUpdateStuff: async function() {
-
     },
 
     postSlashCommandsToAPI: async function(commandObj) {
@@ -431,6 +429,25 @@ exports.Network = {
                 request.continue();
             }
         });
+
+        page.on('requestfailed', request => {
+            process.stdout.write(`url: ${request.url()},
+            errText: ${request.failure().errorText},
+            method: ${request.method()}`)
+        });
+
+        // Catch console log errors
+        page.on("pageerror", err => {
+            process.stdout.write(`Page error: ${err.toString()}`);
+        });
+
+        // Catch all console messages
+        page.on('console', msg => {
+            process.stdout.write('Logger:', msg.type());
+            process.stdout.write('Logger:', msg.text());
+            process.stdout.write('Logger:', msg.location());
+        });
+
         return page;
     },
 
