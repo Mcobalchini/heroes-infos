@@ -438,12 +438,6 @@ exports.Network = {
             }
         });
 
-        page.on('requestfailed', request => {
-        });
-
-        page.on("pageerror", err => {
-        });
-
         return page;
     },
 
