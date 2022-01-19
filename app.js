@@ -128,7 +128,7 @@ async function updateCommandsPermissions() {
                 }
             });
 
-            bot.application.commands.permissions.set({
+            command.permissions.set({
                 guild: it,
                 command: command.id,
                 permissions: permissions

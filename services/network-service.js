@@ -8,7 +8,6 @@ const puppeteer = require('puppeteer');
 const PromisePool = require('es6-promise-pool');
 const {Routes} = require("discord-api-types/v9");
 const {REST} = require("@discordjs/rest");
-const {Network} = require("./network-service");
 let msg = null;
 const rest = new REST({ version: '9' }).setToken(process.env.HEROES_INFOS_TOKEN);
 
