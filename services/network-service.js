@@ -232,8 +232,7 @@ exports.Network = {
                 heroCrawlInfo.heroId,
                 heroCrawlInfo.profileUrl,
                 heroesMap,
-                cookieValue)
-                .catch(err => this.updateData(callbackFunction)) : null;
+                cookieValue) : null;
         };
 
         let startTime = new Date();
