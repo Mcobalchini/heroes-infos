@@ -87,7 +87,7 @@ exports.Commands = {
             } else if (command.name === 'News') {
                 reply = this.assembleNewsReturnMessage();
             } else if (command.name === 'Update' && (msg.author != null || msg.user != null) &&
-                    msg.member.guild.roles._cache.find(it => it.name.toLowerCase() === "admin")) {
+                msg.member._roles.includes(msg.member.guild.roles._cache.find(it => it.name.toLowerCase() === "admin").id)) {
                 if (Network.isUpdatingData) {
                     reply = StringUtils.get('hold.still.updating');
                 } else {
@@ -100,6 +100,8 @@ exports.Commands = {
                     Network.updateData(callBackMessage);
                     reply = StringUtils.get('update.process.started');
                 }
+            } else {
+                reply = StringUtils.get('command.not.exists', receivedCommand, config.prefix);
             }
         } else {
             reply = StringUtils.get('command.not.exists', receivedCommand, config.prefix);
