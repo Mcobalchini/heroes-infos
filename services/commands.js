@@ -86,8 +86,8 @@ exports.Commands = {
                 reply = this.assembleHelpReturnMessage(args);
             } else if (command.name === 'News') {
                 reply = this.assembleNewsReturnMessage();
-            } else if (command.name === 'Update' &&
-                (msg.author != null && msg.member.guild.roles._cache.find(it => it.name.toLowerCase() === "admin"))) {
+            } else if (command.name === 'Update' && (msg.author != null || msg.user != null) &&
+                    msg.member.guild.roles._cache.find(it => it.name.toLowerCase() === "admin")) {
                 if (Network.isUpdatingData) {
                     reply = StringUtils.get('hold.still.updating');
                 } else {
