@@ -66,7 +66,7 @@
     "hint": "Find the top 10 heroes by filters sorted by their score based on QUICKMATCH",
     "localizedHint": "Encontra os 10 melhores heróis por filtros recebidos, ordenando-os pela sua pontuação baseada em Jogos Rápidos",
     "acceptParams": true,
-    "requiredParam": true,
+    "requiredParam": false,
     "defaultPermission": true,
     "category": "HEROES"
   },
