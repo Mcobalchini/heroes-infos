@@ -34,7 +34,7 @@ exports.Network = {
 
         let result
 
-        await page.goto(`https://nexuscompendium.com/api/currently/RotationHero`);
+        await page.goto(`https://nexuscompendium.com/api/currently/RotationHero`).catch();
         result = await page.evaluate(() => {
             return JSON.parse(document.body.innerText).RotationHero.Heroes.map(it => it.ID)
         });
@@ -49,7 +49,7 @@ exports.Network = {
 
         let result
 
-        await page.goto(`https://news.blizzard.com/pt-br/heroes-of-the-storm`);
+        await page.goto(`https://news.blizzard.com/pt-br/heroes-of-the-storm`).catch();
         result = await page.evaluate(() => {
             return Array.from(document.querySelectorAll('.ArticleListItem article')).slice(0,5).map(it => {
                 return { header: it.firstChild.innerText, link: it.firstChild.href }
@@ -68,7 +68,7 @@ exports.Network = {
             'Cookie': cookie,
         });
 
-        await page.goto(icyUrl, {timeout: 0});
+        await page.goto(icyUrl, {timeout: 0}).catch();
 
         const icyData = await page.evaluate(() => {
             const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.innerText);
@@ -96,7 +96,7 @@ exports.Network = {
 
         });
 
-        await page.goto(profileUrl, {timeout: 0});
+        await page.goto(profileUrl, {timeout: 0}).catch();
 
         const profileData = await page.evaluate(() => {
             const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `Popular build (${it.innerText}% win rate)`)
@@ -128,7 +128,8 @@ exports.Network = {
         const page = await this.createPage();
 
         let result
-        await page.goto(`https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`, {waitUntil: 'domcontentloaded'})
+        await page.goto(`https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`,
+            {waitUntil: 'domcontentloaded'}).catch();
 
         result = await page.evaluate(() => {
             return [...new Set(Array.from(document.querySelectorAll('.htl_ban_true')).map(nameElements => nameElements.nextElementSibling.innerText))];
@@ -143,7 +144,7 @@ exports.Network = {
 
         let result
 
-        await page.goto(`https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2`);
+        await page.goto(`https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2`).catch();
         result = await page.evaluate(() => {
             return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
                 return {
@@ -163,7 +164,7 @@ exports.Network = {
 
         let result
 
-        await page.goto(`https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1`);
+        await page.goto(`https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1`).catch();
         result = await page.evaluate(() => {
             return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
                 return {
@@ -422,7 +423,7 @@ exports.Network = {
 
     createHeroesProfileSession: async function () {
         const page = await this.createPage();
-        const response = await page.goto('https://www.heroesprofile.com/Global/Talents/');
+        const response = await page.goto('https://www.heroesprofile.com/Global/Talents/').catch();
         return response._headers["set-cookie"];
     },
 
