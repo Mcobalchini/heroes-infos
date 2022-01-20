@@ -39,7 +39,7 @@ exports.Network = {
             return JSON.parse(document.body.innerText).RotationHero.Heroes.map(it => it.ID)
         });
 
-        await this.browser.close();
+        await this.browser.close().catch();
         return result;
     },
 
