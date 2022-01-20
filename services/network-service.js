@@ -8,6 +8,7 @@ const puppeteer = require('puppeteer');
 const PromisePool = require('es6-promise-pool');
 const {Routes} = require("discord-api-types/v9");
 const {REST} = require("@discordjs/rest");
+const {App} = require("../app.js");
 let msg = null;
 const rest = new REST({ version: '9' }).setToken(process.env.HEROES_INFOS_TOKEN);
 
@@ -363,6 +364,7 @@ exports.Network = {
 
                     this.translateTips(heroesInfos).then(() => {
                         this.isUpdatingData = false;
+                        App.setBotStatus("Heroes of the Storm", "PLAYING");
                         if (callbackFunction)
                             callbackFunction(StringUtils.get('process.update.finished.time', (finishedTime - startTime) / 1000));
                     });
