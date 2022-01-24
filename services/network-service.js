@@ -451,11 +451,19 @@ exports.Network = {
     createHeroesProfileSession: async function () {
         const page = await this.createPage();
         const url = 'https://www.heroesprofile.com/Global/Talents/';
-        const response = await page.goto(url).catch(ex => {
+        let response;
+        try {
+             response = await page.goto(url)
+        } catch (ex) {
             process.stdout.write(ex.stack);
             this.failedJobs.push(url)
-        });
-        return response._headers["set-cookie"];
+        }
+
+        if (response != null) {
+            return response._headers["set-cookie"];
+        } else {
+            await this.createHeroesProfileSession();
+        }
     },
 
     createPage: async function () {
