@@ -35,9 +35,10 @@ exports.Network = {
         let result
         const url = `https://nexuscompendium.com/api/currently/RotationHero`;
 
-        await page.goto(url).catch(ex =>
+        await page.goto(url).catch(ex => {
+            process.stdout.write(ex.stack);
             this.failedJobs.push(url)
-        );
+        });
 
         result = await page.evaluate(() => {
             return JSON.parse(document.body.innerText).RotationHero.Heroes.map(it => it.ID)
@@ -53,9 +54,10 @@ exports.Network = {
         const url = `https://news.blizzard.com/pt-br/heroes-of-the-storm`;
         let result
 
-        await page.goto(url).catch(ex =>
+        await page.goto(url).catch(ex => {
+            process.stdout.write(ex.stack);
             this.failedJobs.push(url)
-        );
+        });
 
         result = await page.evaluate(() => {
             return Array.from(document.querySelectorAll('.ArticleListItem article')).slice(0,5).map(it => {
@@ -75,9 +77,10 @@ exports.Network = {
             'Cookie': cookie,
         });
 
-        await page.goto(icyUrl, {timeout: 0}).catch(ex =>
-            this.failedJobs.push(icyUrl)
-        );
+        await page.goto(icyUrl, {timeout: 0}).catch(ex => {
+            process.stdout.write(ex.stack);
+            this.failedJobs.push(url)
+        });
 
         const icyData = await page.evaluate(() => {
             const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.innerText);
@@ -105,9 +108,10 @@ exports.Network = {
 
         });
 
-        await page.goto(profileUrl, {timeout: 0}).catch(ex =>
-            this.failedJobs.push(profileUrl)
-        );
+        await page.goto(profileUrl, {timeout: 0}).catch(ex => {
+            process.stdout.write(ex.stack);
+            this.failedJobs.push(url)
+        });
 
         const profileData = await page.evaluate(() => {
             const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `Popular build (${it.innerText}% win rate)`)
@@ -140,9 +144,10 @@ exports.Network = {
         const url = `https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`;
         let result
         await page.goto(url,
-            {waitUntil: 'domcontentloaded'}).catch(ex =>
+            {waitUntil: 'domcontentloaded'}).catch(ex => {
+            process.stdout.write(ex.stack);
             this.failedJobs.push(url)
-        );
+        });
 
         result = await page.evaluate(() => {
             return [...new Set(Array.from(document.querySelectorAll('.htl_ban_true')).map(nameElements => nameElements.nextElementSibling.innerText))];
@@ -157,9 +162,10 @@ exports.Network = {
         const url = `https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2`;
         let result
 
-        await page.goto(url).catch(ex =>
+        await page.goto(url).catch(ex => {
+            process.stdout.write(ex.stack);
             this.failedJobs.push(url)
-        );
+        });
 
         result = await page.evaluate(() => {
             return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
@@ -180,9 +186,11 @@ exports.Network = {
         const url = `https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1`;
         let result
 
-        await page.goto(url).catch(ex =>
+        await page.goto(url).catch(ex => {
+            process.stdout.write(ex.stack);
             this.failedJobs.push(url)
-        );
+        });
+
         result = await page.evaluate(() => {
             return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
                 return {
@@ -443,9 +451,10 @@ exports.Network = {
     createHeroesProfileSession: async function () {
         const page = await this.createPage();
         const url = 'https://www.heroesprofile.com/Global/Talents/';
-        const response = await page.goto(url).catch(ex =>
+        const response = await page.goto(url).catch(ex => {
+            process.stdout.write(ex.stack);
             this.failedJobs.push(url)
-        );
+        });
         return response._headers["set-cookie"];
     },
 

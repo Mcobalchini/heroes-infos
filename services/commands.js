@@ -6,7 +6,7 @@ const {Maps} = require("./maps.js");
 const {Network} = require("./network-service.js");
 const {SlashCommandBuilder} = require('@discordjs/builders');
 const {App} = require("../app.js");
-const commands = JSON.parse(fs.readFileSync("./data/commands.json"), {encoding: 'utf8', flag: 'r'});
+const commands = JSON.parse(fs.readFileSync("./data/constant/commands.json"), {encoding: 'utf8', flag: 'r'});
 
 exports.Commands = {
     findCommand: function (commandName) {
@@ -75,7 +75,7 @@ exports.Commands = {
     },
 
     handleCommand: async function (args, receivedCommand, msg, isInteraction) {
-        let reply = "";
+        let reply;
         let command = this.findCommand(receivedCommand);
         if (command != null) {
             if (command.category === "HEROES") {

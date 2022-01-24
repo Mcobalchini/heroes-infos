@@ -1,5 +1,5 @@
 const fs = require('fs');
-const strings = JSON.parse(fs.readFileSync("./data/strings.json"), { encoding: 'utf8', flag: 'r' });
+const strings = JSON.parse(fs.readFileSync("./data/constant/strings.json"), { encoding: 'utf8', flag: 'r' });
 
 exports.StringUtils = {
 	language: "en-us",
@@ -10,7 +10,7 @@ exports.StringUtils = {
 		if (property != null) {
 			let string = property
 			try {
-				string = Object.values(strings[this.language].find(it => Object.keys(it) == property))[0];
+				string = Object.values(strings[this.language].find(it => Object.keys(it) === property))[0];
 				args.forEach((it, idx) => {					
 					string = string.replace(`\{${idx}\}`, args[idx])
 				});

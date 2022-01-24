@@ -1,8 +1,8 @@
 const fs = require('fs');
 const config = require("../config.json");
-const roles = JSON.parse(fs.readFileSync("./data/roles.json"), {encoding: 'utf8', flag: 'r'});
+const roles = JSON.parse(fs.readFileSync("./data/constant/roles.json"), {encoding: 'utf8', flag: 'r'});
 const StringUtils = require('./strings.js').StringUtils;
-const heroesBase = JSON.parse(fs.readFileSync("./data/heroes-base.json"), {encoding: 'utf8', flag: 'r'});
+const heroesBase = JSON.parse(fs.readFileSync("./data/constant/heroes-base.json"), {encoding: 'utf8', flag: 'r'});
 let heroesInfos = [];
 let freeHeroes = [];
 let mustBanHeroes = [];
@@ -303,7 +303,7 @@ exports.Heroes = {
         let remainingHeroes = 5;
         let suggested = [];
 
-        for (it of heroesArray) {
+        for (let it of heroesArray) {
             let hero = this.findHero(it, true, false);
             if (hero != null) {
                 if (currentCompHeroes.size >= 5) {
@@ -317,16 +317,16 @@ exports.Heroes = {
             remainingHeroes -= currentCompHeroes.size;
             const missingRolesMap = new Map()
 
-            for (currentCompHero of currentCompHeroes.values()) {
+            for (let currentCompHero of currentCompHeroes.values()) {
                 heroesSorted = heroesSorted.filter(item => item.id !== currentCompHero.id);
                 currentCompRoles.push(this.findRoleById(currentCompHero.role).name);
             }
             currentCompRoles = currentCompRoles.sort();
 
-            for (currentCompHero of currentCompHeroes.values()) {
+            for (let currentCompHero of currentCompHeroes.values()) {
                 let synergies = currentCompHero.infos.synergies.map(it => this.findHero(it, false, true));
                 synergies.forEach((synergy) => {
-                    let hero = heroesSorted.find(it => it.id == synergy.id)
+                    let hero = heroesSorted.find(it => it.id === synergy.id)
                     if (hero != null)
                         hero.infos.tierPosition = hero.infos.tierPosition * 2;
                 });
@@ -337,7 +337,7 @@ exports.Heroes = {
 
             let metaCompsRoles = this.compositions.map(it => it.roles.sort());
 
-            for (role of currentCompRoles) {
+            for (let role of currentCompRoles) {
                 let index = currentCompRoles.indexOf(role);
                 if (index !== -1) {
                     if (currentCompRoles[index + 1] === role) {
@@ -351,10 +351,10 @@ exports.Heroes = {
             metaCompsRoles = metaCompsRoles.splice(0, 3);
             if (metaCompsRoles.length > 0) {
 
-                for (comp of metaCompsRoles) {
+                for (let comp of metaCompsRoles) {
                     let missingRoles = JSON.parse(JSON.stringify(comp));
 
-                    for (currentRole of currentCompRoles) {
+                    for (let currentRole of currentCompRoles) {
                         let index = missingRoles.indexOf(currentRole);
                         if (index !== -1)
                             missingRoles.splice(missingRoles.indexOf(currentRole), 1);
@@ -366,10 +366,10 @@ exports.Heroes = {
 
             //filter missing role heroes only
             for (let [key, value] of missingRolesMap.entries()) {
-                for (missingRole of value) {
+                for (let missingRole of value) {
                     let role = this.findRoleByName(missingRole);
-                    let hero = heroesSorted.filter(heroToShift => heroToShift.role == role.id).shift();
-                    heroesSorted = heroesSorted.filter(heroFiltered => heroFiltered.id != hero.id);
+                    let hero = heroesSorted.filter(heroToShift => heroToShift.role === role.id).shift();
+                    heroesSorted = heroesSorted.filter(heroFiltered => heroFiltered.id !== hero.id);
 
                     suggested.push(hero);
                 }
@@ -434,7 +434,7 @@ exports.Heroes = {
                         data: returnedValues
                     };
                 } else {
-                    reply = `There was not enough info found for the hero ${argument} \nPlease, call the ${config.prefix}update command to search for them`;
+                    reply = StringUtils.get('not.enough.hero.infos', argument, config.prefix);
                 }
 
             } else {

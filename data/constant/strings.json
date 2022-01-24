@@ -143,6 +143,9 @@
     },
     {
       "news": "Notícias"
+    },
+    {
+      "not.enough.hero.infos" : "Não há informação o suficiente para o héroi {0}"
     }
   ],
   "en-us": [
@@ -289,6 +292,9 @@
     },
     {
       "news": "News"
+    },
+    {
+      "not.enough.hero.infos" : "There was not enough info found for the hero {0}"
     }
   ]
 }
