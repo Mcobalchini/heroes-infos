@@ -26,7 +26,6 @@
     "localizedHint": "Mostra as construções de skills conhecidas para o herói especificado",
     "acceptParams": true,
     "requiredParam": true,
-    "requiredParam": true,
     "defaultPermission": true,
     "category": "HEROES"
   },
