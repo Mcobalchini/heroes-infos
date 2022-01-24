@@ -13,7 +13,7 @@ let msg = null;
 const rest = new REST({ version: '9' }).setToken(process.env.HEROES_INFOS_TOKEN);
 
 exports.Network = {
-
+    failedJobs: [],
     isUpdatingData: false,
     replyTo: null,
     browser: null,
@@ -33,8 +33,12 @@ exports.Network = {
         const page = await this.createPage();
 
         let result
+        const url = `https://nexuscompendium.com/api/currently/RotationHero`;
 
-        await page.goto(`https://nexuscompendium.com/api/currently/RotationHero`).catch();
+        await page.goto(url).catch(ex =>
+            this.failedJobs.push(url)
+        );
+
         result = await page.evaluate(() => {
             return JSON.parse(document.body.innerText).RotationHero.Heroes.map(it => it.ID)
         });
@@ -46,10 +50,13 @@ exports.Network = {
     gatherNews: async function () {
         await this.setBrowser();
         const page = await this.createPage();
-
+        const url = `https://news.blizzard.com/pt-br/heroes-of-the-storm`;
         let result
 
-        await page.goto(`https://news.blizzard.com/pt-br/heroes-of-the-storm`).catch();
+        await page.goto(url).catch(ex =>
+            this.failedJobs.push(url)
+        );
+
         result = await page.evaluate(() => {
             return Array.from(document.querySelectorAll('.ArticleListItem article')).slice(0,5).map(it => {
                 return { header: it.firstChild.innerText, link: it.firstChild.href }
@@ -68,7 +75,9 @@ exports.Network = {
             'Cookie': cookie,
         });
 
-        await page.goto(icyUrl, {timeout: 0}).catch();
+        await page.goto(icyUrl, {timeout: 0}).catch(ex =>
+            this.failedJobs.push(icyUrl)
+        );
 
         const icyData = await page.evaluate(() => {
             const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.innerText);
@@ -96,7 +105,9 @@ exports.Network = {
 
         });
 
-        await page.goto(profileUrl, {timeout: 0}).catch();
+        await page.goto(profileUrl, {timeout: 0}).catch(ex =>
+            this.failedJobs.push(profileUrl)
+        );
 
         const profileData = await page.evaluate(() => {
             const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `Popular build (${it.innerText}% win rate)`)
@@ -126,10 +137,12 @@ exports.Network = {
 
     gatherTierListInfo: async function () {
         const page = await this.createPage();
-
+        const url = `https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`;
         let result
-        await page.goto(`https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`,
-            {waitUntil: 'domcontentloaded'}).catch();
+        await page.goto(url,
+            {waitUntil: 'domcontentloaded'}).catch(ex =>
+            this.failedJobs.push(url)
+        );
 
         result = await page.evaluate(() => {
             return [...new Set(Array.from(document.querySelectorAll('.htl_ban_true')).map(nameElements => nameElements.nextElementSibling.innerText))];
@@ -141,10 +154,13 @@ exports.Network = {
 
     gatherPopularityAndWinRateInfo: async function () {
         const page = await this.createPage();
-
+        const url = `https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2`;
         let result
 
-        await page.goto(`https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2`).catch();
+        await page.goto(url).catch(ex =>
+            this.failedJobs.push(url)
+        );
+
         result = await page.evaluate(() => {
             return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
                 return {
@@ -161,10 +177,12 @@ exports.Network = {
 
     gatherCompositionsInfo: async function () {
         const page = await this.createPage();
-
+        const url = `https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1`;
         let result
 
-        await page.goto(`https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1`).catch();
+        await page.goto(url).catch(ex =>
+            this.failedJobs.push(url)
+        );
         result = await page.evaluate(() => {
             return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
                 return {
@@ -381,6 +399,7 @@ exports.Network = {
                 await this.updateData(callbackFunction);
             }
             process.stdout.write(e.stack);
+            process.stdout.write(this.failedJobs.join('\n'));
             this.isUpdatingData = false;
             if (callbackFunction)
                 callbackFunction(replyMsg);
@@ -423,7 +442,10 @@ exports.Network = {
 
     createHeroesProfileSession: async function () {
         const page = await this.createPage();
-        const response = await page.goto('https://www.heroesprofile.com/Global/Talents/').catch();
+        const url = 'https://www.heroesprofile.com/Global/Talents/';
+        const response = await page.goto(url).catch(ex =>
+            this.failedJobs.push(url)
+        );
         return response._headers["set-cookie"];
     },
 
