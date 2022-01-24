@@ -110,7 +110,7 @@ exports.Network = {
 
         await page.goto(profileUrl, {timeout: 0}).catch(ex => {
             process.stdout.write(ex.stack);
-            this.failedJobs.push(url)
+            this.failedJobs.push(profileUrl)
         });
 
         const profileData = await page.evaluate(() => {
@@ -260,7 +260,10 @@ exports.Network = {
                 heroCrawlInfo.heroId,
                 heroCrawlInfo.profileUrl,
                 heroesMap,
-                cookieValue) : null;
+                cookieValue).catch(ex => {
+                    process.stdout.write(ex.stack);
+                    // this.failedJobs.push(heroCrawlInfo)
+                }) : null;
         };
 
         let startTime = new Date();
