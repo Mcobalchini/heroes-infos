@@ -41,7 +41,7 @@ exports.Network = {
             });
             await this.browser.close().catch();
         } catch (ex) {
-            process.stdout.write(ex.stack);
+            process.stdout.write(`Error while gathering rotation ${ex.stack}\n`);
             this.failedJobs.push(url)
         }
 
@@ -116,7 +116,7 @@ exports.Network = {
 
             });
         } catch (ex) {
-            process.stdout.write(ex.stack);
+            process.stdout.write(`Error while fetching icyData ${ex.stack}\n`);
         }
 
         try {
@@ -139,7 +139,7 @@ exports.Network = {
                 };
             });
         } catch (ex) {
-            process.stdout.write(ex.stack);
+            process.stdout.write(`Error while fetching profileData ${ex.stack}\n`);
         } finally {
             await page.close();
         }
@@ -152,6 +152,7 @@ exports.Network = {
 
             heroesMap.set(heroId, returnObject);
         } else {
+            process.stdout.write(`Trying again due to an error on hero ${icyUrl}\n`);
             await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
         }
     },
@@ -167,7 +168,7 @@ exports.Network = {
             });
 
         } catch (ex) {
-            process.stdout.write(ex.stack);
+            process.stdout.write(`Error while gathering tier list info${ex.stack}\n`);
             this.failedJobs.push(url)
         } finally {
             await page.close();
@@ -198,7 +199,7 @@ exports.Network = {
             });
 
         } catch (ex) {
-            process.stdout.write(ex.stack);
+            process.stdout.write(`Error while gathering popularity and WR info${ex.stack}\n`);
             this.failedJobs.push(url);
         } finally {
             await page.close();
@@ -228,7 +229,7 @@ exports.Network = {
             });
 
         } catch (ex) {
-            process.stdout.write(ex.stack);
+            process.stdout.write(`Error while gathering compositions ${ex.stack}\n`);
             this.failedJobs.push(url)
         } finally {
             await page.close();
@@ -295,7 +296,7 @@ exports.Network = {
                 heroCrawlInfo.profileUrl,
                 heroesMap,
                 cookieValue).catch(ex => {
-                    process.stdout.write(ex.stack);
+                    process.stdout.write(`Error while gathering stats ${ex.stack}\n`);
                     // this.failedJobs.push(heroCrawlInfo)
                 }) : null;
         };
@@ -493,7 +494,7 @@ exports.Network = {
         try {
              response = await page.goto(url)
         } catch (ex) {
-            process.stdout.write(ex.stack);
+            process.stdout.write(`Error while creating heroes session ${ex.stack}\n`);
             this.failedJobs.push(url)
         }
 
