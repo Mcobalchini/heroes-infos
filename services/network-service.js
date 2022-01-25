@@ -115,6 +115,11 @@ exports.Network = {
                 };
 
             });
+        } catch (ex) {
+            process.stdout.write(ex.stack);
+        }
+
+        try {
 
             await page.goto(profileUrl, {timeout: 0});
 
@@ -132,8 +137,8 @@ exports.Network = {
                 return {
                     builds: builds,
                 };
-
             });
+            await page.close();
         } catch (ex) {
             process.stdout.write(ex.stack);
         }
@@ -145,7 +150,6 @@ exports.Network = {
             }
 
             heroesMap.set(heroId, returnObject);
-            await page.close();
         } else {
             await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
         }
