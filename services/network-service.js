@@ -459,6 +459,34 @@ exports.Network = {
         );
     },
 
+    updateCommandsPermissions: async function() {
+        if (!App.bot.application?.owner) await App.bot.application?.fetch();
+
+        const botCommands = await App.bot.application?.commands.fetch()
+        const command = botCommands.find(it => it.name === "update");
+
+        await App.bot.guilds.cache.forEach(it => {
+            let myPerm = Array.from(it.roles._cache
+                .filter(role => role.name.toLowerCase() === "adm" || role.name.toLowerCase() === "admin").values());
+
+            if (myPerm.length > 0) {
+                let permissions = myPerm.map (it => {
+                    return {
+                        id: it.id,
+                        type: 'ROLE',
+                        permission: true
+                    }
+                });
+
+                command.permissions.set({
+                    guild: it,
+                    command: command.id,
+                    permissions: permissions
+                });
+            }
+        });
+    },
+
     isUpdateNeeded: function () {
         return !Heroes.findHero("1", true)?.infos?.builds?.length > 0
     },

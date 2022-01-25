@@ -1,15 +1,17 @@
+require('dotenv').config({path: './variables.env'});
+const {Client, Intents, MessageEmbed} = require("discord.js");
+const bot = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]});
+const config = require("./config.json");
+const prefix = config.prefix;
+
 exports.App = {
-    setBotStatus: setBotStatus
+    setBotStatus: setBotStatus,
+    bot: bot
 };
 
-const {Client, Intents, MessageEmbed} = require("discord.js");
-const config = require("./config.json");
 const {Commands} = require("./services/commands");
-require('dotenv').config({path: './variables.env'});
 const {Network} = require('./services/network-service.js');
 const {StringUtils} = require('./services/strings.js');
-const prefix = config.prefix;
-const bot = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]});
 let msg = null;
 
 function setBotStatus(name, type) {
@@ -109,34 +111,6 @@ function createEmbeds(object, heroName, attachment) {
     return embeds;
 }
 
-async function updateCommandsPermissions() {
-    if (!bot.application?.owner) await bot.application?.fetch();
-
-    const botCommands = await bot.application?.commands.fetch()
-    const command = botCommands.find(it => it.name === "update");
-
-    await bot.guilds.cache.forEach(it => {
-        let myPerm = Array.from(it.roles._cache
-            .filter(role => role.name.toLowerCase() === "adm" || role.name.toLowerCase() === "admin").values());
-
-        if (myPerm.length > 0) {
-            let permissions = myPerm.map (it => {
-                return {
-                    id: it.id,
-                    type: 'ROLE',
-                    permission: true
-                }
-            });
-
-            command.permissions.set({
-                guild: it,
-                command: command.id,
-                permissions: permissions
-            });
-        }
-    });
-}
-
 bot.on("messageCreate", message => {
     if (message.author.bot) return;
     if (!message.content.startsWith(prefix)) return;
@@ -169,7 +143,7 @@ bot.once("ready", function () {
     periodicUpdateCheck();
     setInterval(periodicUpdateCheck, 100000);
     process.stdout.write(`Application ready! - ${new Date()}\n`);
-    Commands.assembleSlashCommands().then(updateCommandsPermissions());
+    Commands.assembleSlashCommands().then(Network.updateCommandsPermissions());
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN);
