@@ -34,18 +34,22 @@ exports.Network = {
 
         let result
         const url = `https://nexuscompendium.com/api/currently/RotationHero`;
-
-        await page.goto(url).catch(ex => {
+        try {
+            await page.goto(url)
+            result = await page.evaluate(() => {
+                return JSON.parse(document.body.innerText).RotationHero.Heroes.map(it => it.ID)
+            });
+            await this.browser.close().catch();
+        } catch (ex) {
             process.stdout.write(ex.stack);
             this.failedJobs.push(url)
-        });
+        }
 
-        result = await page.evaluate(() => {
-            return JSON.parse(document.body.innerText).RotationHero.Heroes.map(it => it.ID)
-        });
-
-        await this.browser.close().catch();
-        return result;
+        if (result != null) {
+            return result;
+        } else {
+            await this.gatherHeroesRotation();
+        }
     },
 
     gatherNews: async function () {
@@ -53,156 +57,180 @@ exports.Network = {
         const page = await this.createPage();
         const url = `https://news.blizzard.com/pt-br/heroes-of-the-storm`;
         let result
-
-        await page.goto(url).catch(ex => {
+        try {
+            await page.goto(url);
+            result = await page.evaluate(() => {
+                return Array.from(document.querySelectorAll('.ArticleListItem article')).slice(0,5).map(it => {
+                    return { header: it.firstChild.innerText, link: it.firstChild.href }
+                })
+            });
+            await this.browser.close();
+        } catch (ex) {
             process.stdout.write(ex.stack);
             this.failedJobs.push(url)
-        });
-
-        result = await page.evaluate(() => {
-            return Array.from(document.querySelectorAll('.ArticleListItem article')).slice(0,5).map(it => {
-                return { header: it.firstChild.innerText, link: it.firstChild.href }
-            })
-        });
-
-        await this.browser.close();
-        return result;
+        }
+        if (result != null) {
+            return result;
+        } else {
+            await this.gatherNews();
+        }
     },
 
     gatherHeroStats: async function (icyUrl, heroId, profileUrl, heroesMap, cookie) {
 
         const page = await this.createPage();
+        let icyData;
+        let profileData;
 
         await page.setExtraHTTPHeaders({
             'Cookie': cookie,
         });
 
-        await page.goto(icyUrl, {timeout: 0}).catch(ex => {
+        try {
+
+            await page.goto(icyUrl, {timeout: 0});
+
+            icyData = await page.evaluate(() => {
+                const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.innerText);
+                const skills = Array.from(document.querySelectorAll('.talent_build_copy_button > input')).map(skillsElements => skillsElements.value);
+                const counters = Array.from(document.querySelectorAll('.hero_portrait_bad')).map(nameElements => nameElements.title);
+                const synergies = Array.from(document.querySelectorAll('.hero_portrait_good')).map(nameElements => nameElements.title);
+                const strongerMaps = Array.from(document.querySelectorAll('.heroes_maps_stronger .heroes_maps_content span img')).map(i => i.title);
+                const tips = Array.from(document.querySelectorAll('.heroes_tips li')).map(i => i.innerText.trim().replaceAll('  ', ' '));
+
+                const builds = [];
+                for (let i in names) {
+                    builds.push({
+                        name: names[i],
+                        skills: skills[i]
+                    });
+                }
+
+                return {
+                    builds: builds,
+                    counters: counters,
+                    synergies: synergies,
+                    strongerMaps: strongerMaps,
+                    tips: tips
+                };
+
+            });
+
+            await page.goto(profileUrl, {timeout: 0});
+
+            profileData = await page.evaluate(() => {
+                const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `Popular build (${it.innerText}% win rate)`)
+                const skills = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .build-code')).map(it => it.innerText)
+                const builds = [];
+                for (let i in names) {
+                    builds.push({
+                        name: names[i],
+                        skills: skills[i]
+                    });
+                }
+
+                return {
+                    builds: builds,
+                };
+
+            });
+        } catch (ex) {
             process.stdout.write(ex.stack);
-            this.failedJobs.push(url)
-        });
-
-        const icyData = await page.evaluate(() => {
-            const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.innerText);
-            const skills = Array.from(document.querySelectorAll('.talent_build_copy_button > input')).map(skillsElements => skillsElements.value);
-            const counters = Array.from(document.querySelectorAll('.hero_portrait_bad')).map(nameElements => nameElements.title);
-            const synergies = Array.from(document.querySelectorAll('.hero_portrait_good')).map(nameElements => nameElements.title);
-            const strongerMaps = Array.from(document.querySelectorAll('.heroes_maps_stronger .heroes_maps_content span img')).map(i => i.title);
-            const tips = Array.from(document.querySelectorAll('.heroes_tips li')).map(i => i.innerText.trim().replaceAll('  ', ' '));
-
-            const builds = [];
-            for (let i in names) {
-                builds.push({
-                    name: names[i],
-                    skills: skills[i]
-                });
-            }
-
-            return {
-                builds: builds,
-                counters: counters,
-                synergies: synergies,
-                strongerMaps: strongerMaps,
-                tips: tips
-            };
-
-        });
-
-        await page.goto(profileUrl, {timeout: 0}).catch(ex => {
-            process.stdout.write(ex.stack);
-            this.failedJobs.push(profileUrl)
-        });
-
-        const profileData = await page.evaluate(() => {
-            const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `Popular build (${it.innerText}% win rate)`)
-            const skills = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .build-code')).map(it => it.innerText)
-            const builds = [];
-            for (let i in names) {
-                builds.push({
-                    name: names[i],
-                    skills: skills[i]
-                });
-            }
-
-            return {
-                builds: builds,
-            };
-
-        });
-
-        returnObject = {
-            icyData: icyData,
-            profileData: profileData
         }
 
-        heroesMap.set(heroId, returnObject);
-        await page.close();
+        if (icyData != null && profileData != null) {
+            returnObject = {
+                icyData: icyData,
+                profileData: profileData
+            }
+
+            heroesMap.set(heroId, returnObject);
+            await page.close();
+        } else {
+            await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
+        }
     },
 
     gatherTierListInfo: async function () {
         const page = await this.createPage();
         const url = `https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`;
-        let result
-        await page.goto(url,
-            {waitUntil: 'domcontentloaded'}).catch(ex => {
+        let result;
+        try {
+            await page.goto(url, {waitUntil: 'domcontentloaded'});
+            result = await page.evaluate(() => {
+                return [...new Set(Array.from(document.querySelectorAll('.htl_ban_true')).map(nameElements => nameElements.nextElementSibling.innerText))];
+            });
+
+            await page.close();
+        } catch (ex) {
             process.stdout.write(ex.stack);
             this.failedJobs.push(url)
-        });
+        }
 
-        result = await page.evaluate(() => {
-            return [...new Set(Array.from(document.querySelectorAll('.htl_ban_true')).map(nameElements => nameElements.nextElementSibling.innerText))];
-        });
+        if (result != null) {
+            return result;
+        } else {
+            await this.gatherTierListInfo();
+        }
 
-        await page.close();
-        return result;
     },
 
     gatherPopularityAndWinRateInfo: async function () {
         const page = await this.createPage();
         const url = `https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2`;
         let result
-
-        await page.goto(url).catch(ex => {
-            process.stdout.write(ex.stack);
-            this.failedJobs.push(url)
-        });
-
-        result = await page.evaluate(() => {
-            return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
-                return {
-                    name: it.children[1].firstElementChild.innerText,
-                    winRate: parseFloat(it.children[3].innerText.replace(",", ".")),
-                    games: parseFloat(it.children[2].innerText.replace(",", ".")),
-                }
+        try {
+            await page.goto(url);
+            result = await page.evaluate(() => {
+                return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
+                    return {
+                        name: it.children[1].firstElementChild.innerText,
+                        winRate: parseFloat(it.children[3].innerText.replace(",", ".")),
+                        games: parseFloat(it.children[2].innerText.replace(",", ".")),
+                    }
+                });
             });
-        });
 
-        await page.close();
-        return result;
+            await page.close();
+        } catch (ex) {
+            process.stdout.write(ex.stack);
+            this.failedJobs.push(url);
+        }
+
+        if (result != null) {
+            return result;
+        } else {
+            await this.gatherPopularityAndWinRateInfo();
+        }
     },
 
     gatherCompositionsInfo: async function () {
         const page = await this.createPage();
         const url = `https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1`;
         let result
+        try {
+            await page.goto(url);
+            result = await page.evaluate(() => {
+                return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
+                    return {
+                        games: it.children[0].innerText,
+                        winRate: parseFloat(it.children[1].innerText.replace(",", ".")),
+                        roles: Array.from(it.children).filter(it => it.style.display === "none").map(it => it.innerText)
+                    }
+                });
+            });
 
-        await page.goto(url).catch(ex => {
+            await page.close();
+        } catch (ex) {
             process.stdout.write(ex.stack);
             this.failedJobs.push(url)
-        });
+        }
 
-        result = await page.evaluate(() => {
-            return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
-                return {
-                    games: it.children[0].innerText,
-                    winRate: parseFloat(it.children[1].innerText.replace(",", ".")),
-                    roles: Array.from(it.children).filter(it => it.style.display === "none").map(it => it.innerText)
-                }
-            });
-        });
-
-        await page.close();
-        return result;
+        if (result != null) {
+            return result;
+        } else {
+            await this.gatherCompositionsInfo();
+        }
     },
 
     updateData: async function (callbackFunction) {
@@ -400,7 +428,7 @@ exports.Network = {
                     });
                 });
             });
-        } catch(e) {
+        } catch (e) {
             let replyMsg = StringUtils.get('could.not.update.data.try.again');
 
             if (e.stack.includes("Navigation timeout of 30000 ms exceeded")

@@ -10,7 +10,7 @@ exports.StringUtils = {
 		if (property != null) {
 			let string = property
 			try {
-				string = Object.values(strings[this.language].find(it => Object.keys(it) === property))[0];
+				string = Object.values(strings[this.language].find(it => Object.keys(it) == property))[0];
 				args.forEach((it, idx) => {					
 					string = string.replace(`\{${idx}\}`, args[idx])
 				});
