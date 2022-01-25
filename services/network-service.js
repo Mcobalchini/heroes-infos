@@ -77,7 +77,6 @@ exports.Network = {
     },
 
     gatherHeroStats: async function (icyUrl, heroId, profileUrl, heroesMap, cookie) {
-
         const page = await this.createPage();
         let icyData;
         let profileData;
@@ -141,7 +140,6 @@ exports.Network = {
         } catch (ex) {
             process.stdout.write(`Error while fetching profileData ${ex.stack}\n`);
         } finally {
-            process.stdout.write(`Page closed\n`);
             await page.close();
         }
 
@@ -301,7 +299,6 @@ exports.Network = {
         };
 
         let startTime = new Date();
-        process.stdout.write(`Gathering builds at ${startTime.toLocaleTimeString()}\n`);
 
         const thread = new PromisePool(promiseProducer, 6);
 
