@@ -141,6 +141,7 @@ exports.Network = {
         } catch (ex) {
             process.stdout.write(`Error while fetching profileData ${ex.stack}\n`);
         } finally {
+            process.stdout.write(`Page closed\n`);
             await page.close();
         }
 
@@ -152,7 +153,7 @@ exports.Network = {
 
             heroesMap.set(heroId, returnObject);
         } else {
-            process.stdout.write(`Trying again due to an error on hero ${icyUrl}\n`);
+            process.stdout.write(`Trying again due to an error on url ${icyUrl}\n`);
             await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
         }
     },
@@ -199,7 +200,7 @@ exports.Network = {
             });
 
         } catch (ex) {
-            process.stdout.write(`Error while gathering popularity and WR info${ex.stack}\n`);
+            process.stdout.write(`Error while gathering popularity and WR info ${ex.stack}\n`);
             this.failedJobs.push(url);
         } finally {
             await page.close();
@@ -348,7 +349,7 @@ exports.Network = {
                     }
 
                     if (profileData.builds.length === 0) {
-                        process.stdout.write(`No builds found for ${heroesInfos[index].name}\n`);
+                        process.stdout.write(`No (profile) builds found for ${heroesInfos[index].name}\n`);
                     }
 
                     //retrieves the duplicate items
