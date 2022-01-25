@@ -138,9 +138,10 @@ exports.Network = {
                     builds: builds,
                 };
             });
-            await page.close();
         } catch (ex) {
             process.stdout.write(ex.stack);
+        } finally {
+            await page.close();
         }
 
         if (icyData != null && profileData != null) {
@@ -165,10 +166,11 @@ exports.Network = {
                 return [...new Set(Array.from(document.querySelectorAll('.htl_ban_true')).map(nameElements => nameElements.nextElementSibling.innerText))];
             });
 
-            await page.close();
         } catch (ex) {
             process.stdout.write(ex.stack);
             this.failedJobs.push(url)
+        } finally {
+            await page.close();
         }
 
         if (result != null) {
@@ -195,10 +197,11 @@ exports.Network = {
                 });
             });
 
-            await page.close();
         } catch (ex) {
             process.stdout.write(ex.stack);
             this.failedJobs.push(url);
+        } finally {
+            await page.close();
         }
 
         if (result != null) {
@@ -224,10 +227,11 @@ exports.Network = {
                 });
             });
 
-            await page.close();
         } catch (ex) {
             process.stdout.write(ex.stack);
             this.failedJobs.push(url)
+        } finally {
+            await page.close();
         }
 
         if (result != null) {
