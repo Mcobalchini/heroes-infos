@@ -159,6 +159,7 @@ exports.Network = {
     },
 
     gatherTierListInfo: async function () {
+        process.stdout.write(`Gathering tier list at ${new Date().toLocaleTimeString()}\n`);
         const page = await this.createPage();
         const url = `https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`;
         let result;
@@ -184,6 +185,7 @@ exports.Network = {
     },
 
     gatherPopularityAndWinRateInfo: async function () {
+        process.stdout.write(`Gathering win rate at ${new Date().toLocaleTimeString()}\n`);
         const page = await this.createPage();
         const url = `https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2`;
         let result
@@ -214,6 +216,7 @@ exports.Network = {
     },
 
     gatherCompositionsInfo: async function () {
+        process.stdout.write(`Gathering compositions at ${new Date().toLocaleTimeString()}\n`);
         const page = await this.createPage();
         const url = `https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1`;
         let result
@@ -250,13 +253,9 @@ exports.Network = {
 
         //const browser = await puppeteer.launch({devtools: true});
 
-        process.stdout.write(`Creating heroes profile session at ${new Date().toLocaleTimeString()}\n`);
         const cookieValue = await this.createHeroesProfileSession();
-        process.stdout.write(`Gathering tier list at ${new Date().toLocaleTimeString()}\n`);
         const tierList = await this.gatherTierListInfo();
-        process.stdout.write(`Gathering win rate at ${new Date().toLocaleTimeString()}\n`);
         const popularityWinRate = await this.gatherPopularityAndWinRateInfo();
-        process.stdout.write(`Gathering compositions at ${new Date().toLocaleTimeString()}\n`);
         const compositions = await this.gatherCompositionsInfo();
 
         //stores compositions
@@ -297,7 +296,6 @@ exports.Network = {
                 heroCrawlInfo.profileUrl,
                 heroesMap,
                 cookieValue).catch(ex => {
-                    process.stdout.write(`Error while gathering stats ${ex.stack}\n`);
                     // this.failedJobs.push(heroCrawlInfo)
                 }) : null;
         };
@@ -517,20 +515,19 @@ exports.Network = {
     },
 
     createHeroesProfileSession: async function () {
+        process.stdout.write(`Creating heroes profile session at ${new Date().toLocaleTimeString()}\n`);
         const page = await this.createPage();
         const url = 'https://www.heroesprofile.com/Global/Talents/';
         let response;
         try {
              response = await page.goto(url)
+             return response._headers["set-cookie"];
         } catch (ex) {
             process.stdout.write(`Error while creating heroes session ${ex.stack}\n`);
-            this.failedJobs.push(url)
-        }
-
-        if (response != null) {
-            return response._headers["set-cookie"];
-        } else {
             await this.createHeroesProfileSession();
+            this.failedJobs.push(url);
+        } finally {
+            await page.close();
         }
     },
 
