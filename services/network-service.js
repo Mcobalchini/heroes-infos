@@ -145,7 +145,7 @@ exports.Network = {
         }
 
         if (icyData != null && profileData != null) {
-            returnObject = {
+            let returnObject = {
                 icyData: icyData,
                 profileData: profileData
             }
@@ -274,8 +274,6 @@ exports.Network = {
             return a.tierPosition - b.tierPosition
         }).reverse();
         Heroes.setCompositions(sortedComposition);
-        this.writeFile('data/compositions.json', sortedComposition);
-        process.stdout.write(`Stored compositions on json at ${new Date().toLocaleTimeString()}\n`);
 
         let heroesMap = new Map();
         let heroesIdAndUrls = [];
@@ -303,9 +301,9 @@ exports.Network = {
         };
 
         let startTime = new Date();
-        process.stdout.write(`Started gathering process at ${startTime.toLocaleTimeString()}\n`);
+        process.stdout.write(`Gathering builds at ${startTime.toLocaleTimeString()}\n`);
 
-        const thread = new PromisePool(promiseProducer, 5);
+        const thread = new PromisePool(promiseProducer, 6);
 
         try {
             thread.start().then(() => {
@@ -357,7 +355,7 @@ exports.Network = {
 
                     //applies winrate on known builds names
                     icyData.builds.forEach(it => {
-                        for (item of repeatedBuilds) {
+                        for (let item of repeatedBuilds) {
                             if (item.skills === it.skills) {
                                 it.name = `${it.name} (${item.name.match(/([0-9.]%*)/g, '').join('')} win rate)`
                             }
@@ -384,7 +382,6 @@ exports.Network = {
                     heroesInfos[index].infos.games = obj.games;
                 }
 
-
                 Heroes.setHeroesInfos(heroesInfos);
 
                 let cacheBans = [];
@@ -397,7 +394,6 @@ exports.Network = {
                 });
 
                 Heroes.setBanHeroes(cacheBans);
-                this.writeFile('data/banlist.json', cacheBans);
 
                 heroesInfos.sort(function (a, b) {
                     return a.infos.games - b.infos.games;
@@ -423,12 +419,15 @@ exports.Network = {
                         });
                     }
 
+                    this.writeFile('data/banlist.json', cacheBans);
                     this.writeFile('data/freeweek.json', cacheFree);
+                    this.writeFile('data/compositions.json', sortedComposition);
 
                     Heroes.setFreeHeroes(cacheFree);
                     this.isUpdatingData = false;
 
                     this.translateTips(heroesInfos).then(() => {
+                        process.stdout.write(`Finished update at ${new Date().toLocaleTimeString()}\n`);
                         this.isUpdatingData = false;
                         App.setBotStatus("Heroes of the Storm", "PLAYING");
                         if (callbackFunction)
