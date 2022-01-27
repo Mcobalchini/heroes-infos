@@ -368,8 +368,8 @@ exports.Heroes = {
             for (let [key, value] of missingRolesMap.entries()) {
                 for (let missingRole of value) {
                     let role = this.findRoleByName(missingRole);
-                    let hero = heroesSorted.filter(heroToShift => heroToShift.role === role.id).shift();
-                    heroesSorted = heroesSorted.filter(heroFiltered => heroFiltered.id !== hero.id);
+                    let hero = heroesSorted.filter(heroToShift => heroToShift.role == role.id).shift();
+                    heroesSorted = heroesSorted.filter(heroFiltered => heroFiltered.id != hero.id);
 
                     suggested.push(hero);
                 }
