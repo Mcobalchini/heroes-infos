@@ -404,8 +404,8 @@ exports.Heroes = {
                             }
                         })
                     }
-                };  
-            }              
+                };
+            }
         }
         return 'No team'
     },

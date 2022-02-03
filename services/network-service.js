@@ -10,7 +10,7 @@ const {Routes} = require("discord-api-types/v9");
 const {REST} = require("@discordjs/rest");
 const {App} = require("../app.js");
 let msg = null;
-const rest = new REST({ version: '9' }).setToken(process.env.HEROES_INFOS_TOKEN);
+const rest = new REST({version: '9'}).setToken(process.env.HEROES_INFOS_TOKEN);
 
 exports.Network = {
     failedJobs: [],
@@ -18,7 +18,7 @@ exports.Network = {
     replyTo: null,
     browser: null,
 
-    setBrowser: async function() {
+    setBrowser: async function () {
         this.browser = await puppeteer.launch({
             headless: true,
             args: [
@@ -35,7 +35,7 @@ exports.Network = {
         let result
         const url = `https://nexuscompendium.com/api/currently/RotationHero`;
         try {
-            await page.goto(url)
+            await page.goto(url, {waitUntil: 'domcontentloaded'})
             result = await page.evaluate(() => {
                 return JSON.parse(document.body.innerText).RotationHero.Heroes.map(it => it.ID)
             });
@@ -58,10 +58,10 @@ exports.Network = {
         const url = `https://news.blizzard.com/pt-br/heroes-of-the-storm`;
         let result
         try {
-            await page.goto(url);
+            await page.goto(url, {waitUntil: 'domcontentloaded'});
             result = await page.evaluate(() => {
-                return Array.from(document.querySelectorAll('.ArticleListItem article')).slice(0,5).map(it => {
-                    return { header: it.firstChild.innerText, link: it.firstChild.href }
+                return Array.from(document.querySelectorAll('.ArticleListItem article')).slice(0, 5).map(it => {
+                    return {header: it.firstChild.innerText, link: it.firstChild.href}
                 })
             });
             await this.browser.close();
@@ -87,7 +87,7 @@ exports.Network = {
 
         try {
 
-            await page.goto(icyUrl, {timeout: 0});
+            await page.goto(icyUrl, {waitUntil: 'domcontentloaded'});
 
             icyData = await page.evaluate(() => {
                 const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.innerText);
@@ -120,7 +120,7 @@ exports.Network = {
 
         try {
 
-            await page.goto(profileUrl, {timeout: 0});
+            await page.goto(profileUrl, {waitUntil: 'domcontentloaded'});
 
             profileData = await page.evaluate(() => {
                 const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `Popular build (${it.innerText}% win rate)`)
@@ -188,7 +188,7 @@ exports.Network = {
         const url = `https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2`;
         let result
         try {
-            await page.goto(url);
+            await page.goto(url, {waitUntil: 'domcontentloaded'});
             result = await page.evaluate(() => {
                 return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
                     return {
@@ -294,8 +294,8 @@ exports.Network = {
                 heroCrawlInfo.profileUrl,
                 heroesMap,
                 cookieValue).catch(ex => {
-                    // this.failedJobs.push(heroCrawlInfo)
-                }) : null;
+                // this.failedJobs.push(heroCrawlInfo)
+            }) : null;
         };
 
         let startTime = new Date();
@@ -449,13 +449,13 @@ exports.Network = {
         }
     },
 
-    postSlashCommandsToAPI: async function(commandObj) {
+    postSlashCommandsToAPI: async function (commandObj) {
         await rest.post(
-            Routes.applicationCommands(process.env.CLIENT_ID), { body:commandObj },
+            Routes.applicationCommands(process.env.CLIENT_ID), {body: commandObj},
         );
     },
 
-    updateCommandsPermissions: async function() {
+    updateCommandsPermissions: async function () {
         if (!App.bot.application?.owner) await App.bot.application?.fetch();
 
         const botCommands = await App.bot.application?.commands.fetch()
@@ -466,7 +466,7 @@ exports.Network = {
                 .filter(role => role.name.toLowerCase() === "adm" || role.name.toLowerCase() === "admin").values());
 
             if (myPerm.length > 0) {
-                let permissions = myPerm.map (it => {
+                let permissions = myPerm.map(it => {
                     return {
                         id: it.id,
                         type: 'ROLE',
@@ -517,8 +517,8 @@ exports.Network = {
         const url = 'https://www.heroesprofile.com/Global/Talents/';
         let response;
         try {
-             response = await page.goto(url)
-             return response._headers["set-cookie"];
+            response = await page.goto(url, {waitUntil: 'domcontentloaded'})
+            return response._headers["set-cookie"];
         } catch (ex) {
             process.stdout.write(`Error while creating heroes session ${ex.stack}\n`);
             await this.createHeroesProfileSession();
