@@ -27,11 +27,11 @@ exports.Commands = {
     },
 
     getCommandHint: function (command) {
-        return StringUtils.language === "pt-br" ? command.localizedHint : command.hint
+        return StringUtils.language === "pt-br" ? command.localizedHint : command.hint;
     },
 
     getCommandName: function (command) {
-        return StringUtils.language === "pt-br" ? command.localizedName : command.name
+        return StringUtils.language === "pt-br" ? command.localizedName : command.name;
     },
 
     assembleSlashCommands: async function () {
@@ -77,17 +77,18 @@ exports.Commands = {
     handleCommand: async function (args, receivedCommand, msg, isInteraction) {
         let reply;
         let command = this.findCommand(receivedCommand);
-        if (command != null) {
+        if (command != null && this.isCommandAllowed(msg, command)) {
             if (command.category === "HEROES") {
                 reply = Heroes.init(command, args);
+            } else if (command.name === "BotInfo") {
+                reply = this.assembleBotInfosReturnMessage();
             } else if (command.name === 'Map') {
                 reply = Maps.init(args);
             } else if (command.name === 'Help') {
                 reply = this.assembleHelpReturnMessage(args);
             } else if (command.name === 'News') {
                 reply = this.assembleNewsReturnMessage();
-            } else if (command.name === 'Update' && (msg.author != null || msg.user != null) &&
-                msg.member._roles.includes(msg.member.guild.roles._cache.find(it => it.name.toLowerCase() === "admin").id)) {
+            } else if (command.name === 'Update') {
                 if (Network.isUpdatingData) {
                     reply = StringUtils.get('hold.still.updating');
                 } else {
@@ -95,7 +96,7 @@ exports.Commands = {
                     Network.replyTo = msg;
                     let callBackMessage = null;
                     if (!isInteraction)
-                        callBackMessage = this.assembleUpdateReturnMessage
+                        callBackMessage = this.assembleUpdateReturnMessage;
 
                     Network.updateData(callBackMessage);
                     reply = StringUtils.get('update.process.started');
@@ -114,11 +115,11 @@ exports.Commands = {
         Network.replyTo = null;
     },
 
-    assembleHelpReturnMessage: function (commandName) {
+    assembleHelpReturnMessage: function (commandAsked) {
         let reply = "";
         let list = [];
-        if (commandName != null && commandName !== "null" && commandName !== "") {
-            let command = this.findCommand(commandName);
+        if (commandAsked != null && commandAsked !== "null" && commandAsked !== "") {
+            let command = this.findCommand(commandAsked);
             if (command != null) {
                 reply += `${this.getCommandHint(command)}\n`;
                 if (command.acceptParams) {
@@ -129,7 +130,7 @@ exports.Commands = {
                     }]
                 }
             } else {
-                reply = StringUtils.get('command.not.exists', commandName, config.prefix);
+                reply = StringUtils.get('command.not.exists', commandAsked, config.prefix);
             }
         } else {
 
@@ -163,6 +164,53 @@ exports.Commands = {
         }
     },
 
+    assembleBotInfosReturnMessage: function () {
+        // let reply = StringUtils.get('available.commands.are'); fixme
+        let reply = "Some infos about me";
+
+        let totalSeconds = (App.bot.uptime / 1000);
+        let days = Math.floor(totalSeconds / 86400);
+        totalSeconds %= 86400;
+        let hours = Math.floor(totalSeconds / 3600);
+        totalSeconds %= 3600;
+        let minutes = Math.floor(totalSeconds / 60);
+        let seconds = Math.floor(totalSeconds % 60);
+        let uptime = `${days} day(s), ${hours} hour(s), ${minutes} minutes and ${seconds} seconds`;
+
+        let list = [
+            {
+                name: "I'm on",
+                value: App.bot.guilds._cache.size.toString() + " server(s)",
+                inline: true
+            },
+            {
+                name: "I'm online for",
+                value: uptime,
+                inline: false
+            },
+            {
+                name: "Last time my database was updated",
+                value: App.bot.updatedAt,
+                inline: false
+            },
+            {
+                name: "My invitation link is",
+                value: 'https://discord.com/oauth2/authorize?client_id=783467749258559509&permissions=534723951616&scope=bot',
+                inline: false
+            }
+        ]
+
+
+        return {
+            data: {
+                featureName: "Bot general information", //fix me
+                featureDescription: reply,
+                list: list,
+            },
+            image: 'images/hots.png'
+        }
+    },
+
     assembleNewsReturnMessage() {
         return Network.gatherNews().then(
             returnedNews => {
@@ -180,5 +228,16 @@ exports.Commands = {
                 }
             }
         )
+    },
+
+    isCommandAllowed(msg, command) {
+        if (command.defaultPermission) {
+            return true
+        } else {
+            return (msg.author != null || msg.user != null) &&
+                msg.member._roles.includes(
+                    msg.member.guild.roles._cache.find(it => it.name.toLowerCase() === "admin").id
+                );
+        }
     }
 };

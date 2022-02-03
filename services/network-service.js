@@ -421,11 +421,11 @@ exports.Network = {
                     this.writeFile('data/compositions.json', sortedComposition);
 
                     Heroes.setFreeHeroes(cacheFree);
-                    this.isUpdatingData = false;
 
                     this.translateTips(heroesInfos).then(() => {
                         process.stdout.write(`Finished update at ${new Date().toLocaleTimeString()}\n`);
                         this.isUpdatingData = false;
+                        App.bot.updatedAt = new Date().toLocaleTimeString();
                         App.setBotStatus("Heroes of the Storm", "PLAYING");
                         if (callbackFunction)
                             callbackFunction(StringUtils.get('process.update.finished.time', (finishedTime - startTime) / 1000));
@@ -459,28 +459,29 @@ exports.Network = {
         if (!App.bot.application?.owner) await App.bot.application?.fetch();
 
         const botCommands = await App.bot.application?.commands.fetch()
-        const command = botCommands.find(it => it.name === "update");
+        const commands = botCommands.filter(it => !it.defaultPermission);
+        for (let command of commands) {
+            await App.bot.guilds.cache.forEach(it => {
+                let myPerm = Array.from(it.roles._cache
+                    .filter(role => role.name.toLowerCase() === "hots-bot-admin").values());
 
-        await App.bot.guilds.cache.forEach(it => {
-            let myPerm = Array.from(it.roles._cache
-                .filter(role => role.name.toLowerCase() === "adm" || role.name.toLowerCase() === "admin").values());
+                if (myPerm.length > 0) {
+                    let permissions = myPerm.map(it => {
+                        return {
+                            id: it.id,
+                            type: 'ROLE',
+                            permission: true
+                        }
+                    });
 
-            if (myPerm.length > 0) {
-                let permissions = myPerm.map(it => {
-                    return {
-                        id: it.id,
-                        type: 'ROLE',
-                        permission: true
-                    }
-                });
-
-                command.permissions.set({
-                    guild: it,
-                    command: command.id,
-                    permissions: permissions
-                });
-            }
-        });
+                    command.permissions.set({
+                        guild: it,
+                        command: command.id,
+                        permissions: permissions
+                    });
+                }
+            });
+        }
     },
 
     isUpdateNeeded: function () {

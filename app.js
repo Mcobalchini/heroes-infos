@@ -6,7 +6,7 @@ const prefix = config.prefix;
 
 exports.App = {
     setBotStatus: setBotStatus,
-    bot: bot
+    bot: bot,
 };
 
 const {Commands} = require("./services/commands");
@@ -138,6 +138,7 @@ bot.on('interactionCreate', async interaction => {
 });
 
 bot.once("ready", function () {
+    bot.updatedAt = "Not updated yet"; //fixme
     StringUtils.defineCleanVal();
     setBotStatus("Heroes of the Storm", "PLAYING");
     periodicUpdateCheck();

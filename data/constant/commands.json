@@ -135,5 +135,14 @@
     "acceptParams": false,
     "defaultPermission": false,
     "category": "GENERAL"
+  },
+  {
+    "name": "BotInfo",
+    "localizedName": "InformaçõesBot",
+    "hint": "Fetch bot infos",
+    "localizedHint": "Busca informações do bot",
+    "acceptParams": false,
+    "defaultPermission": false,
+    "category": "GENERAL"
   }
 ]
