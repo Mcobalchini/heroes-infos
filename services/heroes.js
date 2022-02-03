@@ -1,20 +1,20 @@
 const fs = require('fs');
-const config = require("../config.json");
-const roles = JSON.parse(fs.readFileSync("./data/constant/roles.json"), {encoding: 'utf8', flag: 'r'});
+const config = require('../config.json');
+const roles = JSON.parse(fs.readFileSync('./data/constant/roles.json'), {encoding: 'utf8', flag: 'r'});
 const StringUtils = require('./strings.js').StringUtils;
-const heroesBase = JSON.parse(fs.readFileSync("./data/constant/heroes-base.json"), {encoding: 'utf8', flag: 'r'});
+const heroesBase = JSON.parse(fs.readFileSync('./data/constant/heroes-base.json'), {encoding: 'utf8', flag: 'r'});
 let heroesInfos = [];
 let freeHeroes = [];
 let mustBanHeroes = [];
 let compositions = [];
 
 try {
-    heroesInfos = JSON.parse(fs.readFileSync("./data/heroes-infos.json"));
-    mustBanHeroes = JSON.parse(fs.readFileSync("./data/banlist.json"));
-    compositions = JSON.parse(fs.readFileSync("./data/compositions.json"));
-    freeHeroes = JSON.parse(fs.readFileSync("./data/freeweek.json"));
+    heroesInfos = JSON.parse(fs.readFileSync('./data/heroes-infos.json'));
+    mustBanHeroes = JSON.parse(fs.readFileSync('./data/banlist.json'));
+    compositions = JSON.parse(fs.readFileSync('./data/compositions.json'));
+    freeHeroes = JSON.parse(fs.readFileSync('./data/freeweek.json'));
 } catch (e) {
-    process.stdout.write('error: ' + e + "\n");
+    process.stdout.write('error: ' + e + '\n');
 }
 
 exports.Heroes = {
@@ -61,10 +61,10 @@ exports.Heroes = {
                 hero.localizedName.cleanVal() === heroName.cleanVal() ||
                 hero.accessLink.cleanVal() === heroName.cleanVal() ||
                 hero.id.cleanVal() === heroName.cleanVal() ||
-                (hero.name.cleanVal() + " (" + hero.localizedName.cleanVal() + ")" === heroName.cleanVal()) ||
+                (hero.name.cleanVal() + ' (' + hero.localizedName.cleanVal() + ')' === heroName.cleanVal()) ||
                 (hero.name.cleanVal().includes(heroName.cleanVal()) ||
                     hero.localizedName.cleanVal().includes(heroName.cleanVal()) ||
-                    ((hero.name.cleanVal() + " (" + hero.localizedName.cleanVal() + ")").includes(heroName.cleanVal()))))
+                    ((hero.name.cleanVal() + ' (' + hero.localizedName.cleanVal() + ')').includes(heroName.cleanVal()))))
         );
 
         if (hero != null && searchInfos)
@@ -172,8 +172,8 @@ exports.Heroes = {
 
     getHeroTips: function () {
         let tips
-        if (StringUtils.language === "pt-br") {
-            tips = this.hero.infos.localizedTips ? this.hero.infos.localizedTips : " ";
+        if (StringUtils.language === 'pt-br') {
+            tips = this.hero.infos.localizedTips ? this.hero.infos.localizedTips : ' ';
         } else {
             tips = this.hero.infos.tips;
         }
@@ -209,7 +209,7 @@ exports.Heroes = {
 
     getHeroInfos: function () {
         return {
-            featureName: " ",
+            featureName: ' ',
             overview: this.getHeroOverview(),
             heroBuilds: this.getHeroBuilds(),
             heroSynergies: this.getHeroSynergies(),
@@ -273,7 +273,7 @@ exports.Heroes = {
 
     assembleSuggestHeroesReturnMessage: function (roleName) {
         let role = null;
-        if (roleName != null && roleName !== "") {
+        if (roleName != null && roleName !== '') {
             role = this.findRoleByName(roleName)
             if (role === null) {
                 return StringUtils.get('role.not.found', roleName);

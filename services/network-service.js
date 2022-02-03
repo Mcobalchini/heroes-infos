@@ -6,9 +6,9 @@ const StringUtils = require('./strings.js').StringUtils;
 const Maps = require('./maps.js').Maps;
 const puppeteer = require('puppeteer');
 const PromisePool = require('es6-promise-pool');
-const {Routes} = require("discord-api-types/v9");
-const {REST} = require("@discordjs/rest");
-const {App} = require("../app.js");
+const {Routes} = require('discord-api-types/v9');
+const {REST} = require('@discordjs/rest');
+const {App} = require('../app.js');
 let msg = null;
 const rest = new REST({version: '9'}).setToken(process.env.HEROES_INFOS_TOKEN);
 
@@ -193,8 +193,8 @@ exports.Network = {
                 return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
                     return {
                         name: it.children[1].firstElementChild.innerText,
-                        winRate: parseFloat(it.children[3].innerText.replace(",", ".")),
-                        games: parseFloat(it.children[2].innerText.replace(",", ".")),
+                        winRate: parseFloat(it.children[3].innerText.replace(',', '.')),
+                        games: parseFloat(it.children[2].innerText.replace(',', '.')),
                     }
                 });
             });
@@ -224,8 +224,8 @@ exports.Network = {
                 return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
                     return {
                         games: it.children[0].innerText,
-                        winRate: parseFloat(it.children[1].innerText.replace(",", ".")),
-                        roles: Array.from(it.children).filter(it => it.style.display === "none").map(it => it.innerText)
+                        winRate: parseFloat(it.children[1].innerText.replace(',', '.')),
+                        roles: Array.from(it.children).filter(it => it.style.display === 'none').map(it => it.innerText)
                     }
                 });
             });
@@ -317,7 +317,7 @@ exports.Network = {
                     let heroCounters = [];
                     let heroSynergies = [];
                     let heroMaps = [];
-                    let heroTips = "";
+                    let heroTips = '';
 
                     for (let synergy of icyData.synergies) {
                         let synergyHero = Heroes.findHero(synergy, false, true);
@@ -426,7 +426,7 @@ exports.Network = {
                         process.stdout.write(`Finished update at ${new Date().toLocaleTimeString()}\n`);
                         this.isUpdatingData = false;
                         App.bot.updatedAt = new Date().toLocaleTimeString();
-                        App.setBotStatus("Heroes of the Storm", "PLAYING");
+                        App.setBotStatus('Heroes of the Storm', 'PLAYING');
                         if (callbackFunction)
                             callbackFunction(StringUtils.get('process.update.finished.time', (finishedTime - startTime) / 1000));
                     });
@@ -435,9 +435,9 @@ exports.Network = {
         } catch (e) {
             let replyMsg = StringUtils.get('could.not.update.data.try.again');
 
-            if (e.stack.includes("Navigation timeout of 30000 ms exceeded")
-                || e.stack.includes("net::ERR_ABORTED")
-                || e.stack.includes("net::ERR_NETWORK_CHANGED")) {
+            if (e.stack.includes('Navigation timeout of 30000 ms exceeded')
+                || e.stack.includes('net::ERR_ABORTED')
+                || e.stack.includes('net::ERR_NETWORK_CHANGED')) {
                 replyMsg += StringUtils.get('try.to.update.again');
                 await this.updateData(callbackFunction);
             }
@@ -463,7 +463,7 @@ exports.Network = {
         for (let command of commands) {
             await App.bot.guilds.cache.forEach(it => {
                 let myPerm = Array.from(it.roles._cache
-                    .filter(role => role.name.toLowerCase() === "hots-bot-admin").values());
+                    .filter(role => role.name.toLowerCase() === 'hots-bot-admin').values());
 
                 if (myPerm.length > 0) {
                     let permissions = myPerm.map(it => {
@@ -485,7 +485,7 @@ exports.Network = {
     },
 
     isUpdateNeeded: function () {
-        return !Heroes.findHero("1", true)?.infos?.builds?.length > 0
+        return !Heroes.findHero('1', true)?.infos?.builds?.length > 0
     },
 
     translateTips: async function (heroesInfos) {
@@ -519,7 +519,7 @@ exports.Network = {
         let response;
         try {
             response = await page.goto(url, {waitUntil: 'domcontentloaded'})
-            return response._headers["set-cookie"];
+            return response._headers['set-cookie'];
         } catch (ex) {
             process.stdout.write(`Error while creating heroes session ${ex.stack}\n`);
             await this.createHeroesProfileSession();
@@ -548,7 +548,7 @@ exports.Network = {
     writeFile: function (path, obj) {
         fs.writeFile(path, JSON.stringify(obj), (e) => {
             if (e != null) {
-                process.stdout.write('error: ' + e + "\n");
+                process.stdout.write('error: ' + e + '\n');
                 msg.reply(StringUtils.get('could.not.update.data.try.again'));
             }
         });

@@ -1,7 +1,7 @@
 require('dotenv').config({path: './variables.env'});
-const {Client, Intents, MessageEmbed} = require("discord.js");
+const {Client, Intents, MessageEmbed} = require('discord.js');
 const bot = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]});
-const config = require("./config.json");
+const config = require('./config.json');
 const prefix = config.prefix;
 
 exports.App = {
@@ -9,7 +9,7 @@ exports.App = {
     bot: bot,
 };
 
-const {Commands} = require("./services/commands");
+const {Commands} = require('./services/commands');
 const {Network} = require('./services/network-service.js');
 const {StringUtils} = require('./services/strings.js');
 let msg = null;
@@ -17,7 +17,7 @@ let msg = null;
 function setBotStatus(name, type) {
     bot.user.setActivity(name, {
         type: type,
-        url: "https://heroesofthestorm.com/"
+        url: 'https://heroesofthestorm.com/'
     });
 }
 
@@ -42,7 +42,7 @@ async function handleResponse(args, receivedCommand, msg, isInteraction = false)
                 attachment = 'attachment://hots.png';
                 replyObject.files.push('images/hots.png');
             }
-            embeds.forEach(it => it.setAuthor(it.author.name ? it.author.name : "Heroes Infos", attachment, it.author.url))
+            embeds.forEach(it => it.setAuthor(it.author.name ? it.author.name : 'Heroes Infos', attachment, it.author.url))
         }
     } else {
         replyObject.content = reply;
@@ -50,9 +50,9 @@ async function handleResponse(args, receivedCommand, msg, isInteraction = false)
 
     if (Network.isUpdatingData) {
         let updatingWarningEmbed = createEmbeds({
-            featureName: "Note",
-            test: "i'm updating heroes data"
-        }, "Heroes Infos", 'attachment://hots.png')[0];
+            featureName: 'Note',
+            test: 'i\'m updating heroes data'
+        }, 'Heroes Infos', 'attachment://hots.png')[0];
 
         updatingWarningEmbed.setThumbnail('attachment://download.png');
         embeds.push(updatingWarningEmbed);
@@ -74,14 +74,14 @@ async function handleResponse(args, receivedCommand, msg, isInteraction = false)
 
 function periodicUpdateCheck() {
     if (Network.isUpdateNeeded()) {
-        setBotStatus("Updating", "WATCHING")
-        Network.updateData(() => setBotStatus("Heroes of the Storm", "PLAYING"));
+        setBotStatus('Updating', 'WATCHING')
+        Network.updateData(() => setBotStatus('Heroes of the Storm', 'PLAYING'));
     }
 }
 
 function createEmbeds(object, heroName, attachment) {
-    let embedHeroName = heroName ? heroName : ""
-    let embedAttachment = attachment ? attachment : ""
+    let embedHeroName = heroName ? heroName : ''
+    let embedAttachment = attachment ? attachment : ''
     let embeds = [];
 
     Object.keys(object).forEach(function (key, _) {
@@ -89,7 +89,7 @@ function createEmbeds(object, heroName, attachment) {
             embeds.push(...createEmbeds(object[key], embedHeroName, embedAttachment))
         } else {
             if (key !== 'featureName' && key !== 'featureDescription') {
-                let featureDesc = object.featureDescription ? object.featureDescription : "";
+                let featureDesc = object.featureDescription ? object.featureDescription : '';
                 const embed = new MessageEmbed()
                     .setColor('#0099ff')
                     .setTitle(object.featureName)
@@ -111,7 +111,7 @@ function createEmbeds(object, heroName, attachment) {
     return embeds;
 }
 
-bot.on("messageCreate", message => {
+bot.on('messageCreate', message => {
     if (message.author.bot) return;
     if (!message.content.startsWith(prefix)) return;
     msg = message;
@@ -137,10 +137,10 @@ bot.on('interactionCreate', async interaction => {
     }
 });
 
-bot.once("ready", function () {
-    bot.updatedAt = "Not updated yet"; //fixme
+bot.once('ready', function () {
+    bot.updatedAt = 'Not updated yet'; //fixme
     StringUtils.defineCleanVal();
-    setBotStatus("Heroes of the Storm", "PLAYING");
+    setBotStatus('Heroes of the Storm', 'PLAYING');
     periodicUpdateCheck();
     setInterval(periodicUpdateCheck, 100000);
     process.stdout.write(`Application ready! - ${new Date()}\n`);

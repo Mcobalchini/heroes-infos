@@ -1,7 +1,7 @@
 const fs = require('fs');
 let Heroes = require('./heroes.js').Heroes;
-const config = require("../config.json");
-const maps = JSON.parse(fs.readFileSync("./data/constant/maps.json"), {encoding: 'utf8', flag: 'r'});
+const config = require('../config.json');
+const maps = JSON.parse(fs.readFileSync('./data/constant/maps.json'), {encoding: 'utf8', flag: 'r'});
 const StringUtils = require('./strings.js').StringUtils;
 
 exports.Maps = {

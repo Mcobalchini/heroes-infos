@@ -1,8 +1,8 @@
 const fs = require('fs');
-const strings = JSON.parse(fs.readFileSync("./data/constant/strings.json"), { encoding: 'utf8', flag: 'r' });
+const strings = JSON.parse(fs.readFileSync('./data/constant/strings.json'), { encoding: 'utf8', flag: 'r' });
 
 exports.StringUtils = {
-	language: "en-us",
+	language: 'en-us',
 
 	get: function (property) {
         let args = Array.prototype.slice.call(arguments, 1);
@@ -15,9 +15,9 @@ exports.StringUtils = {
 					string = string.replace(`\{${idx}\}`, args[idx])
 				});
 			} catch (e) {}
-            return string + "\n";
+            return string + '\n';
 		} else {
-			return ""
+			return ''
 		}
 	},
 
@@ -27,9 +27,9 @@ exports.StringUtils = {
 
 	defineCleanVal: function () {
 		if(!String().cleanVal) {
-			Object.defineProperty(String.prototype, "cleanVal", {
+			Object.defineProperty(String.prototype, 'cleanVal', {
 				value: function cleanVal() {
-					return this.split("\'").join("").split(".").join("").toLowerCase().split("-").join(" ");
+					return this.split('\'').join('').split('.').join('').toLowerCase().split('-').join(' ');
 				},
 				writable: true,
 				configurable: true

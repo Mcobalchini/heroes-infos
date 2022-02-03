@@ -1,12 +1,12 @@
 const fs = require('fs');
-const config = require("../config.json");
-const {StringUtils} = require("./strings.js");
-const {Heroes} = require("./heroes.js");
-const {Maps} = require("./maps.js");
-const {Network} = require("./network-service.js");
+const config = require('../config.json');
+const {StringUtils} = require('./strings.js');
+const {Heroes} = require('./heroes.js');
+const {Maps} = require('./maps.js');
+const {Network} = require('./network-service.js');
 const {SlashCommandBuilder} = require('@discordjs/builders');
-const {App} = require("../app.js");
-const commands = JSON.parse(fs.readFileSync("./data/constant/commands.json"), {encoding: 'utf8', flag: 'r'});
+const {App} = require('../app.js');
+const commands = JSON.parse(fs.readFileSync('./data/constant/commands.json'), {encoding: 'utf8', flag: 'r'});
 
 exports.Commands = {
     findCommand: function (commandName) {
@@ -16,9 +16,9 @@ exports.Commands = {
 
         let language = StringUtils.language;
         if (commandBr != null) {
-            language = "pt-br"
+            language = 'pt-br'
         } else if (commandEn != null) {
-            language = "en-us";
+            language = 'en-us';
         }
 
         StringUtils.setLanguage(language);
@@ -27,11 +27,11 @@ exports.Commands = {
     },
 
     getCommandHint: function (command) {
-        return StringUtils.language === "pt-br" ? command.localizedHint : command.hint;
+        return StringUtils.language === 'pt-br' ? command.localizedHint : command.hint;
     },
 
     getCommandName: function (command) {
-        return StringUtils.language === "pt-br" ? command.localizedName : command.name;
+        return StringUtils.language === 'pt-br' ? command.localizedName : command.name;
     },
 
     assembleSlashCommands: async function () {
@@ -46,13 +46,13 @@ exports.Commands = {
 
                 if (it.acceptParams) {
 
-                    let argumentName = "argument"
-                    let descriptionArgument = "some name"
+                    let argumentName = 'argument'
+                    let descriptionArgument = 'some name'
                     let requiredParameter = false;
 
-                    if (it.category === "HEROES") {
-                        argumentName = "hero"
-                        descriptionArgument = "Hero name or part of it's name"
+                    if (it.category === 'HEROES') {
+                        argumentName = 'hero'
+                        descriptionArgument = 'Hero name or part of it\'s name'
                     }
 
                     if (it.requiredParam) {
@@ -78,9 +78,9 @@ exports.Commands = {
         let reply;
         let command = this.findCommand(receivedCommand);
         if (command != null && this.isCommandAllowed(msg, command)) {
-            if (command.category === "HEROES") {
+            if (command.category === 'HEROES') {
                 reply = Heroes.init(command, args);
-            } else if (command.name === "BotInfo") {
+            } else if (command.name === 'BotInfo') {
                 reply = this.assembleBotInfosReturnMessage();
             } else if (command.name === 'Map') {
                 reply = Maps.init(args);
@@ -92,7 +92,7 @@ exports.Commands = {
                 if (Network.isUpdatingData) {
                     reply = StringUtils.get('hold.still.updating');
                 } else {
-                    App.setBotStatus("Updating", "WATCHING");
+                    App.setBotStatus('Updating', 'WATCHING');
                     Network.replyTo = msg;
                     let callBackMessage = null;
                     if (!isInteraction)
@@ -116,9 +116,9 @@ exports.Commands = {
     },
 
     assembleHelpReturnMessage: function (commandAsked) {
-        let reply = "";
+        let reply = '';
         let list = [];
-        if (commandAsked != null && commandAsked !== "null" && commandAsked !== "") {
+        if (commandAsked != null && commandAsked !== 'null' && commandAsked !== '') {
             let command = this.findCommand(commandAsked);
             if (command != null) {
                 reply += `${this.getCommandHint(command)}\n`;
@@ -166,7 +166,7 @@ exports.Commands = {
 
     assembleBotInfosReturnMessage: function () {
         // let reply = StringUtils.get('available.commands.are'); fixme
-        let reply = "Some infos about me";
+        let reply = 'Some infos about me';
 
         let totalSeconds = (App.bot.uptime / 1000);
         let days = Math.floor(totalSeconds / 86400);
@@ -179,22 +179,22 @@ exports.Commands = {
 
         let list = [
             {
-                name: "I'm on",
-                value: App.bot.guilds._cache.size.toString() + " server(s)",
+                name: 'I\'m on',
+                value: App.bot.guilds._cache.size.toString() + ' server(s)',
                 inline: true
             },
             {
-                name: "I'm online for",
+                name: 'I\'m online for',
                 value: uptime,
                 inline: false
             },
             {
-                name: "Last time my database was updated",
+                name: 'Last time my database was updated',
                 value: App.bot.updatedAt,
                 inline: false
             },
             {
-                name: "My invitation link is",
+                name: 'My invitation link is',
                 value: 'https://discord.com/oauth2/authorize?client_id=783467749258559509&permissions=534723951616&scope=bot',
                 inline: false
             }
@@ -203,7 +203,7 @@ exports.Commands = {
 
         return {
             data: {
-                featureName: "Bot general information", //fix me
+                featureName: 'Bot general information', //fix me
                 featureDescription: reply,
                 list: list,
             },
@@ -236,7 +236,7 @@ exports.Commands = {
         } else {
             return (msg.author != null || msg.user != null) &&
                 msg.member._roles.includes(
-                    msg.member.guild.roles._cache.find(it => it.name.toLowerCase() === "admin").id
+                    msg.member.guild.roles._cache.find(it => it.name.toLowerCase() === 'admin').id
                 );
         }
     }
