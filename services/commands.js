@@ -236,7 +236,7 @@ exports.Commands = {
         } else {
             return (msg.author != null || msg.user != null) &&
                 msg.member._roles.includes(
-                    msg.member.guild.roles._cache.find(it => it.name.toLowerCase() === 'admin').id
+                    msg.member.guild.roles._cache.find(it => it.name.toLowerCase() === 'hots-bot-admin').id
                 );
         }
     }
