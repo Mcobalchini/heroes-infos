@@ -460,7 +460,8 @@ exports.Network = {
 
         const botCommands = await App.bot.application?.commands.fetch()
         const commands = botCommands.filter(it => !it.defaultPermission);
-        for (let command of commands) {
+        for (const com of commands) {
+            const command = com[1];
             await App.bot.guilds.cache.forEach(it => {
                 let myPerm = Array.from(it.roles._cache
                     .filter(role => role.name.toLowerCase() === 'hots-bot-admin').values());
