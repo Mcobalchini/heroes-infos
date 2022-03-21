@@ -1,0 +1,300 @@
+{
+  "pt-br": [
+    {
+      "update.process.started": "O processo de atualização iniciou..."
+    },
+    {
+      "hold.still.updating.data": "Aguarde, ainda estou atualizando os dados dos heróis"
+    },
+    {
+      "command.not.exists": "O comando {0} não existe!\nDigite {1}ajuda para saber mais sobre comandos"
+    },
+    {
+      "available.commands.are": "Os comandos disponiveis são:"
+    },
+    {
+      "all.commands.supported.both.languages": "\nTodos os comandos acima suportam os idiomas tanto inglês e português"
+    },
+    {
+      "all.data.gathered.from": "Todos os dados mostrados aqui são obtidos de"
+    },
+    {
+      "if.want.to.know.more.about.specific.command": "Se você quiser saber mais sobre um comando em específico, digite {0}ajuda [nome_do_comando]"
+    },
+    {
+      "version": "Versão {0}"
+    },
+    {
+      "hero.not.found": "O herói {0} não foi encontrado"
+    },
+    {
+      "is.a": "{0} é um {1}"
+    },
+    {
+      "from.universe": "do universo {0}"
+    },
+    {
+      "currently.on.tier": "atuamente na posição {0} do ranking"
+    },
+    {
+      "countered.by": "{0} é mais fraco contra"
+    },
+    {
+      "synergizes.with": "{0} tem sinergia com"
+    },
+    {
+      "usually.stronger.on.maps": "{0} geralmente é mais forte nesses mapas"
+    },
+    {
+      "tips.for": "Aqui estão algumas dicas de jogo para {0}"
+    },
+    {
+      "could.not.update.data.try.again": "Não consegui atualizar os dados dos heróis, tente novamente mais tarde"
+    },
+    {
+      "try.to.update.again": "\nMas vou tentar atualizar os dados novamente"
+    },
+    {
+      "hold.still.updating": "Aguarde um momento, ainda estou atualizando os dados dos heróis"
+    },
+    {
+      "exception.occurred": "Ocorreu um erro inesperado! {0}"
+    },
+    {
+      "process.update.finished.time": "O processo de atualização terminou em {0} segundos"
+    },
+    {
+      "example": "Exemplo"
+    },
+    {
+      "command.example": "{0}{1} [argumento]"
+    },
+    {
+      "no.free.heroes": "Sem heróis de graça por enquanto ¯\\_(ツ)_/¯"
+    },
+    {
+      "free.heroes": "Estes são os heróis da rotação gratuíta atualmente"
+    },
+    {
+      "suggested.heroes": "Heróis sugeridos"
+    },
+    {
+      "role.not.found": "A função {0} não foi encontrada"
+    },
+    {
+      "suggested.bans": "Banimentos sugeridos"
+    },
+    {
+      "available.builds": "Construções disponíveis para {0}"
+    },
+    {
+      "builds": "Construções"
+    },
+    {
+      "synergies": "Sinergias"
+    },
+    {
+      "counters": "É mais fraco contra"
+    },
+    {
+      "stronger.maps": "Mais forte nos mapas"
+    },
+    {
+      "tier.position": "Posição no Ranking"
+    },
+    {
+      "universe": "Universo"
+    },
+    {
+      "role": "Função"
+    },
+    {
+      "tips": "Dicas"
+    },
+    {
+      "score": "Pontuação"
+    },
+    {
+      "hero.score": "Pontuação {0}"
+    },
+    {
+      "current.team": "Sua equipe atual é composta por {0}"
+    },
+    {
+      "suggested.team": "Sugestão de composição de equipe"
+    },
+    {
+      "stronger.map.heroes": "Estes são os melhores heróis para o mapa {0}"
+    },
+    {
+      "available.maps": "Estes são os mapas disponíveis"
+    },
+    {
+      "map.not.found": "O mapa específicado não foi encontrado, \nDigite \"{0}mapa <nome do mapa>\" para ver a lista completa com todos os mapas disponíveis"
+    },
+    {
+      "no.best.heroes.for.map": "Não foram encontrados melhores heróis para o mapa {0}"
+    },
+    {
+      "help": "Ajuda"
+    },
+    {
+      "overview": "Visão geral"
+    },
+    {
+      "news": "Notícias"
+    },
+    {
+      "not.enough.hero.infos" : "Não há informação o suficiente para o héroi {0}"
+    }
+  ],
+  "en-us": [
+    {
+      "update.process.started": "The update process has started..."
+    },
+    {
+      "hold.still.updating.data": "Hold still, i\\'m updating heroes data"
+    },
+    {
+      "command.not.exists": "The command {0} does not exists!\nType {1}help to know more about commands"
+    },
+    {
+      "available.commands.are": "The available commands are:"
+    },
+    {
+      "all.commands.supported.both.languages": "\nAll the commands above supports both english and portuguese names"
+    },
+    {
+      "all.data.gathered.from": "All the data shown here is gathered from"
+    },
+    {
+      "if.want.to.know.more.about.specific.command": "If you want to know more about an specific command, type {0}help [command_name]"
+    },
+    {
+      "version": "Version {0}"
+    },
+    {
+      "hero.not.found": "The hero {0} was not found"
+    },
+    {
+      "is.a": "{0} is a {1}"
+    },
+    {
+      "from.universe": "from {0} universe"
+    },
+    {
+      "currently.on.tier": "currently on {0} tier position"
+    },
+    {
+      "countered.by": "{0} is countered by "
+    },
+    {
+      "synergizes.with": "{0} synergizes with"
+    },
+    {
+      "usually.stronger.on.maps": "{0} is usually stronger on these maps"
+    },
+    {
+      "tips.for": "Here are some pro tips for {0}"
+    },
+    {
+      "could.not.update.data.try.again": "I couldn\\'t update the heroes data due to an error, try again later"
+    },
+    {
+      "try.to.update.again": "\nI\\'ll try to update data again anyway"
+    },
+    {
+      "hold.still.updating": "Hold still, i\\'m updating heroes data"
+    },
+    {
+      "exception.occurred": "An exception occurred! {0}"
+    },
+    {
+      "process.update.finished.time": "The update process has finished in {0} seconds"
+    },
+    {
+      "example": "Exemple"
+    },
+    {
+      "command.example": "{0}{1} [argument]"
+    },
+    {
+      "no.free.heroes": "There are no free heroes yet ¯\\_(ツ)_/¯"
+    },
+    {
+      "free.heroes": "These are the currently free rotation heroes"
+    },
+    {
+      "suggested.heroes": "Suggested heroes"
+    },
+    {
+      "role.not.found": "The role {0} was not found"
+    },
+    {
+      "suggested.bans": "Suggested bans"
+    },
+    {
+      "available.builds": "Available build(s) for {0}"
+    },
+    {
+      "builds": "Builds"
+    },
+    {
+      "synergies": "Synergies"
+    },
+    {
+      "counters": "Counters"
+    },
+    {
+      "stronger.maps": "Stronger Maps"
+    },
+    {
+      "tier.position": "Tier Position"
+    },
+    {
+      "universe": "Universe"
+    },
+    {
+      "role": "Role"
+    },
+    {
+      "tips": "Tips"
+    },
+    {
+      "score": "Score"
+    },
+    {
+      "hero.score": "Score {0}"
+    },
+    {
+      "current.team": "Your current composition is {0}"
+    },
+    {
+      "suggested.team": "Team composition suggestion"
+    },
+    {
+      "stronger.map.heroes": "These are the heroes that are usually stronger on {0}"
+    },
+    {
+      "available.maps": "These are the available maps"
+    },
+    {
+      "map.not.found": "The specified map was not found\nType \"{0}map <name of the map>\" to get a full list with all the available maps"
+    },
+    {
+      "no.best.heroes.for.map": "There are no best heroes for the map {0}"
+    },
+    {
+      "help": "Help"
+    },
+    {
+      "overview": "Overview"
+    },
+    {
+      "news": "News"
+    },
+    {
+      "not.enough.hero.infos" : "There was not enough info found for the hero {0}"
+    }
+  ]
+}
