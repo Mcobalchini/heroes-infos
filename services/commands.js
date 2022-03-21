@@ -41,7 +41,7 @@ exports.Commands = {
 
         try {
             for (let it of commands) {
-                let name = localized ? it.localizedName : it.name;
+                let name = localized ? it.localizedName.unaccent() : it.name;
                 let description = localized ? it.localizedHint : it.hint;
 
                 let commandSlashBuilder = new SlashCommandBuilder()
@@ -51,21 +51,21 @@ exports.Commands = {
 
                 if (it.acceptParams) {
 
-                    let argumentName = StringUtils.get('argument');
+                    let argumentName = StringUtils.get('argument').toLowerCase();
                     let descriptionArgument = StringUtils.get('some.name');
                     let requiredParameter = false;
 
                     if (it.category === 'HEROES') {
-                        argumentName = StringUtils.get('hero');
+                        argumentName = StringUtils.get('hero').toLowerCase();
                         descriptionArgument = StringUtils.get('hero.name.or.part.of.name');
                     } else if (it.category === 'MAP') {
-                        argumentName = StringUtils.get('map');
+                        argumentName = StringUtils.get('map').toLowerCase();
                         descriptionArgument = StringUtils.get('map.name.or.part.of.name');
                     } else if (it.name === 'Suggest') {
-                        argumentName = StringUtils.get('role');
+                        argumentName = StringUtils.get('role').toLowerCase();
                         descriptionArgument = StringUtils.get('role.name.or.part.of.name');
                     } else if (it.name === 'Help') {
-                        argumentName = StringUtils.get('command');
+                        argumentName = StringUtils.get('command').toLowerCase();
                         descriptionArgument = StringUtils.get('command');
                     }
 
