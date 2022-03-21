@@ -85,7 +85,7 @@ exports.Commands = {
             } else if (command.name === 'Map') {
                 reply = Maps.init(args);
             } else if (command.name === 'Help') {
-                reply = this.assembleHelpReturnMessage(args);
+                reply = this.assembleHelpReturnMessage(msg, args);
             } else if (command.name === 'News') {
                 reply = this.assembleNewsReturnMessage();
             } else if (command.name === 'Update') {
@@ -115,12 +115,12 @@ exports.Commands = {
         Network.replyTo = null;
     },
 
-    assembleHelpReturnMessage: function (commandAsked) {
+    assembleHelpReturnMessage: function (msg, commandAsked) {
         let reply = '';
         let list = [];
         if (commandAsked != null && commandAsked !== 'null' && commandAsked !== '') {
             let command = this.findCommand(commandAsked);
-            if (command != null) {
+            if (command != null && this.isCommandAllowed(msg, command)) {
                 reply += `${this.getCommandHint(command)}\n`;
                 if (command.acceptParams) {
                     list = [{
@@ -135,7 +135,7 @@ exports.Commands = {
         } else {
 
             reply = StringUtils.get('available.commands.are');
-            list = commands.map(it => {
+            list = commands.filter(command => this.isCommandAllowed(msg, command)).map(it => {
                 return {
                     name: it.name,
                     value: it.localizedName,
@@ -236,7 +236,7 @@ exports.Commands = {
         } else {
             return (msg.author != null || msg.user != null) &&
                 msg.member._roles.includes(
-                    msg.member.guild.roles._cache.find(it => it.name.toLowerCase() === 'hots-bot-admin').id
+                    msg.member.guild.roles._cache.find(it => it.name.toLowerCase() === 'hots-bot-admin')?.id
                 );
         }
     }
