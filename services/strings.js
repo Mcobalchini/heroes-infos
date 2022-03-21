@@ -2,7 +2,9 @@ const fs = require('fs');
 const strings = JSON.parse(fs.readFileSync('./data/constant/strings.json'), { encoding: 'utf8', flag: 'r' });
 
 exports.StringUtils = {
-	language: 'en-us',
+	EN_US: 'en-us',
+	PT_BR: 'pt-br',
+	language: this.EN_US,
 
 	get: function (property) {
         let args = Array.prototype.slice.call(arguments, 1);
@@ -22,7 +24,15 @@ exports.StringUtils = {
 	},
 
 	setLanguage: function (language) {
-		this.language = language
+		this.language = language;
+	},
+
+	getLanguage: function () {
+		return this.language;
+	},
+
+	isEn: function () {
+		return this.language === this.EN_US;
 	},
 
 	defineCleanVal: function () {

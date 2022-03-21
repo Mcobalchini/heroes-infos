@@ -36,7 +36,7 @@ exports.Maps = {
     },
 
     getMapName: function (map) {
-        return map.name + ' (' + map.localizedName + ')';
+        return StringUtils.isEn() ? map.name : map.localizedName;
     },
 
     assembleMapReturnMessage: function (args) {
@@ -44,6 +44,7 @@ exports.Maps = {
         let array;
         if (args.heroes.length > 0) {
             const map = new Map(Array.from(args.heroes, obj => [obj.role, []]));
+
             args.heroes.forEach(obj => map.get(obj.role).push(obj));
 
             featureName = StringUtils.get('stronger.map.heroes', this.getMapName(args.map));

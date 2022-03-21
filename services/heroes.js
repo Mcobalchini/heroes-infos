@@ -273,16 +273,21 @@ exports.Heroes = {
 
     assembleSuggestHeroesReturnMessage: function (roleName) {
         let role = null;
+        let actualName = null;
         if (roleName != null && roleName !== '') {
             role = this.findRoleByName(roleName)
             if (role === null) {
                 return StringUtils.get('role.not.found', roleName);
+            } else {
+                actualName = StringUtils.isEn() ? role.name : role.localizedName;
             }
         }
 
+        const str = role !== null ? StringUtils.get('on.role', actualName) : ''
+
         return {
             data: {
-                featureName: StringUtils.get('suggested.heroes'),
+                featureName: StringUtils.get('suggested.heroes', str),
                 suggestions: this.findHeroesByScore(parseInt(role?.id)).map(it => {
                     return {
                         name: it.name,
