@@ -72,10 +72,10 @@ exports.StringUtils = {
 		const that = this;
 		if(!String().unaccent) {
 			Object.defineProperty(String.prototype, 'unaccent', {
-				value: function cleanVal() {
+				value: function unaccent() {
 					const reducer = (acc, [key]) =>
 						acc.replace(new RegExp(that.accentsMap.get(key), "g"), key);
-					return (text) => [...that.accentsMap].reduce(reducer, text);
+					return [...that.accentsMap].reduce(reducer, this);
 				},
 				writable: true,
 				configurable: true
