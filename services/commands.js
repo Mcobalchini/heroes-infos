@@ -51,22 +51,22 @@ exports.Commands = {
 
                 if (it.acceptParams) {
 
-                    let argumentName = StringUtils.get('argument').toLowerCase();
-                    let descriptionArgument = StringUtils.get('some.name');
+                    let argumentName = StringUtils.getWithoutNewLine('argument').toLowerCase();
+                    let descriptionArgument = StringUtils.getWithoutNewLine('some.name');
                     let requiredParameter = false;
 
                     if (it.category === 'HEROES') {
-                        argumentName = StringUtils.get('hero').toLowerCase();
-                        descriptionArgument = StringUtils.get('hero.name.or.part.of.name');
+                        argumentName = StringUtils.getWithoutNewLine('hero').toLowerCase();
+                        descriptionArgument = StringUtils.getWithoutNewLine('hero.name.or.part.of.name');
                     } else if (it.category === 'MAP') {
-                        argumentName = StringUtils.get('map').toLowerCase();
-                        descriptionArgument = StringUtils.get('map.name.or.part.of.name');
+                        argumentName = StringUtils.getWithoutNewLine('map').toLowerCase();
+                        descriptionArgument = StringUtils.getWithoutNewLine('map.name.or.part.of.name');
                     } else if (it.name === 'Suggest') {
-                        argumentName = StringUtils.get('role').toLowerCase();
-                        descriptionArgument = StringUtils.get('role.name.or.part.of.name');
+                        argumentName = StringUtils.getWithoutNewLine('role').toLowerCase();
+                        descriptionArgument = StringUtils.getWithoutNewLine('role.name.or.part.of.name');
                     } else if (it.name === 'Help') {
-                        argumentName = StringUtils.get('command').toLowerCase();
-                        descriptionArgument = StringUtils.get('command');
+                        argumentName = StringUtils.getWithoutNewLine('command').toLowerCase();
+                        descriptionArgument = StringUtils.getWithoutNewLine('command');
                     }
 
                     if (it.requiredParam) {

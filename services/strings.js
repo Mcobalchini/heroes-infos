@@ -40,6 +40,10 @@ exports.StringUtils = {
 		}
 	},
 
+	getWithoutNewLine(property) {
+		return this.get(property).replace("\n", "")
+	},
+
 	setLanguage: function (language) {
 		this.language = language;
 	},
@@ -71,7 +75,7 @@ exports.StringUtils = {
 				value: function cleanVal() {
 					const reducer = (acc, [key]) =>
 						acc.replace(new RegExp(that.accentsMap.get(key), "g"), key);
-					export const removeAccents = (text) => [...that.accentsMap].reduce(reducer, text);
+					return (text) => [...that.accentsMap].reduce(reducer, text);
 				},
 				writable: true,
 				configurable: true
