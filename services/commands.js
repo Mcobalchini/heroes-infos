@@ -47,7 +47,7 @@ exports.Commands = {
                 let commandSlashBuilder = new SlashCommandBuilder()
                     .setName(name.toLowerCase())
                     .setDefaultPermission(it.defaultPermission)
-                    .setDescription(description().substring(0, 100));
+                    .setDescription(description.substring(0, 100));
 
                 if (it.acceptParams) {
 
