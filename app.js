@@ -140,6 +140,7 @@ bot.on('interactionCreate', async interaction => {
 bot.once('ready', function () {
     bot.updatedAt = StringUtils.get('not.updated.yet');
     StringUtils.defineCleanVal();
+    StringUtils.defineUnaccent();
     setBotStatus('Heroes of the Storm', 'PLAYING');
     periodicUpdateCheck();
     setInterval(periodicUpdateCheck, 100000);
