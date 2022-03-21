@@ -138,13 +138,15 @@ bot.on('interactionCreate', async interaction => {
 });
 
 bot.once('ready', function () {
-    bot.updatedAt = 'Not updated yet'; //fixme
+    bot.updatedAt = StringUtils.get('not.updated.yet');
     StringUtils.defineCleanVal();
     setBotStatus('Heroes of the Storm', 'PLAYING');
     periodicUpdateCheck();
     setInterval(periodicUpdateCheck, 100000);
     process.stdout.write(`Application ready! - ${new Date()}\n`);
-    Commands.assembleSlashCommands().then(Network.updateCommandsPermissions());
+    Commands.assembleSlashCommands().then(() => {
+        Commands.assembleSlashCommands(true).then(Network.updateCommandsPermissions())
+    });
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN);

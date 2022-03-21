@@ -16,9 +16,9 @@ exports.Commands = {
 
         let language = StringUtils.language;
         if (commandBr != null) {
-            language = 'pt-br'
+            language = StringUtils.PT_BR;
         } else if (commandEn != null) {
-            language = 'en-us';
+            language = StringUtils.EN_US;
         }
 
         StringUtils.setLanguage(language);
@@ -34,25 +34,39 @@ exports.Commands = {
         return StringUtils.language === 'pt-br' ? command.localizedName : command.name;
     },
 
-    assembleSlashCommands: async function () {
-        process.stdout.write('Started refreshing application (/) commands.\n');
+    assembleSlashCommands: async function (localized = false) {
+        process.stdout.write(`Started refreshing application (/) commands. ${localized}\n`);
+        let language = localized ? StringUtils.PT_BR : StringUtils.EN_US;
+        StringUtils.setLanguage(language);
 
         try {
             for (let it of commands) {
+                let name = localized ? it.localizedName : it.name;
+                let description = localized ? it.localizedHint : it.hint;
+
                 let commandSlashBuilder = new SlashCommandBuilder()
-                    .setName(it.name.toLowerCase())
+                    .setName(name.toLowerCase())
                     .setDefaultPermission(it.defaultPermission)
-                    .setDescription(it.hint.substring(0, 100));
+                    .setDescription(description().substring(0, 100));
 
                 if (it.acceptParams) {
 
-                    let argumentName = 'argument'
-                    let descriptionArgument = 'some name'
+                    let argumentName = StringUtils.get('argument');
+                    let descriptionArgument = StringUtils.get('some.name');
                     let requiredParameter = false;
 
                     if (it.category === 'HEROES') {
-                        argumentName = 'hero'
-                        descriptionArgument = 'Hero name or part of it\'s name'
+                        argumentName = StringUtils.get('hero');
+                        descriptionArgument = StringUtils.get('hero.name.or.part.of.name');
+                    } else if (it.category === 'MAP') {
+                        argumentName = StringUtils.get('map');
+                        descriptionArgument = StringUtils.get('map.name.or.part.of.name');
+                    } else if (it.name === 'Suggest') {
+                        argumentName = StringUtils.get('role');
+                        descriptionArgument = StringUtils.get('role.name.or.part.of.name');
+                    } else if (it.name === 'Help') {
+                        argumentName = StringUtils.get('command');
+                        descriptionArgument = StringUtils.get('command');
                     }
 
                     if (it.requiredParam) {
@@ -68,9 +82,9 @@ exports.Commands = {
                 await Network.postSlashCommandsToAPI(commandSlashBuilder);
             }
 
-            process.stdout.write('Successfully reloaded application (/) commands.\n');
+            process.stdout.write(`Successfully reloaded application (/) commands. ${localized}\n`);
         } catch (error) {
-            process.stdout.write(`Error while reloading / commands ${error}`);
+            process.stdout.write(`Error while reloading / commands ${localized} ${error}`);
         }
     },
 
@@ -165,8 +179,7 @@ exports.Commands = {
     },
 
     assembleBotInfosReturnMessage: function () {
-        // let reply = StringUtils.get('available.commands.are'); fixme
-        let reply = 'Some infos about me';
+        let reply = StringUtils.get('some.infos.about.me');
 
         let totalSeconds = (App.bot.uptime / 1000);
         let days = Math.floor(totalSeconds / 86400);
@@ -175,27 +188,27 @@ exports.Commands = {
         totalSeconds %= 3600;
         let minutes = Math.floor(totalSeconds / 60);
         let seconds = Math.floor(totalSeconds % 60);
-        let uptime = `${days} day(s), ${hours} hour(s), ${minutes} minutes and ${seconds} seconds`;
+        let uptime = StringUtils.get('uptime.string', days, hours, minutes, seconds);
 
         let list = [
             {
-                name: 'I\'m on',
-                value: App.bot.guilds._cache.size.toString() + ' server(s)',
+                name: StringUtils.get('im.on'),
+                value: StringUtils.get('number.of.servers', App.bot.guilds._cache.size.toString()),
                 inline: true
             },
             {
-                name: 'I\'m online for',
+                name: StringUtils.get('online.for'),
                 value: uptime,
                 inline: false
             },
             {
-                name: 'Last time my database was updated',
+                name: StringUtils.get('last.time.database.updated'),
                 value: App.bot.updatedAt,
                 inline: false
             },
             {
-                name: 'My invitation link is',
-                value: 'https://discord.com/oauth2/authorize?client_id=783467749258559509&permissions=534723951616&scope=bot',
+                name: StringUtils.get('my.invitation.link.is'),
+                value: 'https://discord.com/oauth2/authorize?client_id=783467749258559509&permissions=2147600384&scope=bot',
                 inline: false
             }
         ]
@@ -203,7 +216,7 @@ exports.Commands = {
 
         return {
             data: {
-                featureName: 'Bot general information', //fix me
+                featureName: StringUtils.get('bot.general.information'),
                 featureDescription: reply,
                 list: list,
             },
@@ -231,6 +244,7 @@ exports.Commands = {
     },
 
     isCommandAllowed(msg, command) {
+        //TODO verify my id as well
         if (command.defaultPermission) {
             return true
         } else {
