@@ -57,14 +57,14 @@ exports.Heroes = {
 
     findHero: function (heroName, searchInfos, evaluateThis) {
         let hero = heroesBase.find(hero =>
-            (hero.name.cleanVal() === heroName.cleanVal() ||
-                hero.localizedName.cleanVal() === heroName.cleanVal() ||
-                hero.accessLink.cleanVal() === heroName.cleanVal() ||
-                hero.id.cleanVal() === heroName.cleanVal() ||
-                (hero.name.cleanVal() + ' (' + hero.localizedName.cleanVal() + ')' === heroName.cleanVal()) ||
-                (hero.name.cleanVal().includes(heroName.cleanVal()) ||
-                    hero.localizedName.cleanVal().includes(heroName.cleanVal()) ||
-                    ((hero.name.cleanVal() + ' (' + hero.localizedName.cleanVal() + ')').includes(heroName.cleanVal()))))
+            (hero.name.cleanVal().unaccent() === heroName.cleanVal().unaccent() ||
+                hero.localizedName.cleanVal().unaccent() === heroName.cleanVal().unaccent() ||
+                hero.accessLink.cleanVal().unaccent() === heroName.cleanVal().unaccent() ||
+                hero.id.cleanVal().unaccent() === heroName.cleanVal().unaccent() ||
+                (hero.name.cleanVal().unaccent() + ' (' + hero.localizedName.cleanVal().unaccent() + ')' === heroName.cleanVal().unaccent()) ||
+                (hero.name.cleanVal().unaccent().includes(heroName.cleanVal().unaccent()) ||
+                    hero.localizedName.cleanVal().unaccent().includes(heroName.cleanVal().unaccent()) ||
+                    ((hero.name.cleanVal().unaccent() + ' (' + hero.localizedName.cleanVal().unaccent() + ')').includes(heroName.cleanVal().unaccent()))))
         );
 
         if (hero != null && searchInfos)
@@ -95,15 +95,16 @@ exports.Heroes = {
     },
 
     getRoleName: function (roleParam) {
-        return `${roleParam.name} (${roleParam.localizedName})`;
+        return StringUtils.isEn() ? roleParam.name : roleParam.localizedName;
     },
 
     getHeroName: function (heroParam) {
-        let heroName = `${heroParam.name} (${heroParam.localizedName})`;
-        if (heroParam.name === heroParam.localizedName) {
-            heroName = `${heroParam.name}`;
-        }
-        return heroName
+        return StringUtils.isEn() ? heroParam.name : heroParam.localizedName;
+        // let heroName = `${heroParam.name} (${heroParam.localizedName})`;
+        // if (heroParam.name === heroParam.localizedName) {
+        //     heroName = `${heroParam.name}`;
+        // }
+        // return heroName
     },
 
     getHeroBuilds: function () {
@@ -135,10 +136,11 @@ exports.Heroes = {
         return {
             featureName: StringUtils.get('counters'),
             counter: this.hero.infos.counters.map(counter => {
+                const hero = this.findHero(counter.name, true, false);
                 return {
-                    name: counter,
-                    value: this.getRoleName(this.findRoleById(this.findHero(counter, true, false).role)),
-                    inline: false
+                    name: this.getHeroName(hero),
+                    value: this.getRoleName(this.findRoleById(hero.role)),
+                    inline: true
                 }
             })
         };
@@ -148,10 +150,11 @@ exports.Heroes = {
         return {
             featureName: StringUtils.get('stronger.maps'),
             strongerMaps: this.hero.infos.strongerMaps.map(strongerMap => {
+                const mapName = StringUtils.isEn() ? strongerMap.name : strongerMap.localizedName;
                 return {
-                    name: strongerMap,
-                    value: strongerMap,
-                    inline: false
+                    name: "** **",
+                    value: mapName,
+                    inline: true
                 }
             })
         };
@@ -161,10 +164,11 @@ exports.Heroes = {
         return {
             featureName: StringUtils.get('synergies'),
             synergies: this.hero.infos.synergies.map(synergy => {
+                const hero = this.findHero(synergy.name, true, false);
                 return {
-                    name: synergy,
-                    value: this.getRoleName(this.findRoleById(this.findHero(synergy, true, false).role)),
-                    inline: false
+                    name: this.getHeroName(hero),
+                    value: this.getRoleName(this.findRoleById(hero.role)),
+                    inline: true
                 }
             })
         };
@@ -240,9 +244,10 @@ exports.Heroes = {
             data: {
                 featureName: StringUtils.get('suggested.bans'),
                 mustBanHeroes: this.mustBanHeroes.map(ban => {
+                    const hero = this.findHero(ban.name, false, false);
                     return {
-                        name: ban.name,
-                        value: ban.role,
+                        name: this.getHeroName(hero),
+                        value: this.getRoleName(this.findRoleById(hero.role)),
                         inline: false
                     }
                 })
@@ -260,10 +265,11 @@ exports.Heroes = {
             data: {
                 featureName: StringUtils.get('free.heroes'),
                 freeHeroes: this.freeHeroes.map(freeHero => {
+                    const hero = this.findHero(freeHero.name, false, false);
                     return {
-                        name: freeHero.name,
-                        value: freeHero.role,
-                        inline: false
+                        name: this.getHeroName(hero),
+                        value: this.getRoleName(this.findRoleById(hero.role)),
+                        inline: true
                     }
                 })
             },
@@ -276,7 +282,7 @@ exports.Heroes = {
         let actualName = null;
         if (roleName != null && roleName !== '') {
             role = this.findRoleByName(roleName)
-            if (role === null) {
+            if (role == null) {
                 return StringUtils.get('role.not.found', roleName);
             } else {
                 actualName = StringUtils.isEn() ? role.name : role.localizedName;
@@ -300,7 +306,8 @@ exports.Heroes = {
     },
 
     assembleTeamReturnMessage: function (heroes) {
-        let heroesSorted = JSON.parse(JSON.stringify(this.heroesInfos.sort(this.sortByTierPosition)));
+        let heroesSorted = JSON.parse(JSON.stringify(this.heroesInfos.sort(this.sortByTierPosition)))
+            .filter(it => it.name !== "Gall" && it.name !== "Cho");
 
         let currentCompRoles = [];
         let heroesArray = heroes.split(' ');
@@ -329,7 +336,7 @@ exports.Heroes = {
             currentCompRoles = currentCompRoles.sort();
 
             for (let currentCompHero of currentCompHeroes.values()) {
-                let synergies = currentCompHero.infos.synergies.map(it => this.findHero(it, false, true));
+                let synergies = currentCompHero.infos.synergies.map(it => this.findHero(it.name, false, true));
                 synergies.forEach((synergy) => {
                     let hero = heroesSorted.find(it => it.id === synergy.id)
                     if (hero != null)
@@ -389,8 +396,8 @@ exports.Heroes = {
                         featureDescription: `${StringUtils.get('current.team', Array.from(currentCompHeroes).map(([_, value]) => `${this.getHeroName(value)}`).join(', '))}`,
                         suggestedHeroes: Array.from(missingRolesMap).map(([key, value]) => {
                             return {
-                                name: key.join(', '),
-                                value: value.map(it => `${this.getHeroName(it)} - ${this.getRoleName(this.findRoleById(it.role))}\n`).join(''),
+                                name: `Comp: ${key.map(it => this.getRoleName(this.findRoleByName(it))).join(', ')}`,
+                                value: value.map(it => `${this.getHeroName(it)} - **${this.getRoleName(this.findRoleById(it.role))}**\n`).join(''),
                                 inline: false,
                             }
                         })
@@ -427,21 +434,24 @@ exports.Heroes = {
         } else if (commandObj.name === 'Team') {
             reply = this.assembleTeamReturnMessage(argument);
         } else {
-            this.findHero(argument, true, true);
-            if (this.hero != null) {
-                if (this.hero.infos != null && (this.hero.infos.counters.length > 0 &&
-                    this.hero.infos.synergies.length > 0 &&
-                    this.hero.infos.builds.length > 0)) {
-                    let returnedValues = eval(`this.getHero${commandObj.name}()`);
-                    reply = {
-                        image: `images/${this.hero.name.cleanVal().replaceAll(' ', '-')}.png`,
-                        heroName: this.getHeroName(this.hero),
-                        data: returnedValues
-                    };
+            if (argument.length > 0) {
+                this.findHero(argument, true, true);
+                if (this.hero != null) {
+                    if (this.hero.infos != null && (this.hero.infos.counters.length > 0 &&
+                        this.hero.infos.synergies.length > 0 &&
+                        this.hero.infos.builds.length > 0)) {
+                        let returnedValues = eval(`this.getHero${commandObj.name}()`);
+                        reply = {
+                            image: `images/${this.hero.name.cleanVal().unaccent().replaceAll(' ', '-')}.png`,
+                            heroName: this.getHeroName(this.hero),
+                            data: returnedValues
+                        };
+                    } else {
+                        reply = StringUtils.get('not.enough.hero.infos', argument, config.prefix);
+                    }
                 } else {
-                    reply = StringUtils.get('not.enough.hero.infos', argument, config.prefix);
+                    reply = StringUtils.get('hero.not.found', argument);
                 }
-
             } else {
                 reply = StringUtils.get('hero.not.found', argument);
             }

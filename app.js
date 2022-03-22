@@ -93,7 +93,7 @@ function createEmbeds(object, heroName, attachment) {
                 const embed = new MessageEmbed()
                     .setColor('#0099ff')
                     .setTitle(object.featureName)
-                    .setAuthor(embedHeroName, embedAttachment, 'https://www.icy-veins.com/heroes/')
+                    .setAuthor(embedHeroName, embedAttachment, `https://www.icy-veins.com/heroes/`)
                     .setImage('attachment://footer.png');
 
                 if (Array.isArray(object[key])) {

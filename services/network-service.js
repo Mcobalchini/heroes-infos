@@ -55,7 +55,7 @@ exports.Network = {
     gatherNews: async function () {
         await this.setBrowser();
         const page = await this.createPage();
-        const url = `https://news.blizzard.com/pt-br/heroes-of-the-storm`;
+        const url = `https://news.blizzard.com/${StringUtils.isEn() ? "en-us" : "pt-br"}/heroes-of-the-storm`;
         let result
         try {
             await page.goto(url, {waitUntil: 'domcontentloaded'});
@@ -322,19 +322,28 @@ exports.Network = {
                     for (let synergy of icyData.synergies) {
                         let synergyHero = Heroes.findHero(synergy, false, true);
                         if (synergyHero)
-                            heroSynergies.push(Heroes.getHeroName(synergyHero));
+                            heroSynergies.push({
+                                name: synergyHero.name,
+                                localizedName: synergyHero.localizedName
+                            });
                     }
 
                     for (let counter of icyData.counters) {
                         let counterHero = Heroes.findHero(counter, false, true);
                         if (counterHero)
-                            heroCounters.push(Heroes.getHeroName(counterHero));
+                            heroCounters.push({
+                                name: counterHero.name,
+                                localizedName: counterHero.localizedName
+                            });
                     }
 
                     for (let strongerMap of icyData.strongerMaps) {
                         let heroMap = Maps.findMap(strongerMap);
                         if (heroMap)
-                            heroMaps.push(`${heroMap.name} (${heroMap.localizedName})`);
+                            heroMaps.push({
+                                name: heroMap.name,
+                                localizedName: heroMap.localizedName
+                            });
                     }
 
                     heroTips += icyData.tips.map(tip => `${tip}\n`).join('');
@@ -348,12 +357,14 @@ exports.Network = {
                     }
 
                     //retrieves the duplicate items
-                    let repeatedBuilds = profileData.builds.filter(item => (icyData.builds.map(it => it.skills).includes(item.skills)));
+                    let repeatedBuilds = profileData.builds.filter(item =>
+                        (icyData.builds.map(it => it.skills.unaccent()).includes(item.skills.unaccent()))
+                    );
 
                     //applies winrate on known builds names
                     icyData.builds.forEach(it => {
                         for (let item of repeatedBuilds) {
-                            if (item.skills === it.skills) {
+                            if (item.skills.unaccent() === it.skills.unaccent()) {
                                 it.name = `${it.name} (${item.name.match(/([0-9.]%*)/g, '').join('')} win rate)`
                             }
                         }
@@ -384,9 +395,10 @@ exports.Network = {
                 let cacheBans = [];
                 tierList.forEach(it => {
                     let banHero = Heroes.findHero(it, false, true);
+                    let heroRole = Heroes.findRoleById(banHero.role);
                     cacheBans.push({
-                        name: Heroes.getHeroName(banHero),
-                        role: Heroes.getRoleName(Heroes.findRoleById(banHero.role))
+                        name: banHero.name,
+                        role: heroRole.name,
                     });
                 });
 
@@ -410,9 +422,10 @@ exports.Network = {
 
                     for (let heroName of value) {
                         let freeHero = Heroes.findHero(heroName, false, true);
+                        let heroRole = Heroes.findRoleById(freeHero.role);
                         cacheFree.push({
-                            name: Heroes.getHeroName(freeHero),
-                            role: Heroes.getRoleName(Heroes.findRoleById(freeHero.role))
+                            name: freeHero.name,
+                            role: heroRole.name
                         });
                     }
 
