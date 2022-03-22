@@ -213,7 +213,7 @@
       "available.commands.are": "The available commands are:"
     },
     {
-      "all.commands.supported.both.languages": "\nAll the commands above supports both english and portuguese names"
+      "all.commands.supported.both.languages": "\nAll the commands above supports both english and portuguese languages"
     },
     {
       "all.data.gathered.from": "All the data shown here is gathered from"
@@ -225,7 +225,7 @@
       "version": "Version {0}"
     },
     {
-      "hero.not.found": "The hero {0} was not found"
+      "hero.not.found": "The hero _{0}_ was not found"
     },
     {
       "is.a": "{0} is a {1}"

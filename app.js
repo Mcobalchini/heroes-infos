@@ -93,7 +93,7 @@ function createEmbeds(object, heroName, attachment) {
                 const embed = new MessageEmbed()
                     .setColor('#0099ff')
                     .setTitle(object.featureName)
-                    .setAuthor(embedHeroName, embedAttachment, 'https://www.icy-veins.com/heroes/')
+                    .setAuthor(embedHeroName, embedAttachment, `https://www.icy-veins.com/heroes/`)
                     .setImage('attachment://footer.png');
 
                 if (Array.isArray(object[key])) {
@@ -145,9 +145,9 @@ bot.once('ready', function () {
     periodicUpdateCheck();
     setInterval(periodicUpdateCheck, 100000);
     process.stdout.write(`Application ready! - ${new Date()}\n`);
-    Commands.assembleSlashCommands().then(() => {
+    /*Commands.assembleSlashCommands().then(() => {
         Commands.assembleSlashCommands(true).then(Network.updateCommandsPermissions())
-    });
+    });*/
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN);

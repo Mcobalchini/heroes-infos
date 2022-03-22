@@ -10,9 +10,9 @@ const commands = JSON.parse(fs.readFileSync('./data/constant/commands.json'), {e
 
 exports.Commands = {
     findCommand: function (commandName) {
-        let commandNameToLowerCase = commandName.cleanVal();
-        let commandEn = commands.find(command => (command.name.cleanVal() === commandNameToLowerCase));
-        let commandBr = commands.find(command => (command.localizedName.cleanVal() === commandNameToLowerCase));
+        let commandNameToLowerCase = commandName.cleanVal().unaccent();
+        let commandEn = commands.find(command => (command.name.cleanVal().unaccent() === commandNameToLowerCase));
+        let commandBr = commands.find(command => (command.localizedName.cleanVal().unaccent() === commandNameToLowerCase));
 
         let language = StringUtils.language;
         if (commandBr != null) {
@@ -31,7 +31,7 @@ exports.Commands = {
     },
 
     getCommandName: function (command) {
-        return StringUtils.language === 'pt-br' ? command.localizedName : command.name;
+        return StringUtils.isEn() ? command.name : command.localizedName;
     },
 
     assembleSlashCommands: async function (localized = false) {
@@ -150,9 +150,10 @@ exports.Commands = {
 
             reply = StringUtils.get('available.commands.are');
             list = commands.filter(command => this.isCommandAllowed(msg, command)).map(it => {
+                const name = this.getCommandName(it);
                 return {
-                    name: it.name,
-                    value: it.localizedName,
+                    name: name,
+                    value: `|| ||`,
                     inline: true
                 };
             })
@@ -162,8 +163,8 @@ exports.Commands = {
         commandInfos += StringUtils.get('all.data.gathered.from');
         commandInfos += 'https://www.icy-veins.com/heroes/\n';
         commandInfos += 'https://www.heroesprofile.com\n';
-        commandInfos += 'http://robogrub.com/silvertierlist_api\n';
         commandInfos += 'https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2\n';
+        commandInfos += 'https://www.heroesprofile.com/\n';
         commandInfos += StringUtils.get('if.want.to.know.more.about.specific.command', config.prefix);
         commandInfos += StringUtils.get('version', config.version);
 
@@ -182,18 +183,19 @@ exports.Commands = {
         let reply = StringUtils.get('some.infos.about.me');
 
         let totalSeconds = (App.bot.uptime / 1000);
-        let days = Math.floor(totalSeconds / 86400);
+        const days = Math.floor(totalSeconds / 86400);
         totalSeconds %= 86400;
-        let hours = Math.floor(totalSeconds / 3600);
+        const hours = Math.floor(totalSeconds / 3600);
         totalSeconds %= 3600;
-        let minutes = Math.floor(totalSeconds / 60);
-        let seconds = Math.floor(totalSeconds % 60);
-        let uptime = StringUtils.get('uptime.string', days, hours, minutes, seconds);
-
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = Math.floor(totalSeconds % 60);
+        const uptime = StringUtils.get('uptime.string', days, hours, minutes, seconds);
+        const servers = App.bot.guilds._cache;
+        process.stdout.write(`Servers. ${servers.map(it => it.name )}\n`);
         let list = [
             {
                 name: StringUtils.get('im.on'),
-                value: StringUtils.get('number.of.servers', App.bot.guilds._cache.size.toString()),
+                value: StringUtils.get('number.of.servers', servers.size.toString()),
                 inline: true
             },
             {
@@ -208,7 +210,7 @@ exports.Commands = {
             },
             {
                 name: StringUtils.get('my.invitation.link.is'),
-                value: 'https://discord.com/oauth2/authorize?client_id=783467749258559509&permissions=2147600384&scope=bot',
+                value: `https://discord.com/api/oauth2/authorize?client_id=${process.env.CLIENT_ID}&permissions=277025508352&scope=applications.commands%20bot`,
                 inline: false
             }
         ]
