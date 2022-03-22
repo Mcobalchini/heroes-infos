@@ -145,9 +145,9 @@ bot.once('ready', function () {
     periodicUpdateCheck();
     setInterval(periodicUpdateCheck, 100000);
     process.stdout.write(`Application ready! - ${new Date()}\n`);
-    /*Commands.assembleSlashCommands().then(() => {
+    Commands.assembleSlashCommands().then(() => {
         Commands.assembleSlashCommands(true).then(Network.updateCommandsPermissions())
-    });*/
+    });
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN);
