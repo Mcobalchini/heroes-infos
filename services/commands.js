@@ -58,12 +58,14 @@ exports.Commands = {
                     if (it.category === 'HEROES') {
                         argumentName = StringUtils.getWithoutNewLine('hero').toLowerCase();
                         descriptionArgument = StringUtils.getWithoutNewLine('hero.name.or.part.of.name');
+
+                        if (it.name === 'Suggest') {
+                            argumentName = StringUtils.getWithoutNewLine('role').toLowerCase();
+                            descriptionArgument = StringUtils.getWithoutNewLine('role.name.or.part.of.name');
+                        }
                     } else if (it.category === 'MAP') {
                         argumentName = StringUtils.getWithoutNewLine('map').toLowerCase();
                         descriptionArgument = StringUtils.getWithoutNewLine('map.name.or.part.of.name');
-                    } else if (it.name === 'Suggest') {
-                        argumentName = StringUtils.getWithoutNewLine('role').toLowerCase();
-                        descriptionArgument = StringUtils.getWithoutNewLine('role.name.or.part.of.name');
                     } else if (it.name === 'Help') {
                         argumentName = StringUtils.getWithoutNewLine('command').toLowerCase();
                         descriptionArgument = StringUtils.getWithoutNewLine('command');
