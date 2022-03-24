@@ -357,7 +357,7 @@
       "hero": "Hero"
     },
     {
-      "map": "Mapa"
+      "map": "Map"
     },
     {
       "not.enough.hero.infos": "There was not enough info found for the hero {0}"
