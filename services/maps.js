@@ -10,7 +10,8 @@ exports.Maps = {
         if (mapName != null && mapName.trim().length > 0) {
             let map = this.findMap(mapName);
             if (map != null) {
-                let bestHeroes = Heroes.findAllHeroes(true).filter(hero => hero.infos.strongerMaps.includes(`${map.name} (${map.localizedName})`))
+                let bestHeroes = Heroes.findAllHeroes(true)
+                    .filter(hero => hero.infos.strongerMaps.map(it => it.name).includes(map.name))
                 if (bestHeroes.length > 0) {
                     return this.assembleMapReturnMessage({
                         map: map,
@@ -26,13 +27,13 @@ exports.Maps = {
     },
 
     findMap: function (mapName) {
-        let mapLowerCase = mapName.cleanVal();
+        let mapLowerCase = mapName.cleanVal().unaccent();
         return maps.find(map =>
             mapLowerCase.length > 2 &&
-            ((map.name.cleanVal() === mapLowerCase ||
-                    map.localizedName.cleanVal() === mapLowerCase) ||
-                (map.name.cleanVal().startsWith(mapLowerCase) ||
-                    map.localizedName.cleanVal().startsWith(mapLowerCase))));
+            ((map.name.cleanVal().unaccent() === mapLowerCase ||
+                    map.localizedName.cleanVal().unaccent() === mapLowerCase) ||
+                (map.name.cleanVal().unaccent().startsWith(mapLowerCase) ||
+                    map.localizedName.cleanVal().unaccent().startsWith(mapLowerCase))));
     },
 
     getMapName: function (map) {
