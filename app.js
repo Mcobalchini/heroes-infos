@@ -113,17 +113,24 @@ function createEmbeds(object, heroName, attachment) {
 
 bot.on('messageCreate', message => {
     if (message.author.bot) return;
-    if (!message.content.startsWith(prefix)) return;
-    msg = message;
 
-    let receivedCommand = message.content.split(' ', 1)[0].substring(1);
-    let args = message.content.substring(receivedCommand.toLowerCase().length + 2);
+    if (message.content.startsWith(prefix) || message.mentions.has(bot.user.id)) {
+        msg = message;
 
-    try {
-        handleResponse(args, receivedCommand, msg);
-    } catch (e) {
-        process.stdout.write(`Exception: ${e.stack}\n`);
-        msg.reply(StringUtils.get('exception.occurred', e))
+        if (message.mentions.has(bot.user.id)) {
+            msg.reply(StringUtils.get("mention.me", config.prefix));
+            return;
+        }
+
+        let receivedCommand = message.content.split(' ', 1)[0].substring(1);
+        let args = message.content.substring(receivedCommand.toLowerCase().length + 2);
+
+        try {
+            handleResponse(args, receivedCommand, msg);
+        } catch (e) {
+            process.stdout.write(`Exception: ${e.stack}\n`);
+            msg.reply(StringUtils.get('exception.occurred', e))
+        }
     }
 });
 

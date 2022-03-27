@@ -61,7 +61,7 @@ exports.Commands = {
 
                         if (it.name === 'Suggest') {
                             argumentName = StringUtils.getWithoutNewLine('role').toLowerCase();
-                            descriptionArgument = StringUtils.getWithoutNewLine('role.name.or.part.of.name');
+                            descriptionArgument = StringUtils.getWithoutNewLine('role');
                         }
                     } else if (it.category === 'MAP') {
                         argumentName = StringUtils.getWithoutNewLine('map').toLowerCase();
