@@ -248,14 +248,15 @@ exports.Commands = {
     },
 
     isCommandAllowed(msg, command) {
-        //TODO verify my id as well
         if (command.defaultPermission) {
             return true
         } else {
-            return (msg.author != null || msg.user != null) &&
-                msg.member._roles.includes(
-                    msg.member.guild.roles._cache.find(it => it.name.toLowerCase() === 'hots-bot-admin')?.id
-                );
+            if (msg.author != null || msg.user != null) {
+                return (msg.author.id === config.adminId || msg.user.id === config.adminId) ||
+                    msg.member._roles.includes(
+                        msg.member.guild.roles._cache.find(it => it.name.toLowerCase() === 'hots-bot-admin')?.id
+                    );
+            }
         }
     }
 };
