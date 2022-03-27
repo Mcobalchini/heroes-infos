@@ -252,7 +252,8 @@ exports.Commands = {
             return true
         } else {
             if (msg.author != null || msg.user != null) {
-                return (msg.author.id === config.adminId || msg.user.id === config.adminId) ||
+                const id = (msg.author != null ? msg.author.id : (msg.user != null ? msg.user.id : 0));
+                return (id === config.adminId) ||
                     msg.member._roles.includes(
                         msg.member.guild.roles._cache.find(it => it.name.toLowerCase() === 'hots-bot-admin')?.id
                     );
