@@ -55,15 +55,25 @@ exports.Network = {
     gatherNews: async function () {
         await this.setBrowser();
         const page = await this.createPage();
-        const url = `https://news.blizzard.com/${StringUtils.isEn() ? "en-us" : "pt-br"}/heroes-of-the-storm`;
+        let url = `https://news.blizzard.com/pt-br/heroes-of-the-storm`;
+        let divClass = ".ArticleListItem article";
+
+        if (StringUtils.isEn()) {
+            url = `https://news.blizzard.com/en-us/heroes-of-the-storm`;
+            divClass = ".Card-content";
+        }
+
         let result
         try {
             await page.goto(url, {waitUntil: 'domcontentloaded'});
-            result = await page.evaluate(() => {
-                return Array.from(document.querySelectorAll('.ArticleListItem article')).slice(0, 5).map(it => {
-                    return {header: it.firstChild.innerText, link: it.firstChild.href}
+            result = await page.evaluate((divClass) => {
+                return Array.from(document.querySelectorAll(divClass)).slice(0, 3).map(it => {
+                    return {
+                        header: it.firstChild.innerText,
+                        link: (it.firstChild.href)
+                    }
                 })
-            });
+            }, divClass);
             await this.browser.close();
         } catch (ex) {
             process.stdout.write(ex.stack);
