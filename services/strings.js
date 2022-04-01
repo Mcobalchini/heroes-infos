@@ -48,15 +48,17 @@ exports.StringUtils = {
 		this.language = language;
 	},
 
-	getLanguage: function () {
-		return this.language;
-	},
-
 	isEn: function () {
 		return this.language === this.EN_US;
 	},
 
-	defineCleanVal: function () {
+	setup: function (){
+		this.setupCleanVal();
+		this.setupUnaccent();
+		this.setupUnaccentClean();
+	},
+
+	setupCleanVal: function () {
 		if(!String().cleanVal) {
 			Object.defineProperty(String.prototype, 'cleanVal', {
 				value: function cleanVal() {
@@ -68,7 +70,7 @@ exports.StringUtils = {
 		}
 	},
 
-	defineUnaccent: function () {
+	setupUnaccent: function () {
 		const that = this;
 		if(!String().unaccent) {
 			Object.defineProperty(String.prototype, 'unaccent', {
@@ -76,6 +78,18 @@ exports.StringUtils = {
 					const reducer = (acc, [key]) =>
 						acc.replace(new RegExp(that.accentsMap.get(key), "g"), key);
 					return [...that.accentsMap].reduce(reducer, this);
+				},
+				writable: true,
+				configurable: true
+			});
+		}
+	},
+
+	setupUnaccentClean: function () {
+		if(!String().unaccentClean) {
+			Object.defineProperty(String.prototype, 'unaccentClean', {
+				value: function unaccentClean() {
+					return this.unaccent().cleanVal();
 				},
 				writable: true,
 				configurable: true

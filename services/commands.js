@@ -9,10 +9,11 @@ const {App} = require('../app.js');
 const commands = JSON.parse(fs.readFileSync('./data/constant/commands.json'), {encoding: 'utf8', flag: 'r'});
 
 exports.Commands = {
+
     findCommand: function (commandName) {
-        let commandNameToLowerCase = commandName.cleanVal().unaccent();
-        let commandEn = commands.find(command => (command.name.cleanVal().unaccent() === commandNameToLowerCase));
-        let commandBr = commands.find(command => (command.localizedName.cleanVal().unaccent() === commandNameToLowerCase));
+        let clearName = commandName.unaccentClean();
+        let commandEn = commands.find(command => (command.name.unaccentClean() === clearName));
+        let commandBr = commands.find(command => (command.localizedName.unaccentClean() === clearName));
 
         let language = StringUtils.language;
         if (commandBr != null) {

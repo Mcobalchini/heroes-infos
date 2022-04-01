@@ -21,10 +21,8 @@ function setBotStatus(name, type) {
     });
 }
 
-async function handleResponse(args, receivedCommand, msg, isInteraction = false) {
-    let reply = await Commands.handleCommand(args, receivedCommand, msg, isInteraction);
-    let replyObject = {}
-    let embeds = [];
+function createResponse(reply, replyObject) {
+    const embeds = [];
 
     if (reply.image != null || reply.data != null) {
         let attachment = null;
@@ -51,7 +49,7 @@ async function handleResponse(args, receivedCommand, msg, isInteraction = false)
     if (Network.isUpdatingData) {
         let updatingWarningEmbed = createEmbeds({
             featureName: 'Note',
-            test: 'i\'m updating heroes data'
+            test: StringUtils.get("hold.still.updating.data")
         }, 'Heroes Infos', 'attachment://hots.png')[0];
 
         updatingWarningEmbed.setThumbnail('attachment://download.png');
@@ -62,7 +60,15 @@ async function handleResponse(args, receivedCommand, msg, isInteraction = false)
             replyObject.files = ['images/footer.png', 'images/hots.png', 'images/download.png'];
         }
     }
-    replyObject.embeds = embeds;
+    return embeds;
+}
+
+async function handleResponse(args, receivedCommand, msg, isInteraction = false) {
+    let reply = await Commands.handleCommand(args, receivedCommand, msg, isInteraction);
+    let replyObject = {}
+    let embeds = [];
+
+    replyObject.embeds = createResponse(reply, replyObject, embeds);
 
     if (msg.isCommand) {
         replyObject.ephemeral = true;
@@ -72,11 +78,15 @@ async function handleResponse(args, receivedCommand, msg, isInteraction = false)
     }
 }
 
-function periodicUpdateCheck() {
+function periodicUpdateCheck(interval) {
     if (Network.isUpdateNeeded()) {
         setBotStatus('Updating', 'WATCHING')
         Network.updateData(() => setBotStatus('Heroes of the Storm', 'PLAYING'));
     }
+
+    if (interval)
+        setInterval(periodicUpdateCheck, 100000, false);
+
 }
 
 function createEmbeds(object, heroName, attachment) {
@@ -138,7 +148,11 @@ bot.on('interactionCreate', async interaction => {
     if (!interaction.isCommand()) return;
     try {
         await interaction.deferReply();
-        await handleResponse(interaction.options?.data?.map(it => it.value).join(' '), interaction.commandName.toString(), interaction, true)
+        await handleResponse(interaction.options?.data?.map(it => it.value).join(' '),
+            interaction.commandName.toString(),
+            interaction,
+            true
+        )
     } catch (e) {
         process.stdout.write(`Exception: ${e.stack}\n`);
     }
@@ -146,11 +160,9 @@ bot.on('interactionCreate', async interaction => {
 
 bot.once('ready', function () {
     bot.updatedAt = StringUtils.get('not.updated.yet');
-    StringUtils.defineCleanVal();
-    StringUtils.defineUnaccent();
+    StringUtils.setup();
     setBotStatus('Heroes of the Storm', 'PLAYING');
-    periodicUpdateCheck();
-    setInterval(periodicUpdateCheck, 100000);
+    periodicUpdateCheck(true);
     process.stdout.write(`Application ready! - ${new Date()}\n`);
     Commands.assembleSlashCommands().then(() => {
         Commands.assembleSlashCommands(true).then(Network.updateCommandsPermissions())
