@@ -141,7 +141,7 @@ exports.Commands = {
                 if (command.acceptParams) {
                     list = [{
                         name: StringUtils.get('example'),
-                        value: StringUtils.get('command.example', this.getCommandName(command).toLowerCase(), config.prefix),
+                        value: StringUtils.get('command.example', config.prefix, this.getCommandName(command).toLowerCase()),
                         inline: true
                     }]
                 }
@@ -174,8 +174,7 @@ exports.Commands = {
             data: {
                 featureName: StringUtils.get('help'),
                 featureDescription: reply,
-                list: list,
-                commandInfos: commandInfos
+                list: list
             },
             image: 'images/hots.png'
         }
