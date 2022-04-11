@@ -21,10 +21,8 @@ function setBotStatus(name, type) {
     });
 }
 
-async function handleResponse(args, receivedCommand, msg, isInteraction = false) {
-    let reply = await Commands.handleCommand(args, receivedCommand, msg, isInteraction);
-    let replyObject = {}
-    let embeds = [];
+function createResponse(reply, replyObject) {
+    const embeds = [];
 
     if (reply.image != null || reply.data != null) {
         let attachment = null;
@@ -36,13 +34,17 @@ async function handleResponse(args, receivedCommand, msg, isInteraction = false)
         }
 
         if (reply.data != null) {
-            embeds.push(...createEmbeds(reply.data, reply.heroName, attachment));
+            embeds.push(...createEmbeds(reply.data, reply.heroName, reply.heroLink, attachment));
             embeds[0].setThumbnail(attachment)
             if (attachment === null) {
                 attachment = 'attachment://hots.png';
                 replyObject.files.push('images/hots.png');
             }
-            embeds.forEach(it => it.setAuthor(it.author.name ? it.author.name : 'Heroes Infos', attachment, it.author.url))
+            embeds.forEach(it => {
+                    it.setTimestamp()
+                    it.setAuthor(it.author.name ? it.author.name : 'Heroes Infos', attachment, it.author.url);
+                }
+            )
         }
     } else {
         replyObject.content = reply;
@@ -51,7 +53,7 @@ async function handleResponse(args, receivedCommand, msg, isInteraction = false)
     if (Network.isUpdatingData) {
         let updatingWarningEmbed = createEmbeds({
             featureName: 'Note',
-            test: 'i\'m updating heroes data'
+            test: StringUtils.get("hold.still.updating.data")
         }, 'Heroes Infos', 'attachment://hots.png')[0];
 
         updatingWarningEmbed.setThumbnail('attachment://download.png');
@@ -62,7 +64,14 @@ async function handleResponse(args, receivedCommand, msg, isInteraction = false)
             replyObject.files = ['images/footer.png', 'images/hots.png', 'images/download.png'];
         }
     }
-    replyObject.embeds = embeds;
+    return embeds;
+}
+
+async function handleResponse(args, receivedCommand, msg, isInteraction = false) {
+    let reply = await Commands.handleCommand(args, receivedCommand, msg, isInteraction);
+    let replyObject = {}
+
+    replyObject.embeds = createResponse(reply, replyObject);
 
     if (msg.isCommand) {
         replyObject.ephemeral = true;
@@ -72,28 +81,33 @@ async function handleResponse(args, receivedCommand, msg, isInteraction = false)
     }
 }
 
-function periodicUpdateCheck() {
+function periodicUpdateCheck(interval) {
     if (Network.isUpdateNeeded()) {
         setBotStatus('Updating', 'WATCHING')
         Network.updateData(() => setBotStatus('Heroes of the Storm', 'PLAYING'));
     }
+
+    if (interval)
+        setInterval(periodicUpdateCheck, 100000, false);
+
 }
 
-function createEmbeds(object, heroName, attachment) {
+function createEmbeds(object, heroName, heroLink, attachment) {
     let embedHeroName = heroName ? heroName : ''
+    let embedHeroLink = heroLink ? heroLink : 'https://www.icy-veins.com/heroes/'
     let embedAttachment = attachment ? attachment : ''
     let embeds = [];
 
     Object.keys(object).forEach(function (key, _) {
         if (object[key].toString() === '[object Object]' && !Array.isArray(object[key])) {
-            embeds.push(...createEmbeds(object[key], embedHeroName, embedAttachment))
+            embeds.push(...createEmbeds(object[key], embedHeroName, embedHeroLink, embedAttachment))
         } else {
-            if (key !== 'featureName' && key !== 'featureDescription') {
+            if (key !== 'featureName' && key !== 'featureDescription' && key !== 'footer') {
                 let featureDesc = object.featureDescription ? object.featureDescription : '';
                 const embed = new MessageEmbed()
                     .setColor('#0099ff')
                     .setTitle(object.featureName)
-                    .setAuthor(embedHeroName, embedAttachment, `https://www.icy-veins.com/heroes/`)
+                    .setAuthor(embedHeroName, embedAttachment, embedHeroLink)
                     .setImage('attachment://footer.png');
 
                 if (Array.isArray(object[key])) {
@@ -104,6 +118,10 @@ function createEmbeds(object, heroName, attachment) {
                     embed.setDescription(desc ? desc : featureDesc)
                 }
 
+                if(object['footer']) {
+                    embed.setFooter(StringUtils.get('data.from.icy.veins'),
+                        'https://static.icy-veins.com/images/common/favicon-high-resolution.png');
+                }
                 embeds.push(embed);
             }
         }
@@ -138,7 +156,11 @@ bot.on('interactionCreate', async interaction => {
     if (!interaction.isCommand()) return;
     try {
         await interaction.deferReply();
-        await handleResponse(interaction.options?.data?.map(it => it.value).join(' '), interaction.commandName.toString(), interaction, true)
+        await handleResponse(interaction.options?.data?.map(it => it.value).join(' '),
+            interaction.commandName.toString(),
+            interaction,
+            true
+        )
     } catch (e) {
         process.stdout.write(`Exception: ${e.stack}\n`);
     }
@@ -146,11 +168,9 @@ bot.on('interactionCreate', async interaction => {
 
 bot.once('ready', function () {
     bot.updatedAt = StringUtils.get('not.updated.yet');
-    StringUtils.defineCleanVal();
-    StringUtils.defineUnaccent();
+    StringUtils.setup();
     setBotStatus('Heroes of the Storm', 'PLAYING');
-    periodicUpdateCheck();
-    setInterval(periodicUpdateCheck, 100000);
+    periodicUpdateCheck(true);
     process.stdout.write(`Application ready! - ${new Date()}\n`);
     Commands.assembleSlashCommands().then(() => {
         Commands.assembleSlashCommands(true).then(Network.updateCommandsPermissions())

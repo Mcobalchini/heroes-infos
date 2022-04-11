@@ -57,14 +57,14 @@ exports.Heroes = {
 
     findHero: function (heroName, searchInfos, evaluateThis) {
         let hero = heroesBase.find(hero =>
-            (hero.name.cleanVal().unaccent() === heroName.cleanVal().unaccent() ||
-                hero.localizedName.cleanVal().unaccent() === heroName.cleanVal().unaccent() ||
-                hero.accessLink.cleanVal().unaccent() === heroName.cleanVal().unaccent() ||
-                hero.id.cleanVal().unaccent() === heroName.cleanVal().unaccent() ||
-                (hero.name.cleanVal().unaccent() + ' (' + hero.localizedName.cleanVal().unaccent() + ')' === heroName.cleanVal().unaccent()) ||
-                (hero.name.cleanVal().unaccent().includes(heroName.cleanVal().unaccent()) ||
-                    hero.localizedName.cleanVal().unaccent().includes(heroName.cleanVal().unaccent()) ||
-                    ((hero.name.cleanVal().unaccent() + ' (' + hero.localizedName.cleanVal().unaccent() + ')').includes(heroName.cleanVal().unaccent()))))
+            (hero.name.unaccentClean() === heroName.unaccentClean() ||
+                hero.localizedName.unaccentClean() === heroName.unaccentClean() ||
+                hero.accessLink.unaccentClean() === heroName.unaccentClean() ||
+                hero.id.unaccentClean() === heroName.unaccentClean() ||
+                (hero.name.unaccentClean() + ' (' + hero.localizedName.unaccentClean() + ')' === heroName.unaccentClean()) ||
+                (hero.name.unaccentClean().includes(heroName.unaccentClean()) ||
+                    hero.localizedName.unaccentClean().includes(heroName.unaccentClean()) ||
+                    ((hero.name.unaccentClean() + ' (' + hero.localizedName.unaccentClean() + ')').includes(heroName.unaccentClean()))))
         );
 
         if (hero != null && searchInfos)
@@ -100,11 +100,6 @@ exports.Heroes = {
 
     getHeroName: function (heroParam) {
         return StringUtils.isEn() ? heroParam.name : heroParam.localizedName;
-        // let heroName = `${heroParam.name} (${heroParam.localizedName})`;
-        // if (heroParam.name === heroParam.localizedName) {
-        //     heroName = `${heroParam.name}`;
-        // }
-        // return heroName
     },
 
     getHeroBuilds: function () {
@@ -441,9 +436,13 @@ exports.Heroes = {
                         this.hero.infos.synergies.length > 0 &&
                         this.hero.infos.builds.length > 0)) {
                         let returnedValues = eval(`this.getHero${commandObj.name}()`);
+                        if (commandObj.isFromIcyVeins){
+                            returnedValues.footer = true;
+                        }
                         reply = {
-                            image: `images/${this.hero.name.cleanVal().unaccent().replaceAll(' ', '-')}.png`,
+                            image: `images/${this.hero.name.unaccentClean().replaceAll(' ', '-')}.png`,
                             heroName: this.getHeroName(this.hero),
+                            heroLink: `https://www.icy-veins.com/heroes/${this.hero.accessLink}-build-guide`,
                             data: returnedValues
                         };
                     } else {

@@ -27,13 +27,13 @@ exports.Maps = {
     },
 
     findMap: function (mapName) {
-        let mapLowerCase = mapName.cleanVal().unaccent();
+        let mapLowerCase = mapName.unaccentClean();
         return maps.find(map =>
             mapLowerCase.length > 2 &&
-            ((map.name.cleanVal().unaccent() === mapLowerCase ||
-                    map.localizedName.cleanVal().unaccent() === mapLowerCase) ||
-                (map.name.cleanVal().unaccent().startsWith(mapLowerCase) ||
-                    map.localizedName.cleanVal().unaccent().startsWith(mapLowerCase))));
+            ((map.name.unaccentClean() === mapLowerCase ||
+                    map.localizedName.unaccentClean() === mapLowerCase) ||
+                (map.name.unaccentClean().startsWith(mapLowerCase) ||
+                    map.localizedName.unaccentClean().startsWith(mapLowerCase))));
     },
 
     getMapName: function (map) {

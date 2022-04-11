@@ -6,13 +6,15 @@ const {Maps} = require('./maps.js');
 const {Network} = require('./network-service.js');
 const {SlashCommandBuilder} = require('@discordjs/builders');
 const {App} = require('../app.js');
-const commands = JSON.parse(fs.readFileSync('./data/constant/commands.json'), {encoding: 'utf8', flag: 'r'});
+const commands = JSON.parse(fs.readFileSync('./data/constant/commands.json'),
+    {encoding: 'utf8', flag: 'r'}).commands;
 
 exports.Commands = {
+
     findCommand: function (commandName) {
-        let commandNameToLowerCase = commandName.cleanVal().unaccent();
-        let commandEn = commands.find(command => (command.name.cleanVal().unaccent() === commandNameToLowerCase));
-        let commandBr = commands.find(command => (command.localizedName.cleanVal().unaccent() === commandNameToLowerCase));
+        let clearName = commandName.unaccentClean();
+        let commandEn = commands.find(command => (command.name.unaccentClean() === clearName));
+        let commandBr = commands.find(command => (command.localizedName.unaccentClean() === clearName));
 
         let language = StringUtils.language;
         if (commandBr != null) {
@@ -134,6 +136,8 @@ exports.Commands = {
     assembleHelpReturnMessage: function (msg, commandAsked) {
         let reply = '';
         let list = [];
+        let commandInfos = '';
+
         if (commandAsked != null && commandAsked !== 'null' && commandAsked !== '') {
             let command = this.findCommand(commandAsked);
             if (command != null && this.isCommandAllowed(msg, command)) {
@@ -159,23 +163,28 @@ exports.Commands = {
                     inline: true
                 };
             })
+
+            commandInfos = StringUtils.get('all.commands.supported.both.languages');
+            commandInfos += StringUtils.get('all.data.gathered.from');
+            commandInfos += 'https://www.icy-veins.com/heroes/\n';
+            commandInfos += 'https://www.heroesprofile.com\n';
+            commandInfos += 'https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2\n';
+            commandInfos += StringUtils.get('if.want.to.know.more.about.specific.command', config.prefix);
+            commandInfos += StringUtils.get('version', config.version);
         }
 
-        let commandInfos = StringUtils.get('all.commands.supported.both.languages');
-        commandInfos += StringUtils.get('all.data.gathered.from');
-        commandInfos += 'https://www.icy-veins.com/heroes/\n';
-        commandInfos += 'https://www.heroesprofile.com\n';
-        commandInfos += 'https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2\n';
-        commandInfos += 'https://www.heroesprofile.com/\n';
-        commandInfos += StringUtils.get('if.want.to.know.more.about.specific.command', config.prefix);
-        commandInfos += StringUtils.get('version', config.version);
-
-        return {
-            data: {
-                featureName: StringUtils.get('help'),
+        const responseData = {
+            featureName: StringUtils.get('help'),
                 featureDescription: reply,
                 list: list
-            },
+        };
+
+        if (commandInfos?.length) {
+            responseData.commandInfos = commandInfos;
+        }
+
+        return {
+            data: responseData,
             image: 'images/hots.png'
         }
     },
