@@ -34,13 +34,17 @@ function createResponse(reply, replyObject) {
         }
 
         if (reply.data != null) {
-            embeds.push(...createEmbeds(reply.data, reply.heroName, attachment));
+            embeds.push(...createEmbeds(reply.data, reply.heroName, reply.heroLink, attachment));
             embeds[0].setThumbnail(attachment)
             if (attachment === null) {
                 attachment = 'attachment://hots.png';
                 replyObject.files.push('images/hots.png');
             }
-            embeds.forEach(it => it.setAuthor(it.author.name ? it.author.name : 'Heroes Infos', attachment, it.author.url))
+            embeds.forEach(it => {
+                    it.setTimestamp()
+                    it.setAuthor(it.author.name ? it.author.name : 'Heroes Infos', attachment, it.author.url);
+                }
+            )
         }
     } else {
         replyObject.content = reply;
@@ -66,9 +70,8 @@ function createResponse(reply, replyObject) {
 async function handleResponse(args, receivedCommand, msg, isInteraction = false) {
     let reply = await Commands.handleCommand(args, receivedCommand, msg, isInteraction);
     let replyObject = {}
-    let embeds = [];
 
-    replyObject.embeds = createResponse(reply, replyObject, embeds);
+    replyObject.embeds = createResponse(reply, replyObject);
 
     if (msg.isCommand) {
         replyObject.ephemeral = true;
@@ -89,21 +92,22 @@ function periodicUpdateCheck(interval) {
 
 }
 
-function createEmbeds(object, heroName, attachment) {
+function createEmbeds(object, heroName, heroLink, attachment) {
     let embedHeroName = heroName ? heroName : ''
+    let embedHeroLink = heroLink ? heroLink : 'https://www.icy-veins.com/heroes/'
     let embedAttachment = attachment ? attachment : ''
     let embeds = [];
 
     Object.keys(object).forEach(function (key, _) {
         if (object[key].toString() === '[object Object]' && !Array.isArray(object[key])) {
-            embeds.push(...createEmbeds(object[key], embedHeroName, embedAttachment))
+            embeds.push(...createEmbeds(object[key], embedHeroName, embedHeroLink, embedAttachment))
         } else {
-            if (key !== 'featureName' && key !== 'featureDescription') {
+            if (key !== 'featureName' && key !== 'featureDescription' && key !== 'footer') {
                 let featureDesc = object.featureDescription ? object.featureDescription : '';
                 const embed = new MessageEmbed()
                     .setColor('#0099ff')
                     .setTitle(object.featureName)
-                    .setAuthor(embedHeroName, embedAttachment, `https://www.icy-veins.com/heroes/`)
+                    .setAuthor(embedHeroName, embedAttachment, embedHeroLink)
                     .setImage('attachment://footer.png');
 
                 if (Array.isArray(object[key])) {
@@ -114,6 +118,10 @@ function createEmbeds(object, heroName, attachment) {
                     embed.setDescription(desc ? desc : featureDesc)
                 }
 
+                if(object['footer']) {
+                    embed.setFooter(StringUtils.get('data.from.icy.veins'),
+                        'https://static.icy-veins.com/images/common/favicon-high-resolution.png');
+                }
                 embeds.push(embed);
             }
         }

@@ -110,7 +110,7 @@ exports.Network = {
                 const builds = [];
                 for (let i in names) {
                     builds.push({
-                        name: names[i],
+                        name: `Icy Veins's ${names[i]}`,
                         skills: skills[i]
                     });
                 }
@@ -133,7 +133,7 @@ exports.Network = {
             await page.goto(profileUrl, {waitUntil: 'domcontentloaded'});
 
             profileData = await page.evaluate(() => {
-                const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `Popular build (${it.innerText}% win rate)`)
+                const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `Profile build (${it.innerText}% win rate)`)
                 const skills = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .build-code')).map(it => it.innerText)
                 const builds = [];
                 for (let i in names) {
@@ -382,7 +382,7 @@ exports.Network = {
 
                     //removes the duplicate items
                     profileData.builds = profileData.builds.filter(item => !repeatedBuilds.includes(item));
-                    let heroBuilds = icyData.builds.concat(profileData.builds);
+                    let heroBuilds = icyData.builds.concat(profileData.builds).slice(0, 5);
 
                     heroesInfos[index].infos = {};
                     heroesInfos[index].id = heroKey;
