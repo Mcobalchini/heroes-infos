@@ -245,7 +245,8 @@ exports.Heroes = {
                         value: this.getRoleName(this.findRoleById(hero.role)),
                         inline: false
                     }
-                })
+                }),
+                footer: true,
             },
             image: 'images/hots.png'
         }
@@ -266,7 +267,8 @@ exports.Heroes = {
                         value: this.getRoleName(this.findRoleById(hero.role)),
                         inline: true
                     }
-                })
+                }),
+                footer: true
             },
             image: 'images/hots.png'
         }
