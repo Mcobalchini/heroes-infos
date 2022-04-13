@@ -41,10 +41,12 @@ function createResponse(reply, replyObject) {
                 replyObject.files.push('images/hots.png');
             }
             embeds.forEach(it => {
-                    it.setTimestamp()
-                    it.setAuthor(it.author.name ? it.author.name : 'Heroes Infos', attachment, it.author.url);
+                if (reply.footer) {
+                    it.setFooter(StringUtils.get('data.from', reply.footer.source), reply.footer.sourceImage)
                 }
-            )
+                it.setTimestamp()
+                it.setAuthor(it.author.name ? it.author.name : 'Heroes Infos', attachment, it.author.url);
+            })
         }
     } else {
         replyObject.content = reply;
@@ -99,7 +101,7 @@ function createEmbeds(object, heroName, heroLink, attachment) {
     let embeds = [];
 
     Object.keys(object).forEach(function (key, _) {
-        if (object[key].toString() === '[object Object]' && !Array.isArray(object[key])) {
+        if (object[key].toString() === '[object Object]' && !Array.isArray(object[key]) && key !== 'footer') {
             embeds.push(...createEmbeds(object[key], embedHeroName, embedHeroLink, embedAttachment))
         } else {
             if (key !== 'featureName' && key !== 'featureDescription' && key !== 'footer') {
@@ -118,10 +120,6 @@ function createEmbeds(object, heroName, heroLink, attachment) {
                     embed.setDescription(desc ? desc : featureDesc)
                 }
 
-                if(object['footer']) {
-                    embed.setFooter(StringUtils.get('data.from.icy.veins'),
-                        'https://static.icy-veins.com/images/common/favicon-high-resolution.png');
-                }
                 embeds.push(embed);
             }
         }

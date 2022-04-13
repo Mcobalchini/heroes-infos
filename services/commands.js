@@ -125,6 +125,13 @@ exports.Commands = {
         } else {
             reply = StringUtils.get('command.not.exists', receivedCommand, config.prefix);
         }
+
+        if (command && command.source){
+            reply.footer = {
+                source: command.source,
+                sourceImage: command.sourceImage
+            }
+        }
         return reply;
     },
 

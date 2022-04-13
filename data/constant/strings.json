@@ -202,7 +202,7 @@
       "mention.me": "Hello there, to find out what I can do, type `{0}help`"
     },
     {
-      "data.from.icy.veins": "Dados de Icy Veins"
+      "data.from": "Dados de {0}"
     }
   ],
   "en-us": [
@@ -408,7 +408,7 @@
       "mention.me": "Hello there, to find out what I can do, type `{0}help`"
     },
     {
-      "data.from.icy.veins": "Data from Icy Veins"
+      "data.from": "Data from {0}"
     }
   ]
 }

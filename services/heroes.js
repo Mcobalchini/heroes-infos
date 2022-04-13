@@ -245,8 +245,7 @@ exports.Heroes = {
                         value: this.getRoleName(this.findRoleById(hero.role)),
                         inline: false
                     }
-                }),
-                footer: true,
+                })
             },
             image: 'images/hots.png'
         }
@@ -267,8 +266,7 @@ exports.Heroes = {
                         value: this.getRoleName(this.findRoleById(hero.role)),
                         inline: true
                     }
-                }),
-                footer: true
+                })
             },
             image: 'images/hots.png'
         }
@@ -438,9 +436,6 @@ exports.Heroes = {
                         this.hero.infos.synergies.length > 0 &&
                         this.hero.infos.builds.length > 0)) {
                         let returnedValues = eval(`this.getHero${commandObj.name}()`);
-                        if (commandObj.isFromIcyVeins){
-                            returnedValues.footer = true;
-                        }
                         reply = {
                             image: `images/${this.hero.name.unaccentClean().replaceAll(' ', '-')}.png`,
                             heroName: this.getHeroName(this.hero),

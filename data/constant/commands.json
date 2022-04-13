@@ -9,7 +9,8 @@
       "requiredParam": true,
       "defaultPermission": true,
       "category": "HEROES",
-      "isFromIcyVeins": true
+      "source": "Icy Veins",
+      "sourceImage": "https://static.icy-veins.com/images/common/favicon-high-resolution.png"
     },
     {
       "name": "Synergies",
@@ -20,7 +21,8 @@
       "requiredParam": true,
       "defaultPermission": true,
       "category": "HEROES",
-      "isFromIcyVeins": true
+      "source": "Icy Veins",
+      "sourceImage": "https://static.icy-veins.com/images/common/favicon-high-resolution.png"
     },
     {
       "name": "Builds",
@@ -51,7 +53,8 @@
       "requiredParam": true,
       "defaultPermission": true,
       "category": "HEROES",
-      "isFromIcyVeins": true
+      "source": "Icy Veins",
+      "sourceImage": "https://static.icy-veins.com/images/common/favicon-high-resolution.png"
     },
     {
       "name": "Infos",
@@ -91,7 +94,8 @@
       "acceptParams": false,
       "defaultPermission": true,
       "category": "HEROES",
-      "isFromIcyVeins": true
+      "source": "Icy Veins",
+      "sourceImage": "https://static.icy-veins.com/images/common/favicon-high-resolution.png"
     },
     {
       "name": "FreeWeek",
@@ -101,7 +105,8 @@
       "acceptParams": false,
       "defaultPermission": true,
       "category": "HEROES",
-      "isFromIcyVeins": true
+      "source": "The Nexus Compendium",
+      "sourceImage": "https://nexuscompendium.com/images/logoes/site-logo.png"
     },
     {
       "name": "Map",
@@ -111,7 +116,9 @@
       "acceptParams": true,
       "requiredParam": false,
       "defaultPermission": true,
-      "category": "MAP"
+      "category": "MAP",
+      "source": "Icy Veins",
+      "sourceImage": "https://static.icy-veins.com/images/common/favicon-high-resolution.png"
     },
     {
       "name": "News",
@@ -121,7 +128,9 @@
       "acceptParams": false,
       "requiredParam": false,
       "defaultPermission": true,
-      "category": "GENERAL"
+      "category": "GENERAL",
+      "source": "Blizzard",
+      "sourceImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Blizzard_Entertainment_Logo_2015.svg/800px-Blizzard_Entertainment_Logo_2015.svg.png"
     },
     {
       "name": "Help",
