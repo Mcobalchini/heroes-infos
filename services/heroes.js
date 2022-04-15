@@ -107,8 +107,8 @@ exports.Heroes = {
             featureName: StringUtils.get('builds'),
             builds: this.hero.infos.builds.map(build => {
                 return {
-                    name: build.name,
-                    value: build.skills,
+                    name: build.skills,
+                    value: build.name,
                     inline: false
                 }
             })

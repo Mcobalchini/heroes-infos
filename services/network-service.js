@@ -99,7 +99,7 @@ exports.Network = {
 
             await page.goto(icyUrl, {waitUntil: 'domcontentloaded'});
 
-            icyData = await page.evaluate(() => {
+            icyData = await page.evaluate((icyUrl) => {
                 const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.innerText);
                 const skills = Array.from(document.querySelectorAll('.talent_build_copy_button > input')).map(skillsElements => skillsElements.value);
                 const counters = Array.from(document.querySelectorAll('.hero_portrait_bad')).map(nameElements => nameElements.title);
@@ -110,7 +110,7 @@ exports.Network = {
                 const builds = [];
                 for (let i in names) {
                     builds.push({
-                        name: `Icy Veins's ${names[i]}`,
+                        name: `[${names[i]}](${icyUrl})`,
                         skills: skills[i]
                     });
                 }
@@ -123,7 +123,7 @@ exports.Network = {
                     tips: tips
                 };
 
-            });
+            }, icyUrl);
         } catch (ex) {
             process.stdout.write(`Error while fetching icyData ${ex.stack}\n`);
         }
@@ -132,13 +132,13 @@ exports.Network = {
 
             await page.goto(profileUrl, {waitUntil: 'domcontentloaded'});
 
-            profileData = await page.evaluate(() => {
-                const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `Profile build (${it.innerText}% win rate)`)
+            profileData = await page.evaluate((profileUrl) => {
+                const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `(${it.innerText}% win rate)`)
                 const skills = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .build-code')).map(it => it.innerText)
                 const builds = [];
                 for (let i in names) {
                     builds.push({
-                        name: names[i],
+                        name: `[Popular Build](${profileUrl.replace('getChartDataTalentBuilds.php', '')}) ${names[i]}`,
                         skills: skills[i]
                     });
                 }
@@ -146,7 +146,7 @@ exports.Network = {
                 return {
                     builds: builds,
                 };
-            });
+            }, profileUrl);
         } catch (ex) {
             process.stdout.write(`Error while fetching profileData ${ex.stack}\n`);
         } finally {
@@ -375,14 +375,14 @@ exports.Network = {
                     icyData.builds.forEach(it => {
                         for (let item of repeatedBuilds) {
                             if (item.skills.unaccent() === it.skills.unaccent()) {
-                                it.name = `${it.name} (${item.name.match(/([0-9.]%*)/g, '').join('')} win rate)`
+                                it.name = `${it.name} (${item.name.match(/([0-9.]%*)/g, '').join('').replace('..', '')} win rate)`
                             }
                         }
                     });
 
                     //removes the duplicate items
                     profileData.builds = profileData.builds.filter(item => !repeatedBuilds.includes(item));
-                    let heroBuilds = icyData.builds.concat(profileData.builds).slice(0, 5);
+                    let heroBuilds = icyData.builds.concat(profileData.builds.slice(0, 4)).slice(0, 5);
 
                     heroesInfos[index].infos = {};
                     heroesInfos[index].id = heroKey;

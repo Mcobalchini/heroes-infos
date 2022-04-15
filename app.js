@@ -165,8 +165,8 @@ bot.on('interactionCreate', async interaction => {
 });
 
 bot.once('ready', function () {
-    bot.updatedAt = StringUtils.get('not.updated.yet');
     StringUtils.setup();
+    bot.updatedAt = StringUtils.get('not.updated.yet');
     setBotStatus('Heroes of the Storm', 'PLAYING');
     periodicUpdateCheck(true);
     process.stdout.write(`Application ready! - ${new Date()}\n`);
