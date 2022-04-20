@@ -266,7 +266,8 @@ exports.Heroes = {
                         value: this.getRoleName(this.findRoleById(hero.role)),
                         inline: true
                     }
-                })
+                }),
+                imageFooter: 'attachment://freeweek.png'
             },
             image: 'images/hots.png'
         }

@@ -21,6 +21,7 @@ exports.Network = {
     setBrowser: async function () {
         this.browser = await puppeteer.launch({
             headless: true,
+            // devtools: true,
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
@@ -43,6 +44,33 @@ exports.Network = {
         } catch (ex) {
             process.stdout.write(`Error while gathering rotation ${ex.stack}\n`);
             this.failedJobs.push(url)
+        }
+
+        if (result != null) {
+            return result;
+        } else {
+            await this.gatherHeroesRotation();
+        }
+    },
+
+    gatherHeroesPrint: async function () {
+        const page = await this.createPage(false);
+
+        let result
+        const url = `https://nexuscompendium.com/currently`;
+
+        try {
+            await page.goto(url, {waitUntil: 'networkidle0'});
+            result = await page.$('.primary-table > table:nth-child(9)');
+            await result.screenshot({
+                path: 'images/freeweek.png'
+            });
+
+        } catch (ex) {
+            process.stdout.write(`Error while gathering rotation ${ex.stack}\n`);
+            this.failedJobs.push(url)
+        } finally {
+            await page.close();
         }
 
         if (result != null) {
@@ -259,9 +287,9 @@ exports.Network = {
         process.stdout.write(`Started updating data process at ${new Date().toLocaleTimeString()}\n`);
         this.isUpdatingData = true;
 
-        //const browser = await puppeteer.launch({devtools: true});
 
         const cookieValue = await this.createHeroesProfileSession();
+        await this.gatherHeroesPrint();
         const tierList = await this.gatherTierListInfo();
         const popularityWinRate = await this.gatherPopularityAndWinRateInfo();
         const compositions = await this.gatherCompositionsInfo();
@@ -553,13 +581,13 @@ exports.Network = {
         }
     },
 
-    createPage: async function () {
+    createPage: async function (blockStuff = true) {
 
         const page = await this.browser.newPage();
         await page.setRequestInterception(true);
 
         page.on('request', (request) => {
-            if (['image', 'stylesheet', 'font', 'script'].indexOf(request.resourceType()) !== -1) {
+            if (blockStuff && ['image', 'stylesheet', 'font', 'script'].indexOf(request.resourceType()) !== -1) {
                 request.abort();
             } else {
                 request.continue();
