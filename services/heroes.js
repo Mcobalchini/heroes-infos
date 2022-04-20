@@ -267,7 +267,7 @@ exports.Heroes = {
                         inline: true
                     }
                 }),
-                imageFooter: 'attachment://freeweek.png'
+                imageFooter: 'images/freeweek.png'
             },
             image: 'images/hots.png'
         }

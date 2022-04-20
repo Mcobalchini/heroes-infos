@@ -27,7 +27,7 @@ function createResponse(reply, replyObject) {
     if (reply.image != null || reply.data != null) {
         let attachment = null;
 
-        replyObject.files = ['images/footer.png', 'images/freeweek.png']
+        replyObject.files = ['images/footer.png']
         if (reply.image != null) {
             attachment = 'attachment://' + reply.image.replace('images/', '');
             replyObject.files.push(reply.image);
@@ -106,7 +106,7 @@ function createEmbeds(object, heroName, heroLink, attachment) {
         } else {
             if (key !== 'featureName' && key !== 'featureDescription' && key !== 'footer' && key !== "imageFooter") {
                 let featureDesc = object.featureDescription ? object.featureDescription : '';
-                let image = object.imageFooter ? object.imageFooter : 'attachment://footer.png';
+                let image = object.imageFooter ? object.imageFooter.replace('images/','attachment://') : 'attachment://footer.png';
 
                 const embed = new MessageEmbed()
                     .setColor('#0099ff')
