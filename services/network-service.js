@@ -166,7 +166,7 @@ exports.Network = {
                 const builds = [];
                 for (let i in names) {
                     builds.push({
-                        name: `[Popular Build](${encodeURIComponent(profileUrl.replace('getChartDataTalentBuilds.php', ''))}) ${names[i]}`,
+                        name: `[Popular Build](${profileUrl.replace('getChartDataTalentBuilds.php', '').replace(' ','+')}) ${names[i]}`,
                         skills: skills[i]
                     });
                 }
