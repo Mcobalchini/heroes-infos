@@ -246,30 +246,24 @@ exports.Heroes = {
                         inline: false
                     }
                 })
-            },
-            image: 'images/hots.png'
+            }
         }
     },
 
     assembleFreeWeekHeroesReturnMessage: function () {
-        if (this.freeHeroes.length <= 0) {
-            return StringUtils.get('no.free.heroes');
-        }
-
         return {
             data: {
                 featureName: StringUtils.get('free.heroes'),
-                freeHeroes: this.freeHeroes.map(freeHero => {
+                freeHeroes: (this.freeHeroes.length <= 0 ? StringUtils.get('no.free.heroes') : this.freeHeroes.map(freeHero => {
                     const hero = this.findHero(freeHero.name, false, false);
                     return {
                         name: this.getHeroName(hero),
                         value: this.getRoleName(this.findRoleById(hero.role)),
                         inline: true
                     }
-                }),
-                imageFooter: 'images/freeweek.png'
-            },
-            image: 'images/hots.png'
+                })),
+                image: 'images/freeweek.png'
+            }
         }
     },
 
@@ -437,8 +431,8 @@ exports.Heroes = {
                         this.hero.infos.synergies.length > 0 &&
                         this.hero.infos.builds.length > 0)) {
                         let returnedValues = eval(`this.getHero${commandObj.name}()`);
-                        reply = {
-                            image: `images/${this.hero.name.unaccentClean().replaceAll(' ', '-')}.png`,
+                        return {
+                            authorImage: `images/${this.hero.name.unaccentClean().replaceAll(' ', '-')}.png`,
                             heroName: this.getHeroName(this.hero),
                             heroLink: `https://www.icy-veins.com/heroes/${this.hero.accessLink}-build-guide`,
                             data: returnedValues
@@ -453,7 +447,15 @@ exports.Heroes = {
                 reply = StringUtils.get('hero.not.found', argument);
             }
         }
-
-        return reply;
+        if (reply.toString() === '[object Object]') {
+            return reply;
+        } else {
+            return {
+                data: {
+                    featureName: ' ',
+                    message: reply,
+                }
+            };
+        }
     }
 };

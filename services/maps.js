@@ -53,15 +53,16 @@ exports.Maps = {
                 return {
                     name: Heroes.getRoleName(Heroes.findRoleById(key)),
                     value: value.map(it => `${Heroes.getHeroName(it)}\n`).join(''),
-                    inline: false
+                    inline: true
                 }
             });
         } else {
             featureName = StringUtils.get('available.maps');
             array = args.map.map(map => {
+                const name = this.getMapName(map);
                 return {
-                    name: map.name,
-                    value: map.localizedName,
+                    name: name,
+                    value: `|| ||`,
                     inline: true
                 }
             })
@@ -71,8 +72,7 @@ exports.Maps = {
             data: {
                 featureName: featureName,
                 data: array
-            },
-            image: 'images/hots.png'
+            }
         }
     },
 };
