@@ -132,7 +132,17 @@ exports.Commands = {
                 sourceImage: command.sourceImage
             }
         }
-        return reply;
+
+        if (reply.toString() === '[object Object]') {
+            return reply;
+        } else {
+            return {
+                data: {
+                    featureName: ' ',
+                    message: reply,
+                }
+            };
+        }
     },
 
     assembleUpdateReturnMessage: function (message) {
@@ -182,8 +192,8 @@ exports.Commands = {
 
         const responseData = {
             featureName: StringUtils.get('help'),
-                featureDescription: reply,
-                list: list
+            featureDescription: reply,
+            list: list
         };
 
         if (commandInfos?.length) {
@@ -192,7 +202,7 @@ exports.Commands = {
 
         return {
             data: responseData,
-            image: 'images/hots.png'
+            authorImage: 'images/hots.png'
         }
     },
 
@@ -239,7 +249,7 @@ exports.Commands = {
                 featureDescription: reply,
                 list: list,
             },
-            image: 'images/hots.png'
+            authorImage: 'images/hots.png'
         }
     },
 

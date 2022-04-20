@@ -1,8 +1,6 @@
 require('dotenv').config({path: './variables.env'});
 const {Client, Intents, MessageEmbed} = require('discord.js');
 const bot = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]});
-const config = require('./config.json');
-const prefix = config.prefix;
 
 exports.App = {
     setBotStatus: setBotStatus,
@@ -12,7 +10,6 @@ exports.App = {
 const {Commands} = require('./services/commands');
 const {Network} = require('./services/network-service.js');
 const {StringUtils} = require('./services/strings.js');
-let msg = null;
 
 function setBotStatus(name, type) {
     bot.user.setActivity(name, {
@@ -21,16 +18,14 @@ function setBotStatus(name, type) {
     });
 }
 
-function createResponse(reply, replyObject) {
+function createResponse(reply) {
     const embeds = [];
 
-    if (reply.image != null || reply.data != null) {
+    if (reply.authorImage != null || reply.data != null) {
         let attachment = null;
 
-        replyObject.files = ['images/footer.png']
-        if (reply.image != null) {
-            attachment = 'attachment://' + reply.image.replace('images/', '');
-            replyObject.files.push(reply.image);
+        if (reply.authorImage != null) {
+            attachment = 'attachment://' + reply.authorImage.replace('images/', '');
         }
 
         if (reply.data != null) {
@@ -38,7 +33,6 @@ function createResponse(reply, replyObject) {
             embeds[0].setThumbnail(attachment)
             if (attachment === null) {
                 attachment = 'attachment://hots.png';
-                replyObject.files.push('images/hots.png');
             }
             embeds.forEach(it => {
                 if (reply.footer) {
@@ -48,32 +42,45 @@ function createResponse(reply, replyObject) {
                 it.setAuthor(it.author.name ? it.author.name : 'Heroes Infos', attachment, it.author.url);
             })
         }
-    } else {
-        replyObject.content = reply;
     }
 
     if (Network.isUpdatingData) {
         let updatingWarningEmbed = createEmbeds({
             featureName: 'Note',
-            test: StringUtils.get("hold.still.updating.data")
-        }, 'Heroes Infos', 'attachment://hots.png')[0];
+            message: StringUtils.get("hold.still.updating.data")
+        }, 'Heroes Infos', null,'attachment://hots.png')[0];
 
         updatingWarningEmbed.setThumbnail('attachment://download.png');
         embeds.push(updatingWarningEmbed);
-        if (replyObject.files != null) {
-            replyObject.files.push('images/hots.png', 'images/download.png');
-        } else {
-            replyObject.files = ['images/footer.png', 'images/hots.png', 'images/download.png'];
-        }
     }
     return embeds;
 }
 
+function fillAttachments(embeds) {
+    const files = new Set();
+    files.add('images/footer.png');
+    embeds.forEach(it => {
+        if (it.image?.url != null) {
+            files.add(it.image.url.replace('attachment://', 'images/'));
+        }
+        if (it.thumbnail?.url != null) {
+            files.add(it.thumbnail.url.replace('attachment://', 'images/'));
+        }
+        if (it.author?.iconURL != null) {
+            files.add(it.author.iconURL.replace('attachment://', 'images/'));
+        }
+    })
+    return Array.from(files).filter(it => it.length > 0);
+}
+
 async function handleResponse(args, receivedCommand, msg, isInteraction = false) {
     let reply = await Commands.handleCommand(args, receivedCommand, msg, isInteraction);
-    let replyObject = {}
+    let embeds = createResponse(reply);
 
-    replyObject.embeds = createResponse(reply, replyObject);
+    let replyObject = {
+        embeds,
+        files: fillAttachments(embeds)
+    }
 
     if (msg.isCommand) {
         replyObject.ephemeral = true;
@@ -101,12 +108,12 @@ function createEmbeds(object, heroName, heroLink, attachment) {
     let embeds = [];
 
     Object.keys(object).forEach(function (key, _) {
-        if (object[key].toString() === '[object Object]' && !Array.isArray(object[key]) && key !== 'footer') {
+        if (isObject(object, key)) {
             embeds.push(...createEmbeds(object[key], embedHeroName, embedHeroLink, embedAttachment))
         } else {
-            if (key !== 'featureName' && key !== 'featureDescription' && key !== 'footer' && key !== "imageFooter") {
+            if (isNotReservedKey(key)) {
                 let featureDesc = object.featureDescription ? object.featureDescription : '';
-                let image = object.imageFooter ? object.imageFooter.replace('images/','attachment://') : 'attachment://footer.png';
+                let image = object.image ? object.image.replace('images/','attachment://') : 'attachment://footer.png';
 
                 const embed = new MessageEmbed()
                     .setColor('#0099ff')
@@ -129,28 +136,14 @@ function createEmbeds(object, heroName, heroLink, attachment) {
     return embeds;
 }
 
-bot.on('messageCreate', message => {
-    if (message.author.bot) return;
+function isObject(object, key) {
+    return object[key].toString() === '[object Object]'
+        && !Array.isArray(object[key]) && key !== 'footer';
+}
 
-    if (message.content.startsWith(prefix) || message.mentions.has(bot.user.id)) {
-        msg = message;
-
-        if (message.mentions.has(bot.user.id)) {
-            msg.reply(StringUtils.get("mention.me", config.prefix));
-            return;
-        }
-
-        let receivedCommand = message.content.split(' ', 1)[0].substring(1);
-        let args = message.content.substring(receivedCommand.toLowerCase().length + 2);
-
-        try {
-            handleResponse(args, receivedCommand, msg);
-        } catch (e) {
-            process.stdout.write(`Exception: ${e.stack}\n`);
-            msg.reply(StringUtils.get('exception.occurred', e))
-        }
-    }
-});
+function isNotReservedKey(key) {
+    return key !== 'featureName' && key !== 'featureDescription' && key !== 'footer' && key !== 'image';
+}
 
 bot.on('interactionCreate', async interaction => {
     if (!interaction.isCommand()) return;
