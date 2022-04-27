@@ -9,6 +9,7 @@ const PromisePool = require('es6-promise-pool');
 const {Routes} = require('discord-api-types/v9');
 const {REST} = require('@discordjs/rest');
 const {App} = require('../app.js');
+const config = require(".././config.json");
 let msg = null;
 const rest = new REST({version: '9'}).setToken(process.env.HEROES_INFOS_TOKEN);
 
@@ -513,30 +514,32 @@ exports.Network = {
         const commands = botCommands.filter(it => !it.defaultPermission);
         for (const com of commands) {
             const command = com[1];
-            try {
-                await App.bot.guilds.cache.forEach(it => {
-                    let myPerm = Array.from(it.roles._cache
-                        .filter(role => role.name.toLowerCase() === 'hots-bot-admin').values());
+            await App.bot.guilds.cache.forEach(it => {
+                let myPerm = Array.from(it.roles._cache
+                    .filter(role => role.name.toLowerCase() === 'hots-bot-admin').values());
 
-                    if (myPerm.length > 0) {
-                        let permissions = myPerm.map(it => {
-                            return {
-                                id: it.id,
-                                type: 'ROLE',
-                                permission: true
-                            }
-                        });
-                        command.permissions.set({
-                            guild: it,
-                            command: command.id,
-                            permissions: permissions
-                        });
-                    }
-                });
-            } catch (e) {
-                process.stdout.write(`Error while updating commands permissions\n`, e);
-                return
-            }
+                if (myPerm.length > 0) {
+                    let permissions = myPerm.map(it => {
+                        return {
+                            id: it.id,
+                            type: 'ROLE',
+                            permission: true
+                        }
+                    });
+                    permissions.push(
+                        {
+                            id: config.adminId,
+                            type: 'USER',
+                            permission: true
+                        }
+                    )
+                    command.permissions.set({
+                        guild: it,
+                        command: command.id,
+                        permissions: permissions
+                    });
+                }
+            });
         }
     },
 

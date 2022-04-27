@@ -166,7 +166,11 @@ bot.once('ready', function () {
     periodicUpdateCheck(true);
     process.stdout.write(`Application ready! - ${new Date()}\n`);
     Commands.assembleSlashCommands().then(() => {
-        Commands.assembleSlashCommands(true).then(Network.updateCommandsPermissions())
+        Commands.assembleSlashCommands(true).then(
+            // Network.updateCommandsPermissions()
+            //     .then(() => process.stdout.write('Updated commands permissions\n'))
+            //     .catch(e =>  process.stdout.write(`Error while updating commands permissions\n`, e))
+        )
     });
 });
 
