@@ -34,20 +34,12 @@ function createResponse(reply) {
             if (attachment === null) {
                 attachment = 'attachment://hots.png';
             }
-
-
             embeds.forEach(it => {
-                let author = {
-                    name: it.author.name ? it.author.name : 'Heroes Infos',
-                    url: attachment,
-                    iconURL: it.author.url
-                }
-
                 if (reply.footer) {
                     it.setFooter(StringUtils.get('data.from', reply.footer.source), reply.footer.sourceImage)
                 }
                 it.setTimestamp()
-                it.setAuthor(author);
+                it.setAuthor(it.author.name ? it.author.name : 'Heroes Infos', attachment, it.author.url);
             })
         }
     }
@@ -123,16 +115,10 @@ function createEmbeds(object, heroName, heroLink, attachment) {
                 let featureDesc = object.featureDescription ? object.featureDescription : '';
                 let image = object.image ? object.image.replace('images/','attachment://') : 'attachment://footer.png';
 
-                let author = {
-                    name: embedHeroName,
-                    url: embedAttachment,
-                    iconURL:embedHeroLink
-                }
-
                 const embed = new MessageEmbed()
                     .setColor('#0099ff')
                     .setTitle(object.featureName)
-                    .setAuthor(author)
+                    .setAuthor(embedHeroName, embedAttachment, embedHeroLink)
                     .setImage(image);
 
                 if (Array.isArray(object[key])) {
