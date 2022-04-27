@@ -166,7 +166,7 @@ exports.Network = {
                 const builds = [];
                 for (let i in names) {
                     builds.push({
-                        name: `[Popular Build](${profileUrl.replace('getChartDataTalentBuilds.php', '').replaceAll(' ','+')}) ${names[i]}`,
+                        name: `[Popular Build](${profileUrl.replace('getChartDataTalentBuilds.php', '').replaceAll(' ', '+')}) ${names[i]}`,
                         skills: skills[i]
                     });
                 }
@@ -513,26 +513,30 @@ exports.Network = {
         const commands = botCommands.filter(it => !it.defaultPermission);
         for (const com of commands) {
             const command = com[1];
-            await App.bot.guilds.cache.forEach(it => {
-                let myPerm = Array.from(it.roles._cache
-                    .filter(role => role.name.toLowerCase() === 'hots-bot-admin').values());
+            try {
+                await App.bot.guilds.cache.forEach(it => {
+                    let myPerm = Array.from(it.roles._cache
+                        .filter(role => role.name.toLowerCase() === 'hots-bot-admin').values());
 
-                if (myPerm.length > 0) {
-                    let permissions = myPerm.map(it => {
-                        return {
-                            id: it.id,
-                            type: 'ROLE',
-                            permission: true
-                        }
-                    });
-
-                    command.permissions.set({
-                        guild: it,
-                        command: command.id,
-                        permissions: permissions
-                    });
-                }
-            });
+                    if (myPerm.length > 0) {
+                        let permissions = myPerm.map(it => {
+                            return {
+                                id: it.id,
+                                type: 'ROLE',
+                                permission: true
+                            }
+                        });
+                        command.permissions.set({
+                            guild: it,
+                            command: command.id,
+                            permissions: permissions
+                        });
+                    }
+                });
+            } catch (e) {
+                process.stdout.write(`Error while updating commands permissions\n`, e);
+                return
+            }
         }
     },
 
