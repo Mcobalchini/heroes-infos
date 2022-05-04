@@ -105,7 +105,7 @@ exports.Commands = {
             } else if (command.name === 'Help') {
                 reply = this.assembleHelpReturnMessage(msg, args);
             } else if (command.name === 'News') {
-                reply = this.assembleNewsReturnMessage();
+                reply = await this.assembleNewsReturnMessage();
             } else if (command.name === 'Update') {
                 if (Network.isUpdatingData) {
                     reply = StringUtils.get('hold.still.updating');
