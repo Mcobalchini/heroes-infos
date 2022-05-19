@@ -221,10 +221,18 @@ bot.once('ready', function () {
                 Commands.assembleSlashCommands(true)
             });
         } else {
-            process.stdout.write(`Update not needed`);
+            process.stdout.write(`Update not needed\n`);
         }
     });
 
+});
+
+bot.on("guildCreate", guild => {
+    process.stdout.write(`Joined a new guild: ${guild.name}\n`);
+});
+
+bot.on("guildDelete", guild => {
+    process.stdout.write(`Left a guild: ${guild.name}\n`);
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN);
