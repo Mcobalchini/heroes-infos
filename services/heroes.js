@@ -55,17 +55,18 @@ exports.Heroes = {
         }).splice(0, 12)
     },
 
-    findHero: function (heroName, searchInfos, evaluateThis) {
+    findHero: function (searchTerm, searchInfos, evaluateThis) {
         let hero = heroesBase.find(hero =>
-            (hero.name.unaccentClean() === heroName.unaccentClean() ||
-                hero.localizedName.unaccentClean() === heroName.unaccentClean() ||
-                hero.accessLink.unaccentClean() === heroName.unaccentClean() ||
-                hero.id.unaccentClean() === heroName.unaccentClean() ||
-                (hero.name.unaccentClean() + ' (' + hero.localizedName.unaccentClean() + ')' === heroName.unaccentClean()) ||
-                (hero.name.unaccentClean().includes(heroName.unaccentClean()) ||
-                    hero.localizedName.unaccentClean().includes(heroName.unaccentClean()) ||
-                    ((hero.name.unaccentClean() + ' (' + hero.localizedName.unaccentClean() + ')').includes(heroName.unaccentClean()))))
+            hero.name.unaccentClean() === searchTerm.unaccentClean() ||
+            hero.localizedName.unaccentClean() === searchTerm.unaccentClean()
         );
+
+        if (hero == null) {
+            hero = heroesBase.find(hero => hero.accessLink.unaccentClean() === searchTerm.unaccentClean() ||
+                hero.id.unaccentClean() === searchTerm.unaccentClean() ||
+                (hero.name.unaccentClean().includes(searchTerm.unaccentClean()) ||
+                    hero.localizedName.unaccentClean().includes(searchTerm.unaccentClean())));
+        }
 
         if (hero != null && searchInfos)
             hero = this.findHeroInfos(hero.id);
@@ -254,7 +255,7 @@ exports.Heroes = {
         return {
             data: {
                 featureName: StringUtils.get('free.heroes'),
-                freeHeroes: (this.freeHeroes.length <= 0 ? StringUtils.get('no.free.heroes') : this.freeHeroes.map(freeHero => {
+                freeHeroes: (this.freeHeroes.length <= 0 ? StringUtils.get('no.free.heroes') : this.freeHeroes?.map(freeHero => {
                     const hero = this.findHero(freeHero.name, false, false);
                     return {
                         name: this.getHeroName(hero),
@@ -447,15 +448,6 @@ exports.Heroes = {
                 reply = StringUtils.get('hero.not.found', argument);
             }
         }
-        if (reply.toString() === '[object Object]') {
-            return reply;
-        } else {
-            return {
-                data: {
-                    featureName: ' ',
-                    message: reply,
-                }
-            };
-        }
+        return reply;
     }
 };

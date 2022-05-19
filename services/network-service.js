@@ -543,6 +543,12 @@ exports.Network = {
         }
     },
 
+    getApiCommandsSize: async function () {
+        if (!App.bot.application?.owner) await App.bot.application?.fetch();
+        const botCommands = await App.bot.application?.commands.fetch()
+        return botCommands.size
+    },
+
     isUpdateNeeded: function () {
         return !Heroes.findHero('1', true)?.infos?.builds?.length > 0
     },

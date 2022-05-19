@@ -7,7 +7,7 @@
       "hold.still.updating.data": "Aguarde, ainda estou atualizando os dados dos heróis"
     },
     {
-      "command.not.exists": "O comando {0} não existe!\nDigite {1}ajuda para saber mais sobre comandos"
+      "command.not.exists": "O comando {0} não existe!\nDigite /ajuda para saber mais sobre comandos"
     },
     {
       "available.commands.are": "Os comandos disponiveis são:"
@@ -19,7 +19,7 @@
       "all.data.gathered.from": "Todos os dados mostrados aqui são obtidos de"
     },
     {
-      "if.want.to.know.more.about.specific.command": "Se você quiser saber mais sobre um comando em específico, digite {0}ajuda [nome_do_comando]"
+      "if.want.to.know.more.about.specific.command": "Se você quiser saber mais sobre um comando em específico, digite /ajuda [nome_do_comando]"
     },
     {
       "version": "Versão {0}"
@@ -199,7 +199,7 @@
       "not.updated.yet": "Ainda não foi atualizado"
     },
     {
-      "mention.me": "Hello there, to find out what I can do, type `{0}help`"
+      "mention.me": "Hello there, to find out what I can do, type `/help`"
     },
     {
       "data.from": "Dados de {0}"
@@ -213,7 +213,7 @@
       "hold.still.updating.data": "Hold still, i\\'m updating heroes data"
     },
     {
-      "command.not.exists": "The command {0} does not exists!\nType {1}help to know more about commands"
+      "command.not.exists": "The command {0} does not exists!\nType /help to know more about commands"
     },
     {
       "available.commands.are": "The available commands are:"
@@ -225,7 +225,7 @@
       "all.data.gathered.from": "All the data shown here is gathered from"
     },
     {
-      "if.want.to.know.more.about.specific.command": "If you want to know more about an specific command, type {0}help [command_name]"
+      "if.want.to.know.more.about.specific.command": "If you want to know more about an specific command, type /help [command_name]"
     },
     {
       "version": "Version {0}"
@@ -405,7 +405,7 @@
       "not.updated.yet": "Not updated yet"
     },
     {
-      "mention.me": "Hello there, to find out what I can do, type `{0}help`"
+      "mention.me": "Hello there, to find out what I can do, type `/help`"
     },
     {
       "data.from": "Data from {0}"

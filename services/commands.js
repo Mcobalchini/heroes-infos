@@ -36,6 +36,11 @@ exports.Commands = {
         return StringUtils.isEn() ? command.name : command.localizedName;
     },
 
+    isUpdateSlashCommandsNeeded: async function () {
+        const apiCommands = await Network.getApiCommandsSize();
+        return (commands.length * 2) !== apiCommands;
+    },
+
     assembleSlashCommands: async function (localized = false) {
         process.stdout.write(`Started refreshing application (/) commands. ${localized}\n`);
         let language = localized ? StringUtils.PT_BR : StringUtils.EN_US;
@@ -185,6 +190,7 @@ exports.Commands = {
             commandInfos += StringUtils.get('all.data.gathered.from');
             commandInfos += 'https://www.icy-veins.com/heroes/\n';
             commandInfos += 'https://www.heroesprofile.com\n';
+            commandInfos += 'https://nexuscompendium.com\n';
             commandInfos += 'https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2\n';
             commandInfos += StringUtils.get('if.want.to.know.more.about.specific.command', config.prefix);
             commandInfos += StringUtils.get('version', config.version);
@@ -279,8 +285,8 @@ exports.Commands = {
             if (msg.author != null || msg.user != null) {
                 const id = (msg.author != null ? msg.author.id : (msg.user != null ? msg.user.id : 0));
                 return (id === config.adminId) ||
-                    msg.member._roles.includes(
-                        msg.member.guild.roles._cache.find(it => it.name.toLowerCase() === 'hots-bot-admin')?.id
+                    msg.member?._roles?.includes(
+                        msg.member?.guild?.roles?._cache.find(it => it.name.toLowerCase() === 'hots-bot-admin')?.id
                     );
             }
         }
