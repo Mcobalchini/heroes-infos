@@ -218,11 +218,13 @@ bot.once('ready', function () {
 });
 
 bot.on("guildCreate", guild => {
-    process.stdout.write(`Joined a new guild: ${guild.name}\n`);
+    const channel = bot.channels?.cache?.find(channel => channel.id === process.env.JOIN_SERVER_CHANNEL_ID);
+    channel?.send(`Joined a new guild: ${guild.name}\n`);
 });
 
 bot.on("guildDelete", guild => {
-    process.stdout.write(`Left a guild: ${guild.name}\n`);
+    const channel = bot.channels?.cache?.find(channel => channel.id === process.env.LEAVE_SERVER_CHANNEL_ID);
+    channel?.send(`Left a guild: ${guild.name}\n`);
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN);
