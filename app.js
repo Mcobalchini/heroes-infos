@@ -18,28 +18,16 @@ function setBotStatus(name, type) {
     });
 }
 
-function fillAuthorAndFooter(attachment, embeds, reply) {
-
-    if (attachment === null) {
-        attachment = 'attachment://hots.png';
-    }
+function fillFooter(attachment, embeds, footerObj) {
 
     embeds.forEach(it => {
-        let author = {
-            name: it.author.name ? it.author.name : 'Heroes Infos',
-            url: it.author.url,
-            iconURL: attachment
-        }
-
-        if (reply.footer) {
+        if (footerObj) {
             let footer = {
-                text: StringUtils.get('data.from', reply.footer.source),
-                iconURL: reply.footer.sourceImage
+                text: StringUtils.get('data.from', footerObj.source),
+                iconURL: footerObj.sourceImage
             }
             it.setFooter(footer)
         }
-        it.setTimestamp()
-        it.setAuthor(author);
     });
 }
 
@@ -56,7 +44,7 @@ function createResponse(reply) {
         if (reply.data != null) {
             embeds.push(...createEmbeds(reply.data, reply.heroName, reply.heroLink, attachment));
             embeds[0].setThumbnail(attachment);
-            fillAuthorAndFooter(attachment, embeds, reply);
+            fillFooter(attachment, embeds, reply.footer);
         }
     }
 
@@ -83,15 +71,15 @@ function fillAttachments(embeds) {
     return Array.from(files.values());
 }
 
-function removePrefix(text) {
+function removeAttachmenPrefix(text) {
     return text.replace('attachment://', '');
 }
 
 function addToMap(fileMap, property) {
     if (property != null) {
-        const thumb = removePrefix(property);
-        if (thumb.length > 0 && !fileMap.has(thumb))
-            fileMap.set(thumb, new MessageAttachment(`images/${thumb}`, thumb));
+        const fileName = removeAttachmenPrefix(property);
+        if (fileName.length > 0 && !fileMap.has(fileName))
+            fileMap.set(fileName, new MessageAttachment(`images/${fileName}`, fileName));
     }
 }
 
@@ -143,38 +131,40 @@ function addItemIntoListIfNeeded(array) {
     return array;
 }
 
-function createEmbeds(object, heroName, heroLink, attachment) {
-    let embedHeroName = heroName ? heroName : ''
-    let embedHeroLink = heroLink ? heroLink : 'https://www.icy-veins.com/heroes/'
-    let embedAttachment = attachment ? attachment : ''
+function createEmbeds(replyObject, heroName, heroLink, attachment) {
+    let authorName = heroName ? heroName : 'Heroes Infos Bot'
+    let authorUrl = heroLink ? heroLink : 'https://www.icy-veins.com/heroes/'
+    let authorIcon = attachment ? attachment : 'attachment://hots.png'
     let embeds = [];
 
-    Object.keys(object).forEach(function (key, _) {
-        if (isObject(object, key)) {
-            embeds.push(...createEmbeds(object[key], embedHeroName, embedHeroLink, embedAttachment))
+    const author = {
+        name: authorName,
+        url: authorUrl,
+        iconURL: authorIcon
+    }
+
+    Object.keys(replyObject).forEach(function (key, _) {
+        const attribute = replyObject[key];
+        if (isObject(replyObject, key)) {
+            embeds.push(...createEmbeds(attribute, authorName, authorUrl, authorIcon))
         } else {
             if (isNotReservedKey(key)) {
-                let featureDesc = object.featureDescription ? object.featureDescription : '';
-                let image = object.image ? object.image.replace('images/', 'attachment://') : 'attachment://footer.png';
-
-                let author = {
-                    name: embedHeroName,
-                    url: embedHeroLink,
-                    iconURL: embedAttachment
-                }
+                let featureDesc = replyObject.featureDescription ? replyObject.featureDescription : '';
+                let image = replyObject.image ? replyObject.image.replace('images/', 'attachment://') : 'attachment://footer.png';
 
                 const embed = new MessageEmbed()
                     .setColor('#0099ff')
-                    .setTitle(object.featureName)
+                    .setTitle(replyObject.featureName)
                     .setAuthor(author)
-                    .setImage(image);
+                    .setImage(image)
+                    .setTimestamp();
 
-                if (Array.isArray(object[key])) {
-                    let array = addItemIntoListIfNeeded(object[key]);
+                if (Array.isArray(attribute)) {
+                    let array = addItemIntoListIfNeeded(attribute);
                     embed.addFields(array)
                     embed.setDescription(featureDesc)
                 } else {
-                    let desc = object[key]
+                    let desc = attribute
                     embed.setDescription(desc ? desc : featureDesc)
                 }
 
