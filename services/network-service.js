@@ -43,7 +43,7 @@ exports.Network = {
             });
             await this.browser.close().catch();
         } catch (ex) {
-            process.stdout.write(`Error while gathering rotation ${ex.stack}\n`);
+            App.log(`Error while gathering rotation`, ex);
             this.failedJobs.push(url)
         }
 
@@ -68,7 +68,7 @@ exports.Network = {
             });
 
         } catch (ex) {
-            process.stdout.write(`Error while gathering rotation ${ex.stack}\n`);
+            App.log(`Error while gathering rotation`, ex);
             this.failedJobs.push(url)
         } finally {
             await page.close();
@@ -105,7 +105,7 @@ exports.Network = {
             }, divClass);
             await this.browser.close();
         } catch (ex) {
-            process.stdout.write(ex.stack);
+            App.log('Error while gathering news', ex);
             this.failedJobs.push(url)
         }
         if (result != null) {
@@ -154,7 +154,7 @@ exports.Network = {
 
             }, icyUrl);
         } catch (ex) {
-            process.stdout.write(`Error while fetching icyData ${ex.stack}\n`);
+            App.log(`Error while fetching icyData`, ex);
         }
 
         try {
@@ -177,7 +177,7 @@ exports.Network = {
                 };
             }, profileUrl);
         } catch (ex) {
-            process.stdout.write(`Error while fetching profileData ${ex.stack}\n`);
+            App.log(`Error while fetching profileData`, ex);
         } finally {
             await page.close();
         }
@@ -190,13 +190,13 @@ exports.Network = {
 
             heroesMap.set(heroId, returnObject);
         } else {
-            process.stdout.write(`Trying again due to an error on url ${icyUrl}\n`);
+            App.log(`Trying again due to an error on url ${icyUrl}\n`);
             await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
         }
     },
 
     gatherTierListInfo: async function () {
-        process.stdout.write(`Gathering tier list at ${new Date().toLocaleTimeString()}\n`);
+        App.log(`Gathering tier list at ${new Date().toLocaleTimeString()}\n`);
         const page = await this.createPage();
         const url = `https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`;
         let result;
@@ -207,7 +207,7 @@ exports.Network = {
             });
 
         } catch (ex) {
-            process.stdout.write(`Error while gathering tier list info${ex.stack}\n`);
+            App.log(`Error while gathering tier list info`, ex);
             this.failedJobs.push(url)
         } finally {
             await page.close();
@@ -222,7 +222,7 @@ exports.Network = {
     },
 
     gatherPopularityAndWinRateInfo: async function () {
-        process.stdout.write(`Gathering win rate at ${new Date().toLocaleTimeString()}\n`);
+        App.log(`Gathering win rate at ${new Date().toLocaleTimeString()}\n`);
         const page = await this.createPage();
         const url = `https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2`;
         let result
@@ -239,7 +239,7 @@ exports.Network = {
             });
 
         } catch (ex) {
-            process.stdout.write(`Error while gathering popularity and WR info ${ex.stack}\n`);
+            App.log(`Error while gathering popularity and WR info`, ex);
             this.failedJobs.push(url);
         } finally {
             await page.close();
@@ -253,7 +253,7 @@ exports.Network = {
     },
 
     gatherCompositionsInfo: async function () {
-        process.stdout.write(`Gathering compositions at ${new Date().toLocaleTimeString()}\n`);
+        App.log(`Gathering compositions at ${new Date().toLocaleTimeString()}\n`);
         const page = await this.createPage();
         const url = `https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1`;
         let result
@@ -270,7 +270,7 @@ exports.Network = {
             });
 
         } catch (ex) {
-            process.stdout.write(`Error while gathering compositions ${ex.stack}\n`);
+            App.log(`Error while gathering compositions`, ex);
             this.failedJobs.push(url)
         } finally {
             await page.close();
@@ -285,7 +285,7 @@ exports.Network = {
 
     updateData: async function (callbackFunction) {
         await this.setBrowser();
-        process.stdout.write(`Started updating data process at ${new Date().toLocaleTimeString()}\n`);
+        App.log(`Started updating data process at ${new Date().toLocaleTimeString()}\n`);
         this.isUpdatingData = true;
 
 
@@ -346,8 +346,8 @@ exports.Network = {
 
                 let finishedTime = new Date();
 
-                process.stdout.write(`Finished gathering process at ${finishedTime.toLocaleTimeString()}\n`);
-                process.stdout.write(`${(finishedTime - startTime) / 1000} seconds has passed\n`);
+                App.log(`Finished gathering process at ${finishedTime.toLocaleTimeString()}\n`);
+                App.log(`${(finishedTime - startTime) / 1000} seconds has passed\n`);
 
                 for (let [heroKey, heroData] of heroesMap) {
                     let index = heroesInfos.findIndex(it => it.id === heroKey);
@@ -392,7 +392,7 @@ exports.Network = {
                     }
 
                     if (profileData.builds.length === 0) {
-                        process.stdout.write(`No (profile) builds found for ${heroesInfos[index].name}\n`);
+                        App.log(`No (profile) builds found for ${heroesInfos[index].name}\n`);
                     }
 
                     //retrieves the duplicate items
@@ -475,7 +475,7 @@ exports.Network = {
                     Heroes.setFreeHeroes(cacheFree);
 
                     this.translateTips(heroesInfos).then(() => {
-                        process.stdout.write(`Finished update at ${new Date().toLocaleTimeString()}\n`);
+                        App.log(`Finished update at ${new Date().toLocaleTimeString()}\n`);
                         this.isUpdatingData = false;
                         App.bot.updatedAt = new Date().toLocaleTimeString();
                         App.setBotStatus('Heroes of the Storm', 'PLAYING');
@@ -493,8 +493,8 @@ exports.Network = {
                 replyMsg += StringUtils.get('try.to.update.again');
                 await this.updateData(callbackFunction);
             }
-            process.stdout.write(e.stack);
-            process.stdout.write(this.failedJobs.join('\n'));
+            App.log('Error while updating', e);
+            App.log(this.failedJobs.join('\n'));
             this.isUpdatingData = false;
             if (callbackFunction)
                 callbackFunction(replyMsg);
@@ -578,7 +578,7 @@ exports.Network = {
     },
 
     createHeroesProfileSession: async function () {
-        process.stdout.write(`Creating heroes profile session at ${new Date().toLocaleTimeString()}\n`);
+        App.log(`Creating heroes profile session at ${new Date().toLocaleTimeString()}\n`);
         const page = await this.createPage();
         const url = 'https://www.heroesprofile.com/Global/Talents/';
         let response;
@@ -586,7 +586,7 @@ exports.Network = {
             response = await page.goto(url, {waitUntil: 'domcontentloaded'})
             return response._headers['set-cookie'];
         } catch (ex) {
-            process.stdout.write(`Error while creating heroes session ${ex.stack}\n`);
+            App.log(`Error while creating heroes session`, ex);
             await this.createHeroesProfileSession();
             this.failedJobs.push(url);
         } finally {
@@ -613,7 +613,7 @@ exports.Network = {
     writeFile: function (path, obj) {
         fs.writeFile(path, JSON.stringify(obj), (e) => {
             if (e != null) {
-                process.stdout.write('error: ' + e + '\n');
+                App.log(`error while writing file ${path}`, e);
                 msg.reply(StringUtils.get('could.not.update.data.try.again'));
             }
         });

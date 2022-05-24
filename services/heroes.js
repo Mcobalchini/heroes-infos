@@ -1,5 +1,6 @@
 const fs = require('fs');
 const config = require('../config.json');
+const {App} = require("../app");
 const roles = JSON.parse(fs.readFileSync('./data/constant/roles.json'), {encoding: 'utf8', flag: 'r'});
 const StringUtils = require('./strings.js').StringUtils;
 const heroesBase = JSON.parse(fs.readFileSync('./data/constant/heroes-base.json'), {encoding: 'utf8', flag: 'r'});
@@ -14,7 +15,7 @@ try {
     compositions = JSON.parse(fs.readFileSync('./data/compositions.json'));
     freeHeroes = JSON.parse(fs.readFileSync('./data/freeweek.json'));
 } catch (e) {
-    process.stdout.write('error: ' + e + '\n');
+    App.log('error while reading json data', e);
 }
 
 exports.Heroes = {

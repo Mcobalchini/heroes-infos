@@ -203,6 +203,12 @@
     },
     {
       "data.from": "Dados de {0}"
+    },
+    {
+      "bot.error": "Um erro ocorreu!"
+    },
+    {
+      "note": "Observação"
     }
   ],
   "en-us": [
@@ -409,6 +415,12 @@
     },
     {
       "data.from": "Data from {0}"
+    },
+    {
+      "bot.error": "An exception has ocurred!"
+    },
+    {
+      "note": "Note"
     }
   ]
 }

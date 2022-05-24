@@ -42,7 +42,7 @@ exports.Commands = {
     },
 
     assembleSlashCommands: async function (localized = false) {
-        process.stdout.write(`Started refreshing application (/) commands. ${localized}\n`);
+        App.log(`Started refreshing application (/) commands. ${localized}\n`);
         let language = localized ? StringUtils.PT_BR : StringUtils.EN_US;
         StringUtils.setLanguage(language);
 
@@ -91,9 +91,9 @@ exports.Commands = {
                 await Network.postSlashCommandsToAPI(commandSlashBuilder);
             }
 
-            process.stdout.write(`Successfully reloaded application (/) commands. ${localized}\n`);
+            App.log(`Successfully reloaded application (/) commands. ${localized}\n`);
         } catch (error) {
-            process.stdout.write(`Error while reloading / commands ${localized} ${error}`);
+            App.log(`Error while reloading / commands ${localized}`, error);
         }
     },
 
@@ -203,7 +203,10 @@ exports.Commands = {
         };
 
         if (commandInfos?.length) {
-            responseData.commandInfos = commandInfos;
+            responseData.commandInfos = {
+                featureName: StringUtils.get('help'),
+                featureDescription: commandInfos,
+            };
         }
 
         return {
@@ -224,7 +227,7 @@ exports.Commands = {
         const seconds = Math.floor(totalSeconds % 60);
         const uptime = StringUtils.get('uptime.string', days, hours, minutes, seconds);
         const servers = App.bot.guilds._cache;
-        process.stdout.write(`Servers. ${servers.map(it => it.name )}\n`);
+        App.log(`Servers. ${servers.map(it => it.name )}\n`);
         let list = [
             {
                 name: StringUtils.get('im.on'),

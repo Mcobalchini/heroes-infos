@@ -3,7 +3,7 @@
 <!---Esses são exemplos. Veja https://shields.io para outras pessoas ou para personalizar este conjunto de escudos. Você pode querer incluir dependências, status do projeto e informações de licença aqui--->
 
 ![GitHub repo size](https://img.shields.io/github/languages/code-size/mcobalchini/heroes-infos?color=%233d98cf&style=for-the-badge)
-![Discord Server](https://img.shields.io/discord/977221397602508810?color=%233d98cf&label=Discord&style=for-the-badge)
+![Discord Server](https://img.shields.io/discord/977573469413867520?color=%233d98cf&label=Discord&style=for-the-badge)
 ![Github last commit](https://img.shields.io/github/last-commit/mcobalchini/heroes-infos?color=%233d98cf&style=for-the-badge)
 ![Github open pull requests](https://img.shields.io/github/issues-pr/mcobalchini/heroes-infos?color=%233d98cf&style=for-the-badge)
 
