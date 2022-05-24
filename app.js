@@ -7,7 +7,7 @@ exports.App = {
     bot: bot,
     log: log,
 };
-
+StringUtils.setup();
 const {Commands} = require('./services/commands');
 const {Network} = require('./services/network-service.js');
 const {StringUtils} = require('./services/strings.js');
@@ -235,7 +235,6 @@ bot.on('interactionCreate', async interaction => {
 });
 
 bot.once('ready', function () {
-    StringUtils.setup();
     StringUtils.setLanguage(StringUtils.EN_US);
     bot.updatedAt = StringUtils.get('not.updated.yet');
     setBotStatus('Heroes of the Storm', 'PLAYING');
