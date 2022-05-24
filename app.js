@@ -21,7 +21,7 @@ function setBotStatus(name, type) {
 
 function log(text, error) {
     if (error) {
-        process.stdout.write(text+'\n', 'utf-8', error);
+        process.stdout.write(text + '\n', 'utf-8', error);
         if (process.env.LOGS_CHANNEL_ID) {
             sendError(error)
         }
@@ -239,14 +239,14 @@ bot.once('ready', function () {
     bot.updatedAt = StringUtils.get('not.updated.yet');
     setBotStatus('Heroes of the Storm', 'PLAYING');
     periodicUpdateCheck(true);
-    log(`Application ready! - ${new Date()}\n`);
+    log(`Application ready! - ${new Date()}`);
     Commands.isUpdateSlashCommandsNeeded().then(needed => {
         if (needed) {
             Commands.assembleSlashCommands().then(() => {
                 Commands.assembleSlashCommands(true)
             });
         } else {
-            log(`Update not needed\n`);
+            log(`Slash commands update not needed`);
         }
     });
 
@@ -254,12 +254,12 @@ bot.once('ready', function () {
 
 bot.on("guildCreate", guild => {
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.JOIN_SERVER_CHANNEL_ID);
-    channel?.send(`Joined a new guild: ${guild.name}\n`);
+    channel?.send(`Joined a new guild: ${guild.name}`);
 });
 
 bot.on("guildDelete", guild => {
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.LEAVE_SERVER_CHANNEL_ID);
-    channel?.send(`Left a guild: ${guild.name}\n`);
+    channel?.send(`Left a guild: ${guild.name}`);
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN);

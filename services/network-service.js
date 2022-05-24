@@ -190,13 +190,13 @@ exports.Network = {
 
             heroesMap.set(heroId, returnObject);
         } else {
-            App.log(`Trying again due to an error on url ${icyUrl}\n`);
+            App.log(`Trying again due to an error on url ${icyUrl}`);
             await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
         }
     },
 
     gatherTierListInfo: async function () {
-        App.log(`Gathering tier list at ${new Date().toLocaleTimeString()}\n`);
+        App.log(`Gathering tier list at ${new Date().toLocaleTimeString()}`);
         const page = await this.createPage();
         const url = `https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`;
         let result;
@@ -222,7 +222,7 @@ exports.Network = {
     },
 
     gatherPopularityAndWinRateInfo: async function () {
-        App.log(`Gathering win rate at ${new Date().toLocaleTimeString()}\n`);
+        App.log(`Gathering win rate at ${new Date().toLocaleTimeString()}`);
         const page = await this.createPage();
         const url = `https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2`;
         let result
@@ -253,7 +253,7 @@ exports.Network = {
     },
 
     gatherCompositionsInfo: async function () {
-        App.log(`Gathering compositions at ${new Date().toLocaleTimeString()}\n`);
+        App.log(`Gathering compositions at ${new Date().toLocaleTimeString()}`);
         const page = await this.createPage();
         const url = `https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1`;
         let result
@@ -285,7 +285,7 @@ exports.Network = {
 
     updateData: async function (callbackFunction) {
         await this.setBrowser();
-        App.log(`Started updating data process at ${new Date().toLocaleTimeString()}\n`);
+        App.log(`Started updating data process at ${new Date().toLocaleTimeString()}`);
         this.isUpdatingData = true;
 
 
@@ -346,8 +346,8 @@ exports.Network = {
 
                 let finishedTime = new Date();
 
-                App.log(`Finished gathering process at ${finishedTime.toLocaleTimeString()}\n`);
-                App.log(`${(finishedTime - startTime) / 1000} seconds has passed\n`);
+                App.log(`Finished gathering process at ${finishedTime.toLocaleTimeString()}`);
+                App.log(`${(finishedTime - startTime) / 1000} seconds has passed`);
 
                 for (let [heroKey, heroData] of heroesMap) {
                     let index = heroesInfos.findIndex(it => it.id === heroKey);
@@ -392,7 +392,7 @@ exports.Network = {
                     }
 
                     if (profileData.builds.length === 0) {
-                        App.log(`No (profile) builds found for ${heroesInfos[index].name}\n`);
+                        App.log(`No (profile) builds found for ${heroesInfos[index].name}`);
                     }
 
                     //retrieves the duplicate items
@@ -475,7 +475,7 @@ exports.Network = {
                     Heroes.setFreeHeroes(cacheFree);
 
                     this.translateTips(heroesInfos).then(() => {
-                        App.log(`Finished update at ${new Date().toLocaleTimeString()}\n`);
+                        App.log(`Finished update at ${new Date().toLocaleTimeString()}`);
                         this.isUpdatingData = false;
                         App.bot.updatedAt = new Date().toLocaleTimeString();
                         App.setBotStatus('Heroes of the Storm', 'PLAYING');
@@ -578,7 +578,7 @@ exports.Network = {
     },
 
     createHeroesProfileSession: async function () {
-        App.log(`Creating heroes profile session at ${new Date().toLocaleTimeString()}\n`);
+        App.log(`Creating heroes profile session at ${new Date().toLocaleTimeString()}`);
         const page = await this.createPage();
         const url = 'https://www.heroesprofile.com/Global/Talents/';
         let response;
