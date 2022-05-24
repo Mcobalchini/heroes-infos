@@ -7,10 +7,10 @@ exports.App = {
     bot: bot,
     log: log,
 };
-StringUtils.setup();
+const {StringUtils} = require('./services/strings.js');
 const {Commands} = require('./services/commands');
 const {Network} = require('./services/network-service.js');
-const {StringUtils} = require('./services/strings.js');
+StringUtils.setup();
 
 function setBotStatus(name, type) {
     bot.user.setActivity(name, {
@@ -21,7 +21,7 @@ function setBotStatus(name, type) {
 
 function log(text, error) {
     if (error) {
-        process.stdout.write(text, 'utf-8', error);
+        process.stdout.write(text+'\n', 'utf-8', error);
         if (process.env.LOGS_CHANNEL_ID) {
             sendError(error)
         }
