@@ -477,7 +477,7 @@ exports.Network = {
                     this.translateTips(heroesInfos).then(() => {
                         App.log(`Finished update at ${new Date().toLocaleTimeString()}`);
                         this.isUpdatingData = false;
-                        App.bot.updatedAt = new Date().toLocaleTimeString();
+                        App.bot.updatedAt = new Date().toUTCString();
                         App.setBotStatus('Heroes of the Storm', 'PLAYING');
                         if (callbackFunction)
                             callbackFunction(StringUtils.get('process.update.finished.time', (finishedTime - startTime) / 1000));

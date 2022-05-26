@@ -208,6 +208,21 @@
       "bot.error": "Um erro ocorreu!"
     },
     {
+      "left.server": "Saí de um servidor :cry:"
+    },
+    {
+      "joined.new.server": "Entrei em um novo servidor! :partying_face:"
+    },
+    {
+      "server.name": "Nome do servidor"
+    },
+    {
+      "server.id": "ID do servidor"
+    },
+    {
+      "server.member.count": "Quantidade de membros"
+    },
+    {
       "note": "Observação"
     }
   ],
@@ -418,6 +433,21 @@
     },
     {
       "bot.error": "An exception has ocurred!"
+    },
+    {
+      "left.server": "I left a server :cry:"
+    },
+    {
+      "joined.new.server": "I joined a new server! :partying_face:"
+    },
+    {
+      "server.name": "Server name"
+    },
+    {
+      "server.id": "Server ID"
+    },
+    {
+      "server.member.count": "Member count"
     },
     {
       "note": "Note"

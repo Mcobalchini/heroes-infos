@@ -20,13 +20,17 @@ function setBotStatus(name, type) {
 }
 
 function log(text, error) {
-    if (error) {
-        process.stdout.write(text + '\n', 'utf-8', error);
-        if (process.env.LOGS_CHANNEL_ID) {
-            sendError(error)
+    try {
+        if (error) {
+            process.stdout.write(text + '\n', 'utf-8', error);
+            if (process.env.LOGS_CHANNEL_ID) {
+                sendError(error)
+            }
+        } else {
+            process.stdout.write(`${text}\n`);
         }
-    } else {
-        process.stdout.write(`${text}\n`);
+    } catch (e) {
+        process.stdout.write(`error while sending error ${e.message}\n`);
     }
 }
 
@@ -36,11 +40,9 @@ function sendError(errorMessage){
         featureName: StringUtils.get('bot.error'),
         data: errorMessage.message,
     }
-    const embeds = []
     const embed = createEmbed(reply, null, null, null, 'attachment://fire.png');
     embed.setColor('#FE4F60');
-    embeds.push(embed);
-    channel?.send(assembleEmbedObject(embeds));
+    channel?.send(assembleEmbedObject(embed));
 }
 
 function fillFooter(attachment, embeds, footerObj) {
@@ -75,8 +77,8 @@ function createResponse(reply) {
 
     if (Network.isUpdatingData) {
         let updatingWarningEmbed = createEmbed({
-            featureName: StringUtils.get("note"),
-            message: StringUtils.get("hold.still.updating.data")
+            featureName: StringUtils.get('note'),
+            message: StringUtils.get('hold.still.updating.data')
         }, null, null,null, 'attachment://download.png');
 
         embeds.push(updatingWarningEmbed);
@@ -102,12 +104,15 @@ function removeAttachmenPrefix(text) {
 function addToMap(fileMap, property) {
     if (property != null) {
         const fileName = removeAttachmenPrefix(property);
-        if (fileName.length > 0 && !fileMap.has(fileName))
+        if (!fileName.includes('http') && fileName.length > 0 && !fileMap.has(fileName))
             fileMap.set(fileName, new MessageAttachment(`images/${fileName}`, fileName));
     }
 }
 
 function assembleEmbedObject(embeds) {
+    if (!Array.isArray(embeds)) {
+        embeds = [embeds]
+    }
     return {
         embeds,
         files: fillAttachments(embeds)
@@ -182,7 +187,7 @@ function createEmbed(replyObject, authorName, authorUrl, authorIcon, thumbnail) 
 
         const attribute = Object.keys(replyObject).find(it => isNotReservedKey(it))
 
-        if (Array.isArray(replyObject[attribute])) {
+    if (Array.isArray(replyObject[attribute])) {
         let array = addItemIntoListIfNeeded(replyObject[attribute]);
         embed.addFields(array)
         embed.setDescription(featureDesc)
@@ -220,6 +225,26 @@ function isNotReservedKey(key) {
     return key !== 'featureName' && key !== 'featureDescription' && key !== 'footer' && key !== 'image';
 }
 
+function assembleGuildData(guild) {
+    return [
+        {
+            name: StringUtils.get('server.name'),
+            value: guild.name ?? '',
+            inline: false
+        },
+        {
+            name: StringUtils.get('server.id'),
+            value: guild.id.toString() ?? '0',
+            inline: true
+        },
+        {
+            name: StringUtils.get('server.member.count'),
+            value: guild.memberCount.toString() ?? '0',
+            inline: true
+        }
+    ]
+}
+
 bot.on('interactionCreate', async interaction => {
     if (!interaction.isCommand()) return;
     try {
@@ -228,7 +253,7 @@ bot.on('interactionCreate', async interaction => {
             interaction.commandName.toString(),
             interaction,
             true
-        )
+        );
     } catch (e) {
         log(`Error while handling response`, e);
     }
@@ -252,14 +277,23 @@ bot.once('ready', function () {
 
 });
 
-bot.on("guildCreate", guild => {
+bot.on('guildCreate', guild => {
+    log(`Owner id ${guild.ownerId}`);
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.JOIN_SERVER_CHANNEL_ID);
-    channel?.send(`Joined a new guild: ${guild.name}`);
+    const embed = createEmbed( {
+            featureName: StringUtils.get('joined.new.server'),
+            guildData: assembleGuildData(guild)
+        }, null, null, null, guild.iconURL());
+    channel?.send(assembleEmbedObject(embed));
 });
 
-bot.on("guildDelete", guild => {
+bot.on('guildDelete', guild => {
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.LEAVE_SERVER_CHANNEL_ID);
-    channel?.send(`Left a guild: ${guild.name}`);
+    const embed = createEmbed( {
+            featureName: StringUtils.get('left.server'),
+            guildData: assembleGuildData(guild)
+        }, null, null, null, guild.iconURL());
+    channel?.send(assembleEmbedObject(embed));
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN);
