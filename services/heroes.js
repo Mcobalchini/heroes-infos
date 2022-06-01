@@ -133,7 +133,7 @@ exports.Heroes = {
         return {
             featureName: StringUtils.get('counters'),
             counter: this.hero.infos.counters.map(counter => {
-                const hero = this.findHero(counter.name, true, false);
+                const hero = this.findHero(counter, true, false);
                 return {
                     name: this.getHeroName(hero),
                     value: this.getRoleName(this.findRoleById(hero.role)),
@@ -161,7 +161,7 @@ exports.Heroes = {
         return {
             featureName: StringUtils.get('synergies'),
             synergies: this.hero.infos.synergies.map(synergy => {
-                const hero = this.findHero(synergy.name, true, false);
+                const hero = this.findHero(synergy, true, false);
                 return {
                     name: this.getHeroName(hero),
                     value: this.getRoleName(this.findRoleById(hero.role)),
@@ -222,6 +222,21 @@ exports.Heroes = {
 
     setHeroesInfos: function (heroesParam) {
         this.heroesInfos = heroesParam;
+    },
+
+    setHeroesTierPosition: function () {
+        App.log(`setting heroes tier position at ${new Date().toUTCString()}`);
+        this.heroesInfos.sort(function (a, b) {
+            return a.infos.games - b.infos.games;
+        }).forEach((it, idx) => {
+            it.infos.tierPosition = parseInt(idx + 1);
+        });
+
+        this.heroesInfos.sort(function (a, b) {
+            return a.infos.winRate - b.infos.winRate;
+        }).forEach((it, idx) => {
+            it.infos.tierPosition = parseInt(it.infos.tierPosition) + parseInt(idx + 1);
+        })
     },
 
     setFreeHeroes: function (heroesParam) {

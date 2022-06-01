@@ -9,7 +9,6 @@ const PromisePool = require('es6-promise-pool');
 const {Routes} = require('discord-api-types/v9');
 const {REST} = require('@discordjs/rest');
 const {App} = require('../app.js');
-const config = require(".././config.json");
 let msg = null;
 const rest = new REST({version: '9'}).setToken(process.env.HEROES_INFOS_TOKEN);
 
@@ -19,19 +18,8 @@ exports.Network = {
     replyTo: null,
     browser: null,
 
-    setBrowser: async function () {
-        this.browser = await puppeteer.launch({
-            headless: true,
-            // devtools: true,
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-            ],
-        })
-    },
-
     gatherHeroesRotation: async function () {
-
+        let remainingTrials = 3;
         const page = await this.createPage();
 
         let result
@@ -41,20 +29,41 @@ exports.Network = {
             result = await page.evaluate(() => {
                 return JSON.parse(document.body.innerText).RotationHero.Heroes.map(it => it.ID)
             });
-            await this.browser.close().catch();
         } catch (ex) {
             App.log(`Error while gathering rotation`, ex);
             this.failedJobs.push(url)
+        } finally {
+            await page.close();
         }
 
         if (result != null) {
-            return result;
+            let freeHeroes = [];
+
+            for (let heroName of result) {
+                let freeHero = Heroes.findHero(heroName, false, true);
+                let heroRole = Heroes.findRoleById(freeHero.role);
+                freeHeroes.push({
+                    name: freeHero.name,
+                    role: heroRole.name
+                });
+            }
+
+            Heroes.setFreeHeroes(freeHeroes);
+            this.writeFile('data/freeweek.json', freeHeroes);
+            App.log(`Updated heroes rotation at ${new Date().toUTCString()}`);
         } else {
-            await this.gatherHeroesRotation();
+            if (remainingTrials > 0) {
+                remainingTrials--;
+                await this.gatherHeroesRotation();
+            } else {
+                App.log(`No more tries remaining for gathering heroes rotation`);
+                return null;
+            }
         }
     },
 
     gatherHeroesPrint: async function () {
+        let remainingTrials = 3;
         const page = await this.createPage(false);
 
         let result
@@ -68,7 +77,7 @@ exports.Network = {
             });
 
         } catch (ex) {
-            App.log(`Error while gathering rotation`, ex);
+            App.log(`Error while gathering rotation image`, ex);
             this.failedJobs.push(url)
         } finally {
             await page.close();
@@ -77,7 +86,152 @@ exports.Network = {
         if (result != null) {
             return result;
         } else {
-            await this.gatherHeroesRotation();
+            if (remainingTrials > 0) {
+                remainingTrials--;
+                await this.gatherHeroesPrint();
+            } else {
+                App.log(`No more tries remaining for gathering heroes print`);
+                return null;
+            }
+        }
+    },
+
+    gatherBanTierListInfo: async function () {
+        let remainingTrials = 3
+        App.log(`Gathering ban tier list at ${new Date().toUTCString()}`);
+        const page = await this.createPage();
+        const url = `https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`;
+        let result;
+        try {
+            await page.goto(url, { waitUntil: 'domcontentloaded' });
+            result = await page.evaluate(() => {
+                return [...new Set(Array.from(document.querySelectorAll('.htl_ban_true')).map(nameElements => nameElements.nextElementSibling.innerText))];
+            });
+
+        } catch (ex) {
+            App.log(`Error while gathering tier list info`, ex);
+            this.failedJobs.push(url)
+        } finally {
+            await page.close();
+        }
+
+        if (result != null) {
+            let banList = [];
+            result.forEach(it => {
+                let banHero = Heroes.findHero(it, false, true);
+                let heroRole = Heroes.findRoleById(banHero.role);
+                banList.push({
+                    name: banHero.name,
+                    role: heroRole.name,
+                });
+            });
+
+            Heroes.setBanHeroes(banList);
+            this.writeFile('data/banlist.json', banList);
+            App.log(`Updated ban list at ${new Date().toUTCString()}`);
+        } else {
+            if (remainingTrials > 0) {
+                remainingTrials--;
+                await this.gatherBanTierListInfo();
+            } else {
+                App.log(`No more tries remaining for ban tier list`);
+                return null;
+            }
+        }
+
+    },
+
+    gatherCompositionsInfo: async function () {
+        let remainingTrials = 3;
+        App.log(`Gathering compositions at ${new Date().toUTCString()}`);
+        const page = await this.createPage();
+        const url = `https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1`;
+        let result
+        try {
+            await page.goto(url);
+            result = await page.evaluate(() => {
+                return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
+                    return {
+                        games: it.children[0].innerText,
+                        winRate: parseFloat(it.children[1].innerText.replace(',', '.')),
+                        roles: Array.from(it.children).filter(it => it.style.display === 'none').map(it => it.innerText)
+                    }
+                });
+            });
+
+        } catch (ex) {
+            App.log(`Error while gathering compositions`, ex);
+            this.failedJobs.push(url)
+        } finally {
+            await page.close();
+        }
+
+        if (result != null) {
+            result.sort(function (a, b) {
+                return a.games - b.games;
+            }).forEach((it, idx) => {
+                it.tierPosition = parseInt(idx + 1);
+            });
+
+            result.sort(function (a, b) {
+                return a.winRate - b.winRate;
+            }).forEach((it, idx) => {
+                it.tierPosition = parseInt(it.tierPosition) + parseInt(idx + 1);
+            });
+
+            let sortedComposition = result.sort(function (a, b) {
+                return a.tierPosition - b.tierPosition
+            }).reverse();
+
+            Heroes.setCompositions(sortedComposition);
+            this.writeFile('data/compositions.json', sortedComposition);
+            App.log(`Updated compositions list at ${new Date().toUTCString()}`);
+        } else {
+            if (remainingTrials > 0) {
+                remainingTrials--;
+                await this.gatherCompositionsInfo();
+            } else {
+                App.log(`No more tries remaining for gathering compositions`);
+                return null;
+            }
+        }
+    },
+
+    gatherPopularityAndWinRateInfo: async function () {
+        let remainingTrials = 3;
+        App.log(`Gathering win rate at ${new Date().toUTCString()}`);
+        const page = await this.createPage();
+        const url = `https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2`;
+        let result
+        try {
+            await page.goto(url, {waitUntil: 'domcontentloaded'});
+            result = await page.evaluate(() => {
+                return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
+                    return {
+                        name: it.children[1].firstElementChild.innerText,
+                        winRate: parseFloat(it.children[3].innerText.replace(',', '.')),
+                        games: parseFloat(it.children[2].innerText.replace(',', '.')),
+                    }
+                });
+            });
+
+        } catch (ex) {
+            App.log(`Error while gathering popularity and WR info`, ex);
+            this.failedJobs.push(url);
+        } finally {
+            await page.close();
+        }
+
+        if (result != null) {
+            return result;
+        } else {
+            if (remainingTrials > 0) {
+                remainingTrials--;
+                await this.gatherPopularityAndWinRateInfo();
+            } else {
+                App.log(`No more tries remaining for gathering popularity and WR`);
+                return null;
+            }
         }
     },
 
@@ -115,7 +269,31 @@ exports.Network = {
         }
     },
 
+    createHeroesProfileSession: async function () {
+        let remainingTrials = 3;
+        App.log(`Creating heroes profile session at ${new Date().toUTCString()}`);
+        const page = await this.createPage();
+        const url = 'https://www.heroesprofile.com/Global/Talents/';
+        let response;
+        try {
+            response = await page.goto(url, {waitUntil: 'domcontentloaded'})
+            return response._headers['set-cookie'];
+        } catch (ex) {
+            App.log(`Error while creating heroes session`, ex);
+            if (remainingTrials > 0) {
+                remainingTrials--;
+                await this.createHeroesProfileSession();
+            } else {
+                App.log(`No more tries remaining for heroes profile session`);
+                return null;
+            }
+        } finally {
+            await page.close();
+        }
+    },
+
     gatherHeroStats: async function (icyUrl, heroId, profileUrl, heroesMap, cookie) {
+        let remainingTrials = 3;
         const page = await this.createPage();
         let icyData;
         let profileData;
@@ -190,128 +368,85 @@ exports.Network = {
 
             heroesMap.set(heroId, returnObject);
         } else {
-            App.log(`Trying again due to an error on url ${icyUrl}`);
-            await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
+            if (remainingTrials > 0) {
+                remainingTrials--;
+                await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
+            } else {
+                App.log(`No more tries remaining for icyData`);
+                let returnObject = {
+                    icyData: icyData,
+                    profileData: profileData
+                }
+
+                heroesMap.set(heroId, returnObject);
+            }
         }
     },
 
-    gatherTierListInfo: async function () {
-        App.log(`Gathering tier list at ${new Date().toLocaleTimeString()}`);
-        const page = await this.createPage();
-        const url = `https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`;
-        let result;
-        try {
-            await page.goto(url, {waitUntil: 'domcontentloaded'});
-            result = await page.evaluate(() => {
-                return [...new Set(Array.from(document.querySelectorAll('.htl_ban_true')).map(nameElements => nameElements.nextElementSibling.innerText))];
-            });
+    translateTips: async function (heroesInfos) {
 
-        } catch (ex) {
-            App.log(`Error while gathering tier list info`, ex);
-            this.failedJobs.push(url)
-        } finally {
-            await page.close();
-        }
+        let heroesAux = JSON.parse(JSON.stringify(heroesInfos));
+        let heroesCrawl = JSON.parse(JSON.stringify(heroesAux));
+        let heroesMap = new Map();
 
-        if (result != null) {
-            return result;
-        } else {
-            await this.gatherTierListInfo();
-        }
+        const translatePromiseProducer = () => {
+            const heroCrawlInfo = heroesCrawl.pop();
+            return heroCrawlInfo ? translate(heroCrawlInfo.infos.tips.substring(0, 5000), {to: 'pt'}).then(res => {
+                heroesMap.set(heroCrawlInfo.id, res.text);
+            }) : null;
+        };
 
+        const translateThread = new PromisePool(translatePromiseProducer, 20);
+        translateThread.start().then(() => {
+            for (let [heroKey, heroData] of heroesMap) {
+                let index = heroesAux.findIndex(it => it.id === heroKey);
+                heroesAux[index].infos.localizedTips = heroData
+            }
+        });
+        Heroes.setHeroesInfos(heroesAux);
+        this.writeFile('data/heroes-infos.json', heroesAux);
     },
 
-    gatherPopularityAndWinRateInfo: async function () {
-        App.log(`Gathering win rate at ${new Date().toLocaleTimeString()}`);
-        const page = await this.createPage();
-        const url = `https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2`;
-        let result
-        try {
-            await page.goto(url, {waitUntil: 'domcontentloaded'});
-            result = await page.evaluate(() => {
-                return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
-                    return {
-                        name: it.children[1].firstElementChild.innerText,
-                        winRate: parseFloat(it.children[3].innerText.replace(',', '.')),
-                        games: parseFloat(it.children[2].innerText.replace(',', '.')),
-                    }
-                });
-            });
+    assembleHeroBuilds: function (profileData, hero, index, icyData) {
 
-        } catch (ex) {
-            App.log(`Error while gathering popularity and WR info`, ex);
-            this.failedJobs.push(url);
-        } finally {
-            await page.close();
+        if (profileData?.builds?.length === 0) {
+            App.log(`No (profile) builds found for ${hero.name}`);
         }
 
-        if (result != null) {
-            return result;
-        } else {
-            await this.gatherPopularityAndWinRateInfo();
-        }
-    },
+        //retrieves the duplicate items
+        let repeatedBuilds = profileData?.builds?.filter(item =>
+            (icyData.builds.map(it => it.skills.unaccent()).includes(item.skills.unaccent()))
+        );
 
-    gatherCompositionsInfo: async function () {
-        App.log(`Gathering compositions at ${new Date().toLocaleTimeString()}`);
-        const page = await this.createPage();
-        const url = `https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1`;
-        let result
-        try {
-            await page.goto(url);
-            result = await page.evaluate(() => {
-                return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
-                    return {
-                        games: it.children[0].innerText,
-                        winRate: parseFloat(it.children[1].innerText.replace(',', '.')),
-                        roles: Array.from(it.children).filter(it => it.style.display === 'none').map(it => it.innerText)
-                    }
-                });
-            });
+        //applies winrate on known builds names
+        icyData.builds.forEach(it => {
+            for (let item of repeatedBuilds) {
+                if (item.skills.unaccent() === it.skills.unaccent()) {
+                    it.name = `${it.name} (${item.name.match(/([\d.]%*)/g, '').join('').replace('..', '')} win rate)`
+                }
+            }
+        });
 
-        } catch (ex) {
-            App.log(`Error while gathering compositions`, ex);
-            this.failedJobs.push(url)
-        } finally {
-            await page.close();
-        }
+        //removes the duplicate items
+        if (profileData)
+            profileData.builds = profileData?.builds?.filter(item => !repeatedBuilds.includes(item));
 
-        if (result != null) {
-            return result;
-        } else {
-            await this.gatherCompositionsInfo();
-        }
+        return icyData.builds.concat(profileData?.builds?.slice(0, 4)).slice(0, 5);
     },
 
     updateData: async function (callbackFunction) {
         await this.setBrowser();
-        App.log(`Started updating data process at ${new Date().toLocaleTimeString()}`);
+        App.log(`Started updating data process at ${new Date().toUTCString()}`);
         this.isUpdatingData = true;
 
-
-        const cookieValue = await this.createHeroesProfileSession();
+        //write to file
         await this.gatherHeroesPrint();
-        const tierList = await this.gatherTierListInfo();
+        await this.gatherBanTierListInfo();
+        await this.gatherCompositionsInfo();
+        await this.gatherHeroesRotation();
+
         const popularityWinRate = await this.gatherPopularityAndWinRateInfo();
-        const compositions = await this.gatherCompositionsInfo();
-
-        //stores compositions
-        compositions.sort(function (a, b) {
-            return a.games - b.games;
-        }).forEach((it, idx) => {
-            it.tierPosition = parseInt(idx + 1);
-        });
-
-        compositions.sort(function (a, b) {
-            return a.winRate - b.winRate;
-        }).forEach((it, idx) => {
-            it.tierPosition = parseInt(it.tierPosition) + parseInt(idx + 1);
-        });
-
-        let sortedComposition = compositions.sort(function (a, b) {
-            return a.tierPosition - b.tierPosition
-        }).reverse();
-        Heroes.setCompositions(sortedComposition);
+        const cookieValue = await this.createHeroesProfileSession();
 
         let heroesMap = new Map();
         let heroesIdAndUrls = [];
@@ -346,35 +481,15 @@ exports.Network = {
 
                 let finishedTime = new Date();
 
-                App.log(`Finished gathering process at ${finishedTime.toLocaleTimeString()}`);
+                App.log(`Finished gathering process at ${finishedTime.toUTCString()}`);
                 App.log(`${(finishedTime - startTime) / 1000} seconds has passed`);
+                this.browser.close().catch();
 
                 for (let [heroKey, heroData] of heroesMap) {
                     let index = heroesInfos.findIndex(it => it.id === heroKey);
                     let icyData = heroData.icyData
                     let profileData = heroData.profileData
-                    let heroCounters = [];
-                    let heroSynergies = [];
                     let heroMaps = [];
-                    let heroTips = '';
-
-                    for (let synergy of icyData.synergies) {
-                        let synergyHero = Heroes.findHero(synergy, false, true);
-                        if (synergyHero)
-                            heroSynergies.push({
-                                name: synergyHero.name,
-                                localizedName: synergyHero.localizedName
-                            });
-                    }
-
-                    for (let counter of icyData.counters) {
-                        let counterHero = Heroes.findHero(counter, false, true);
-                        if (counterHero)
-                            heroCounters.push({
-                                name: counterHero.name,
-                                localizedName: counterHero.localizedName
-                            });
-                    }
 
                     for (let strongerMap of icyData.strongerMaps) {
                         let heroMap = Maps.findMap(strongerMap);
@@ -385,44 +500,25 @@ exports.Network = {
                             });
                     }
 
-                    heroTips += icyData.tips.map(tip => `${tip}\n`).join('');
-
                     if (heroesInfos[index] == null) {
                         heroesInfos[index] = {};
                     }
 
-                    if (profileData.builds.length === 0) {
-                        App.log(`No (profile) builds found for ${heroesInfos[index].name}`);
-                    }
-
-                    //retrieves the duplicate items
-                    let repeatedBuilds = profileData.builds.filter(item =>
-                        (icyData.builds.map(it => it.skills.unaccent()).includes(item.skills.unaccent()))
-                    );
-
-                    //applies winrate on known builds names
-                    icyData.builds.forEach(it => {
-                        for (let item of repeatedBuilds) {
-                            if (item.skills.unaccent() === it.skills.unaccent()) {
-                                it.name = `${it.name} (${item.name.match(/([0-9.]%*)/g, '').join('').replace('..', '')} win rate)`
-                            }
-                        }
-                    });
-
-                    //removes the duplicate items
-                    profileData.builds = profileData.builds.filter(item => !repeatedBuilds.includes(item));
-                    let heroBuilds = icyData.builds.concat(profileData.builds.slice(0, 4)).slice(0, 5);
-
                     heroesInfos[index].infos = {};
                     heroesInfos[index].id = heroKey;
                     heroesInfos[index].name = Heroes.findHero(heroKey, false, true).name;
-                    heroesInfos[index].infos.builds = heroBuilds;
-                    heroesInfos[index].infos.synergies = heroSynergies;
-                    heroesInfos[index].infos.counters = heroCounters;
-                    heroesInfos[index].infos.strongerMaps = heroMaps;
-                    heroesInfos[index].infos.tips = heroTips;
+                    heroesInfos[index].infos.builds = this.assembleHeroBuilds(profileData,
+                        heroesInfos,
+                        heroesInfos[index],
+                        icyData
+                    );
 
-                    let obj = popularityWinRate.find(it => {
+                    heroesInfos[index].infos.synergies = icyData.synergies;
+                    heroesInfos[index].infos.counters = icyData.counters;
+                    heroesInfos[index].infos.strongerMaps = heroMaps;
+                    heroesInfos[index].infos.tips = icyData.tips.map(tip => `${tip}\n`).join('');
+
+                    let obj = popularityWinRate?.find(it => {
                         return it.name.cleanVal() === heroesInfos[index].name.cleanVal()
                     });
                     heroesInfos[index].infos.winRate = obj.winRate;
@@ -430,58 +526,15 @@ exports.Network = {
                 }
 
                 Heroes.setHeroesInfos(heroesInfos);
+                Heroes.setHeroesTierPosition();
 
-                let cacheBans = [];
-                tierList.forEach(it => {
-                    let banHero = Heroes.findHero(it, false, true);
-                    let heroRole = Heroes.findRoleById(banHero.role);
-                    cacheBans.push({
-                        name: banHero.name,
-                        role: heroRole.name,
-                    });
-                });
-
-                Heroes.setBanHeroes(cacheBans);
-
-                heroesInfos.sort(function (a, b) {
-                    return a.infos.games - b.infos.games;
-                }).forEach((it, idx) => {
-                    it.infos.tierPosition = parseInt(idx + 1);
-                });
-
-                heroesInfos.sort(function (a, b) {
-                    return a.infos.winRate - b.infos.winRate;
-                }).forEach((it, idx) => {
-                    it.infos.tierPosition = parseInt(it.infos.tierPosition) + parseInt(idx + 1);
-                })
-
-                this.gatherHeroesRotation().then((value) => {
-
-                    let cacheFree = [];
-
-                    for (let heroName of value) {
-                        let freeHero = Heroes.findHero(heroName, false, true);
-                        let heroRole = Heroes.findRoleById(freeHero.role);
-                        cacheFree.push({
-                            name: freeHero.name,
-                            role: heroRole.name
-                        });
-                    }
-
-                    this.writeFile('data/banlist.json', cacheBans);
-                    this.writeFile('data/freeweek.json', cacheFree);
-                    this.writeFile('data/compositions.json', sortedComposition);
-
-                    Heroes.setFreeHeroes(cacheFree);
-
-                    this.translateTips(heroesInfos).then(() => {
-                        App.log(`Finished update at ${new Date().toLocaleTimeString()}`);
-                        this.isUpdatingData = false;
-                        App.bot.updatedAt = new Date().toUTCString();
-                        App.setBotStatus('Heroes of the Storm', 'PLAYING');
-                        if (callbackFunction)
-                            callbackFunction(StringUtils.get('process.update.finished.time', (finishedTime - startTime) / 1000));
-                    });
+                this.translateTips(heroesInfos).then(() => {
+                    App.log(`Finished translate process at ${new Date().toUTCString()}`);
+                    this.isUpdatingData = false;
+                    App.bot.updatedAt = new Date().toUTCString();
+                    App.setBotStatus('Heroes of the Storm', 'PLAYING');
+                    if (callbackFunction)
+                        callbackFunction(StringUtils.get('process.update.finished.time', (finishedTime - startTime) / 1000));
                 });
             });
         } catch (e) {
@@ -493,6 +546,7 @@ exports.Network = {
                 replyMsg += StringUtils.get('try.to.update.again');
                 await this.updateData(callbackFunction);
             }
+
             App.log('Error while updating', e);
             App.log(this.failedJobs.join('\n'));
             this.isUpdatingData = false;
@@ -507,42 +561,6 @@ exports.Network = {
         );
     },
 
-    updateCommandsPermissions: async function () {
-        if (!App.bot.application?.owner) await App.bot.application?.fetch();
-
-        const botCommands = await App.bot.application?.commands.fetch()
-        const commands = botCommands.filter(it => !it.defaultPermission);
-        for (const com of commands) {
-            const command = com[1];
-            await App.bot.guilds.cache.forEach(it => {
-                let myPerm = Array.from(it.roles._cache
-                    .filter(role => role.name.toLowerCase() === 'hots-bot-admin').values());
-
-                if (myPerm.length > 0) {
-                    let permissions = myPerm.map(it => {
-                        return {
-                            id: it.id,
-                            type: 'ROLE',
-                            permission: true
-                        }
-                    });
-                    permissions.push(
-                        {
-                            id: config.adminId,
-                            type: 'USER',
-                            permission: true
-                        }
-                    )
-                    command.permissions.set({
-                        guild: it,
-                        command: command.id,
-                        permissions: permissions
-                    });
-                }
-            });
-        }
-    },
-
     getApiCommandsSize: async function () {
         if (!App.bot.application?.owner) await App.bot.application?.fetch();
         const botCommands = await App.bot.application?.commands.fetch()
@@ -553,45 +571,15 @@ exports.Network = {
         return !Heroes.findHero('1', true)?.infos?.builds?.length > 0
     },
 
-    translateTips: async function (heroesInfos) {
-
-        let heroesAux = JSON.parse(JSON.stringify(heroesInfos));
-        let heroesCrawl = JSON.parse(JSON.stringify(heroesAux));
-        let heroesMap = new Map();
-
-        const translatePromiseProducer = () => {
-            const heroCrawlInfo = heroesCrawl.pop();
-            return heroCrawlInfo ? translate(heroCrawlInfo.infos.tips.substring(0, 5000), {to: 'pt'}).then(res => {
-                heroesMap.set(heroCrawlInfo.id, res.text);
-            }) : null;
-        };
-
-        const translateThread = new PromisePool(translatePromiseProducer, 20);
-        translateThread.start().then(() => {
-            for (let [heroKey, heroData] of heroesMap) {
-                let index = heroesAux.findIndex(it => it.id === heroKey);
-                heroesAux[index].infos.localizedTips = heroData
-            }
+    setBrowser: async function () {
+        this.browser = await puppeteer.launch({
+            headless: true,
+            // devtools: true,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+            ],
         })
-        Heroes.setHeroesInfos(heroesAux);
-        this.writeFile('data/heroes-infos.json', heroesAux);
-    },
-
-    createHeroesProfileSession: async function () {
-        App.log(`Creating heroes profile session at ${new Date().toLocaleTimeString()}`);
-        const page = await this.createPage();
-        const url = 'https://www.heroesprofile.com/Global/Talents/';
-        let response;
-        try {
-            response = await page.goto(url, {waitUntil: 'domcontentloaded'})
-            return response._headers['set-cookie'];
-        } catch (ex) {
-            App.log(`Error while creating heroes session`, ex);
-            await this.createHeroesProfileSession();
-            this.failedJobs.push(url);
-        } finally {
-            await page.close();
-        }
     },
 
     createPage: async function (blockStuff = true) {
@@ -618,4 +606,5 @@ exports.Network = {
             }
         });
     }
+
 }
