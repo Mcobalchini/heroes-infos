@@ -22,7 +22,7 @@ function setBotStatus(name, type) {
 function log(text, error) {
     try {
         if (error) {
-            process.stdout.write(text + '\n', 'utf-8', error);
+            process.stdout.write(`[${new Date().toLocaleString()}] - ${text} - [ERROR]: ${error} \n`);
             if (process.env.LOGS_CHANNEL_ID) {
                 sendError(error)
             }
@@ -146,7 +146,6 @@ function periodicUpdateCheck(interval) {
 
     if (interval)
         setInterval(periodicUpdateCheck, 100000, false);
-
 }
 
 function addItemIntoListIfNeeded(array) {
@@ -161,7 +160,6 @@ function addItemIntoListIfNeeded(array) {
     }
     return array;
 }
-
 
 function createEmbed(replyObject, authorName, authorUrl, authorIcon, thumbnail) {
     authorName = authorName ? authorName : 'Heroes Infos Bot'
