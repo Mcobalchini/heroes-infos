@@ -18,8 +18,8 @@ exports.Network = {
     replyTo: null,
     browser: null,
 
-    gatherHeroesRotation: async function () {
-        let remainingTrials = 3;
+    gatherHeroesRotation: async function (remainingTrials) {
+        remainingTrials = remainingTrials ?? 3;
         const page = await this.createPage();
 
         let result
@@ -54,7 +54,7 @@ exports.Network = {
         } else {
             if (remainingTrials > 0) {
                 remainingTrials--;
-                await this.gatherHeroesRotation();
+                await this.gatherHeroesRotation(remainingTrials);
             } else {
                 App.log(`No more tries remaining for gathering heroes rotation`);
                 return null;
@@ -62,8 +62,8 @@ exports.Network = {
         }
     },
 
-    gatherHeroesPrint: async function () {
-        let remainingTrials = 3;
+    gatherHeroesPrint: async function (remainingTrials) {
+        remainingTrials = remainingTrials ?? 3;
         const page = await this.createPage(false);
 
         let result
@@ -88,7 +88,7 @@ exports.Network = {
         } else {
             if (remainingTrials > 0) {
                 remainingTrials--;
-                await this.gatherHeroesPrint();
+                await this.gatherHeroesPrint(remainingTrials);
             } else {
                 App.log(`No more tries remaining for gathering heroes print`);
                 return null;
@@ -96,8 +96,8 @@ exports.Network = {
         }
     },
 
-    gatherBanTierListInfo: async function () {
-        let remainingTrials = 3
+    gatherBanTierListInfo: async function (remainingTrials) {
+        remainingTrials = remainingTrials ?? 3;
         App.log(`Gathering ban tier list at ${new Date().toUTCString()}`);
         const page = await this.createPage();
         const url = `https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`;
@@ -132,7 +132,7 @@ exports.Network = {
         } else {
             if (remainingTrials > 0) {
                 remainingTrials--;
-                await this.gatherBanTierListInfo();
+                await this.gatherBanTierListInfo(remainingTrials);
             } else {
                 App.log(`No more tries remaining for ban tier list`);
                 return null;
@@ -141,8 +141,8 @@ exports.Network = {
 
     },
 
-    gatherCompositionsInfo: async function () {
-        let remainingTrials = 3;
+    gatherCompositionsInfo: async function (remainingTrials) {
+        remainingTrials = remainingTrials ?? 3;
         App.log(`Gathering compositions at ${new Date().toUTCString()}`);
         const page = await this.createPage();
         const url = `https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1`;
@@ -189,7 +189,7 @@ exports.Network = {
         } else {
             if (remainingTrials > 0) {
                 remainingTrials--;
-                await this.gatherCompositionsInfo();
+                await this.gatherCompositionsInfo(remainingTrials);
             } else {
                 App.log(`No more tries remaining for gathering compositions`);
                 return null;
@@ -197,8 +197,8 @@ exports.Network = {
         }
     },
 
-    gatherPopularityAndWinRateInfo: async function () {
-        let remainingTrials = 3;
+    gatherPopularityAndWinRateInfo: async function (remainingTrials) {
+        remainingTrials = remainingTrials ?? 3;
         App.log(`Gathering win rate at ${new Date().toUTCString()}`);
         const page = await this.createPage();
         const url = `https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2`;
@@ -227,7 +227,7 @@ exports.Network = {
         } else {
             if (remainingTrials > 0) {
                 remainingTrials--;
-                await this.gatherPopularityAndWinRateInfo();
+                await this.gatherPopularityAndWinRateInfo(remainingTrials);
             } else {
                 App.log(`No more tries remaining for gathering popularity and WR`);
                 return null;
@@ -269,8 +269,8 @@ exports.Network = {
         }
     },
 
-    createHeroesProfileSession: async function () {
-        let remainingTrials = 3;
+    createHeroesProfileSession: async function (remainingTrials) {
+        remainingTrials = remainingTrials ?? 3;
         App.log(`Creating heroes profile session at ${new Date().toUTCString()}`);
         const page = await this.createPage();
         const url = 'https://www.heroesprofile.com/Global/Talents/';
@@ -282,7 +282,7 @@ exports.Network = {
             App.log(`Error while creating heroes session`, ex);
             if (remainingTrials > 0) {
                 remainingTrials--;
-                await this.createHeroesProfileSession();
+                await this.createHeroesProfileSession(remainingTrials);
             } else {
                 App.log(`No more tries remaining for heroes profile session`);
                 return null;
@@ -293,7 +293,6 @@ exports.Network = {
     },
 
     gatherHeroStats: async function (icyUrl, heroId, profileUrl, heroesMap, cookie) {
-        let remainingTrials = 3;
         const page = await this.createPage();
         let icyData;
         let profileData;
@@ -368,18 +367,7 @@ exports.Network = {
 
             heroesMap.set(heroId, returnObject);
         } else {
-            if (remainingTrials > 0) {
-                remainingTrials--;
-                await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
-            } else {
-                App.log(`No more tries remaining for icyData`);
-                let returnObject = {
-                    icyData: icyData,
-                    profileData: profileData
-                }
-
-                heroesMap.set(heroId, returnObject);
-            }
+             await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
         }
     },
 
@@ -521,8 +509,8 @@ exports.Network = {
                     let obj = popularityWinRate?.find(it => {
                         return it.name.cleanVal() === heroesInfos[index].name.cleanVal()
                     });
-                    heroesInfos[index].infos.winRate = obj.winRate;
-                    heroesInfos[index].infos.games = obj.games;
+                    heroesInfos[index].infos.winRate = obj?.winRate ?? 0;
+                    heroesInfos[index].infos.games = obj?.games ?? 0;
                 }
 
                 Heroes.setHeroesInfos(heroesInfos);
