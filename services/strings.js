@@ -2,8 +2,8 @@ const fs = require('fs');
 const strings = JSON.parse(fs.readFileSync('./data/constant/strings.json'), { encoding: 'utf8', flag: 'r' });
 
 exports.StringUtils = {
-	EN_US: 'en-us',
-	PT_BR: 'pt-br',
+	EN_US: 'en-US',
+	PT_BR: 'pt-BR',
 	language: this.EN_US,
 
 	accentsMap: new Map([

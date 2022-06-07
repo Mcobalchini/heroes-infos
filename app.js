@@ -21,13 +21,14 @@ function setBotStatus(name, type) {
 
 function log(text, error) {
     try {
+        const date = new Date().toLocaleString("pt-BR");
         if (error) {
-            process.stdout.write(`[${new Date().toLocaleString()}] - ${text} - [ERROR]: ${error} \n`);
+            process.stdout.write(`[${date}] - ${text} - [ERROR]: ${error} \n`);
             if (process.env.LOGS_CHANNEL_ID) {
                 sendError(error)
             }
         } else {
-            process.stdout.write(`${text}\n`);
+            process.stdout.write(`[${date}] - ${text}\n`);
         }
     } catch (e) {
         process.stdout.write(`error while sending error ${e.message}\n`);
@@ -183,12 +184,12 @@ function createEmbed(replyObject, authorName, authorUrl, authorIcon, thumbnail) 
         .setThumbnail(thumbnail)
         .setTimestamp();
 
-        const attribute = Object.keys(replyObject).find(it => isNotReservedKey(it))
+    const attribute = Object.keys(replyObject).find(it => isNotReservedKey(it))
 
     if (Array.isArray(replyObject[attribute])) {
         let array = addItemIntoListIfNeeded(replyObject[attribute]);
-        embed.addFields(array)
-        embed.setDescription(featureDesc)
+        embed.addFields(array);
+        embed.setDescription(featureDesc);
     } else {
         let desc = replyObject[attribute]
         embed.setDescription(desc ? desc : featureDesc)
@@ -262,7 +263,7 @@ bot.once('ready', function () {
     bot.updatedAt = StringUtils.get('not.updated.yet');
     setBotStatus('Heroes of the Storm', 'PLAYING');
     periodicUpdateCheck(true);
-    log(`Application ready! - ${new Date()}`);
+    log(`Application ready!`);
     Commands.isUpdateSlashCommandsNeeded().then(needed => {
         if (needed) {
             Commands.assembleSlashCommands().then(() => {

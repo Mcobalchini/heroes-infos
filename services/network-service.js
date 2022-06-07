@@ -27,7 +27,12 @@ exports.Network = {
         try {
             await page.goto(url, {waitUntil: 'domcontentloaded'})
             result = await page.evaluate(() => {
-                return JSON.parse(document.body.innerText).RotationHero.Heroes.map(it => it.ID)
+                const obj = JSON.parse(document.body.innerText).RotationHero;
+                return {
+                    startDate: obj.StartDate,
+                    endDate: obj.EndDate,
+                    heroes: obj.Heroes.map(it => it.ID)
+                }
             });
         } catch (ex) {
             App.log(`Error while gathering rotation`, ex);
@@ -39,7 +44,7 @@ exports.Network = {
         if (result != null) {
             let freeHeroes = [];
 
-            for (let heroName of result) {
+            for (let heroName of result.heroes) {
                 let freeHero = Heroes.findHero(heroName, false, true);
                 let heroRole = Heroes.findRoleById(freeHero.role);
                 freeHeroes.push({
@@ -48,9 +53,15 @@ exports.Network = {
                 });
             }
 
-            Heroes.setFreeHeroes(freeHeroes);
-            this.writeFile('data/freeweek.json', freeHeroes);
-            App.log(`Updated heroes rotation at ${new Date().toUTCString()}`);
+            const rotation = {
+                startDate: result.startDate,
+                endDate: result.endDate,
+                heroes: freeHeroes
+            };
+
+            Heroes.setFreeHeroes(rotation);
+            this.writeFile('data/freeweek.json', rotation);
+            App.log(`Updated heroes rotation`);
         } else {
             if (remainingTrials > 0) {
                 remainingTrials--;
@@ -98,7 +109,7 @@ exports.Network = {
 
     gatherBanTierListInfo: async function (remainingTrials) {
         remainingTrials = remainingTrials ?? 3;
-        App.log(`Gathering ban tier list at ${new Date().toUTCString()}`);
+        App.log(`Gathering ban tier list`);
         const page = await this.createPage();
         const url = `https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`;
         let result;
@@ -128,7 +139,7 @@ exports.Network = {
 
             Heroes.setBanHeroes(banList);
             this.writeFile('data/banlist.json', banList);
-            App.log(`Updated ban list at ${new Date().toUTCString()}`);
+            App.log(`Updated ban list`);
         } else {
             if (remainingTrials > 0) {
                 remainingTrials--;
@@ -143,7 +154,7 @@ exports.Network = {
 
     gatherCompositionsInfo: async function (remainingTrials) {
         remainingTrials = remainingTrials ?? 3;
-        App.log(`Gathering compositions at ${new Date().toUTCString()}`);
+        App.log(`Gathering compositions`);
         const page = await this.createPage();
         const url = `https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1`;
         let result
@@ -185,7 +196,7 @@ exports.Network = {
 
             Heroes.setCompositions(sortedComposition);
             this.writeFile('data/compositions.json', sortedComposition);
-            App.log(`Updated compositions list at ${new Date().toUTCString()}`);
+            App.log(`Updated compositions list`);
         } else {
             if (remainingTrials > 0) {
                 remainingTrials--;
@@ -199,7 +210,7 @@ exports.Network = {
 
     gatherPopularityAndWinRateInfo: async function (remainingTrials) {
         remainingTrials = remainingTrials ?? 3;
-        App.log(`Gathering win rate at ${new Date().toUTCString()}`);
+        App.log(`Gathering win rate`);
         const page = await this.createPage();
         const url = `https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2`;
         let result
@@ -271,12 +282,13 @@ exports.Network = {
 
     createHeroesProfileSession: async function (remainingTrials) {
         remainingTrials = remainingTrials ?? 3;
-        App.log(`Creating heroes profile session at ${new Date().toUTCString()}`);
+        App.log(`Creating heroes profile session`);
         const page = await this.createPage();
         const url = 'https://www.heroesprofile.com/Global/Talents/';
         let response;
         try {
             response = await page.goto(url, {waitUntil: 'domcontentloaded'})
+            App.log(`Created heroes profile session`);
             return response._headers['set-cookie'];
         } catch (ex) {
             App.log(`Error while creating heroes session`, ex);
@@ -424,7 +436,7 @@ exports.Network = {
 
     updateData: async function (callbackFunction) {
         await this.setBrowser();
-        App.log(`Started updating data process at ${new Date().toUTCString()}`);
+        App.log(`Started updating data process`);
         this.isUpdatingData = true;
 
         //write to file
@@ -455,9 +467,7 @@ exports.Network = {
                 heroCrawlInfo.heroId,
                 heroCrawlInfo.profileUrl,
                 heroesMap,
-                cookieValue).catch(ex => {
-                // this.failedJobs.push(heroCrawlInfo)
-            }) : null;
+                cookieValue).catch() : null;
         };
 
         let startTime = new Date();
@@ -465,12 +475,12 @@ exports.Network = {
         const thread = new PromisePool(promiseProducer, 6);
 
         try {
+            App.log(`Started gathering heroes data`);
             thread.start().then(() => {
 
                 let finishedTime = new Date();
 
-                App.log(`Finished gathering process at ${finishedTime.toUTCString()}`);
-                App.log(`${(finishedTime - startTime) / 1000} seconds has passed`);
+                App.log(`Finished gathering process in ${(finishedTime.getTime() - startTime.getTime()) / 1000} seconds`);
                 this.browser.close().catch();
 
                 for (let [heroKey, heroData] of heroesMap) {
@@ -517,9 +527,9 @@ exports.Network = {
                 Heroes.setHeroesTierPosition();
 
                 this.translateTips(heroesInfos).then(() => {
-                    App.log(`Finished translate process at ${new Date().toUTCString()}`);
+                    App.log(`Finished translate process`);
                     this.isUpdatingData = false;
-                    App.bot.updatedAt = new Date().toUTCString();
+                    App.bot.updatedAt = new Date().toLocaleString("pt-BR");
                     App.setBotStatus('Heroes of the Storm', 'PLAYING');
                     if (callbackFunction)
                         callbackFunction(StringUtils.get('process.update.finished.time', (finishedTime - startTime) / 1000));
