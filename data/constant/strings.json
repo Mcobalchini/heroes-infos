@@ -1,5 +1,5 @@
 {
-  "pt-br": [
+  "pt-BR": [
     {
       "update.process.started": "O processo de atualização iniciou..."
     },
@@ -127,7 +127,7 @@
       "hero.score": "Pontuação {0}"
     },
     {
-      "current.team": "Sua equipe atual é composta por {0}"
+      "current.team": "Sua equipe atual é composta por {0}\naqui estão algumas sugestões para sua equipe"
     },
     {
       "suggested.team": "Sugestão de composição de equipe"
@@ -224,9 +224,12 @@
     },
     {
       "note": "Observação"
+    },
+    {
+      "rotation.dates": "De {0} até {1}"
     }
   ],
-  "en-us": [
+  "en-US": [
     {
       "update.process.started": "The update process has started..."
     },
@@ -354,7 +357,7 @@
       "hero.score": "Score {0}"
     },
     {
-      "current.team": "Your current composition is {0}"
+      "current.team": "Your current composition is {0}\nhere are some comp suggestions for you to try"
     },
     {
       "suggested.team": "Team composition suggestion"
@@ -451,6 +454,9 @@
     },
     {
       "note": "Note"
+    },
+    {
+      "rotation.dates": "From {0} to {1}"
     }
   ]
 }

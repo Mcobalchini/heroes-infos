@@ -225,7 +225,7 @@ exports.Heroes = {
     },
 
     setHeroesTierPosition: function () {
-        App.log(`setting heroes tier position at ${new Date().toUTCString()}`);
+        App.log(`setting heroes tier position`);
         this.heroesInfos.sort(function (a, b) {
             return a.infos.games - b.infos.games;
         }).forEach((it, idx) => {
@@ -268,10 +268,14 @@ exports.Heroes = {
     },
 
     assembleFreeWeekHeroesReturnMessage: function () {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         return {
             data: {
                 featureName: StringUtils.get('free.heroes'),
-                freeHeroes: (this.freeHeroes.length <= 0 ? StringUtils.get('no.free.heroes') : this.freeHeroes?.map(freeHero => {
+                featureDescription: StringUtils.get('rotation.dates',
+                    new Date(this.freeHeroes?.startDate).toLocaleDateString(StringUtils.language, options),
+                    new Date(this.freeHeroes?.endDate).toLocaleDateString(StringUtils.language, options)),
+                freeHeroes: (this.freeHeroes?.heroes?.length <= 0 ? StringUtils.get('no.free.heroes') : this.freeHeroes?.heroes?.map(freeHero => {
                     const hero = this.findHero(freeHero.name, false, false);
                     return {
                         name: this.getHeroName(hero),
@@ -343,7 +347,7 @@ exports.Heroes = {
             currentCompRoles = currentCompRoles.sort();
 
             for (let currentCompHero of currentCompHeroes.values()) {
-                let synergies = currentCompHero.infos.synergies.map(it => this.findHero(it.name, false, true));
+                let synergies = currentCompHero.infos.synergies.map(it => this.findHero(it, false, true));
                 synergies.forEach((synergy) => {
                     let hero = heroesSorted.find(it => it.id === synergy.id)
                     if (hero != null)
@@ -397,14 +401,29 @@ exports.Heroes = {
             }
 
             if (Array.from(missingRolesMap.values())[0]?.length) {
+                const currentHeroes = Array.from(currentCompHeroes).map(([_, hero]) => {
+                    return {
+                        name: this.getHeroName(hero),
+                        role: this.findRoleById(hero.role).name,
+                    }
+                });
+
                 return {
                     data: {
                         featureName: StringUtils.get('suggested.team'),
-                        featureDescription: `${StringUtils.get('current.team', Array.from(currentCompHeroes).map(([_, value]) => `${this.getHeroName(value)}`).join(', '))}`,
-                        suggestedHeroes: Array.from(missingRolesMap).map(([key, value]) => {
+                        featureDescription: StringUtils.get('current.team', currentHeroes.map(it => `*${it.name}*`)?.join(', ')),
+                        suggestedHeroes: Array.from(missingRolesMap).map(([rolesArray, heroes]) => {
+                            const missingHeroes = heroes.map(it => {
+                                return `${this.getHeroName(it)} - **${this.getRoleName(this.findRoleById(it.role))}**\n`
+                            });
+                            currentHeroes.forEach(it => {
+                                missingHeroes.splice(rolesArray.indexOf(it.role),
+                                    0,
+                                    `~~${it.name} - ${this.getRoleName(this.findRoleByName(it.role))}~~\n`)
+                            });
                             return {
-                                name: `Comp: ${key.map(it => this.getRoleName(this.findRoleByName(it))).join(', ')}`,
-                                value: value.map(it => `${this.getHeroName(it)} - **${this.getRoleName(this.findRoleById(it.role))}**\n`).join(''),
+                                name: `${rolesArray.map(it => this.getRoleName(this.findRoleByName(it))).join(', ')}`,
+                                value: missingHeroes.join(''),
                                 inline: false,
                             }
                         })
