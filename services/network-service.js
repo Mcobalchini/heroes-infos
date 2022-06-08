@@ -472,7 +472,7 @@ exports.Network = {
 
         let startTime = new Date();
 
-        const thread = new PromisePool(promiseProducer, 8);
+        const thread = new PromisePool(promiseProducer, 7);
 
         try {
             App.log(`Started gathering heroes data`);
