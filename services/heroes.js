@@ -273,8 +273,8 @@ exports.Heroes = {
             data: {
                 featureName: StringUtils.get('free.heroes'),
                 featureDescription: StringUtils.get('rotation.dates',
-                    new Date(this.freeHeroes?.startDate).toLocaleDateString(StringUtils.language, options),
-                    new Date(this.freeHeroes?.endDate).toLocaleDateString(StringUtils.language, options)),
+                    new Date(`${this.freeHeroes?.startDate} `).toLocaleDateString(StringUtils.language, options),
+                    new Date(`${this.freeHeroes?.endDate} `).toLocaleDateString(StringUtils.language, options)),
                 freeHeroes: (this.freeHeroes?.heroes?.length <= 0 ? StringUtils.get('no.free.heroes') : this.freeHeroes?.heroes?.map(freeHero => {
                     const hero = this.findHero(freeHero.name, false, false);
                     return {
