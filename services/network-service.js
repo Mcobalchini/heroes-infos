@@ -472,7 +472,7 @@ exports.Network = {
 
         let startTime = new Date();
 
-        const thread = new PromisePool(promiseProducer, 7);
+        const thread = new PromisePool(promiseProducer, 6);
 
         try {
             App.log(`Started gathering heroes data`);
@@ -556,7 +556,6 @@ exports.Network = {
     updateRotation: async function () {
         this.startSession()
         await this.gatherHeroesRotation();
-
     },
 
     postSlashCommandsToAPI: async function (commandObj) {
