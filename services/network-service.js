@@ -553,6 +553,12 @@ exports.Network = {
         }
     },
 
+    updateRotation: async function () {
+        this.startSession()
+        await this.gatherHeroesRotation();
+
+    },
+
     postSlashCommandsToAPI: async function (commandObj) {
         await rest.post(
             Routes.applicationCommands(process.env.CLIENT_ID), {body: commandObj},
@@ -567,6 +573,15 @@ exports.Network = {
 
     isUpdateNeeded: function () {
         return !Heroes.findHero('1', true)?.infos?.builds?.length > 0
+    },
+
+    startSession: async function (blockStuff = true) {
+        try {
+            await this.createPage(blockStuff);
+        } catch (e) {
+            await this.setBrowser();
+            await this.createPage();
+        }
     },
 
     setBrowser: async function () {
