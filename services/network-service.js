@@ -384,7 +384,7 @@ exports.Network = {
     },
 
     translateTips: async function (heroesInfos) {
-
+        App.log(`Started translate process`);
         let heroesAux = JSON.parse(JSON.stringify(heroesInfos));
         let heroesCrawl = JSON.parse(JSON.stringify(heroesAux));
         let heroesMap = new Map();
@@ -472,7 +472,7 @@ exports.Network = {
 
         let startTime = new Date();
 
-        const thread = new PromisePool(promiseProducer, 6);
+        const thread = new PromisePool(promiseProducer, 5);
 
         try {
             App.log(`Started gathering heroes data`);
@@ -554,7 +554,6 @@ exports.Network = {
     },
 
     updateRotation: async function () {
-        this.startSession()
         await this.gatherHeroesRotation();
     },
 
