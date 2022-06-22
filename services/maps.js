@@ -52,7 +52,7 @@ exports.Maps = {
             array = Array.from(map).map(([key, value]) => {
                 return {
                     name: Heroes.getRoleName(Heroes.findRoleById(key)),
-                    value: value.map(it => `${Heroes.getHeroName(it)}\n`).join(''),
+                    value: value.map(it => `${Heroes.getHeroName(it)}\n`).slice(0, 3).join(''),
                     inline: true
                 }
             });
