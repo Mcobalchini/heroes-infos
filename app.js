@@ -120,9 +120,9 @@ function assembleEmbedObject(embeds) {
     };
 }
 
-async function handleResponse(args, receivedCommand, msg, isInteraction = false) {
+async function handleResponse(args, receivedCommand, msg) {
     try {
-        let reply = await Commands.handleCommand(args, receivedCommand, msg, isInteraction);
+        let reply = await Commands.handleCommand(args, receivedCommand, msg);
         let replyObject = assembleEmbedObject(createResponse(reply));
 
         if (msg.isCommand) {
@@ -250,8 +250,7 @@ bot.on('interactionCreate', async interaction => {
         await interaction.deferReply();
         await handleResponse(interaction.options?.data?.map(it => it.value).join(' '),
             interaction.commandName.toString(),
-            interaction,
-            true
+            interaction
         );
     } catch (e) {
         log(`Error while handling response`, e);

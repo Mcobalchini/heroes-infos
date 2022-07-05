@@ -139,7 +139,7 @@
       "available.maps": "Estes são os mapas disponíveis"
     },
     {
-      "map.not.found": "O mapa específicado não foi encontrado, \nDigite \"{0}mapa <nome do mapa>\" para ver a lista completa com todos os mapas disponíveis"
+      "map.not.found": "O mapa específicado não foi encontrado, \nDigite \"\\mapa <nome do mapa>\" para ver a lista completa com todos os mapas disponíveis"
     },
     {
       "no.best.heroes.for.map": "Não foram encontrados melhores heróis para o mapa {0}"
@@ -227,6 +227,18 @@
     },
     {
       "rotation.dates": "De {0} até {1}"
+    },
+    {
+      "rotation": "Rotação"
+    },
+    {
+      "updates.rotation": "Atualiza a rotação"
+    },
+    {
+      "everything": "Tudo"
+    },
+    {
+      "updates.everything": "Atualiza tudo"
     }
   ],
   "en-US": [
@@ -369,7 +381,7 @@
       "available.maps": "These are the available maps"
     },
     {
-      "map.not.found": "The specified map was not found\nType \"{0}map <name of the map>\" to get a full list with all the available maps"
+      "map.not.found": "The specified map was not found\nType \"\\map <name of the map>\" to get a full list with all the available maps"
     },
     {
       "no.best.heroes.for.map": "There are no best heroes for the map {0}"
@@ -457,6 +469,18 @@
     },
     {
       "rotation.dates": "From {0} to {1}"
+    },
+    {
+      "rotation": "Rotation"
+    },
+    {
+      "updates.rotation": "Updates rotation"
+    },
+    {
+      "everything": "Everything"
+    },
+    {
+      "updates.everything": "Updates everything"
     }
   ]
 }

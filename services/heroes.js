@@ -474,7 +474,7 @@ exports.Heroes = {
                             data: returnedValues
                         };
                     } else {
-                        reply = StringUtils.get('not.enough.hero.infos', argument, config.prefix);
+                        reply = StringUtils.get('not.enough.hero.infos', argument);
                     }
                 } else {
                     reply = StringUtils.get('hero.not.found', argument);

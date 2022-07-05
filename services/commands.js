@@ -38,7 +38,7 @@ exports.Commands = {
 
     isUpdateSlashCommandsNeeded: async function () {
         const apiCommands = await Network.getApiCommandsSize();
-        return (commands.length * 2) !== apiCommands;
+        return process.env.UPDATE_COMMANDS === 'true' || ((commands.length * 2) !== apiCommands);
     },
 
     assembleSlashCommands: async function (localized = false) {
@@ -57,35 +57,49 @@ exports.Commands = {
                     .setDescription(description.substring(0, 100));
 
                 if (it.acceptParams) {
+                    if (it.paramOptions) {
+                        const options = it.paramOptions.map(param => {
+                            return {
+                                name: StringUtils.getWithoutNewLine(param.description).toLowerCase(),
+                                value: param.name
+                            }
+                        });
+                        commandSlashBuilder.addStringOption(option =>
+                            option.setName('option')
+                                .setDescription('select one')
+                                .setRequired(it.requiredParam)
+                                .addChoices(...options)
+                        );
+                    } else {
+                        let argumentName = StringUtils.getWithoutNewLine('argument').toLowerCase();
+                        let descriptionArgument = StringUtils.getWithoutNewLine('some.name');
+                        let requiredParameter = false;
 
-                    let argumentName = StringUtils.getWithoutNewLine('argument').toLowerCase();
-                    let descriptionArgument = StringUtils.getWithoutNewLine('some.name');
-                    let requiredParameter = false;
+                        if (it.category === 'HEROES') {
+                            argumentName = StringUtils.getWithoutNewLine('hero').toLowerCase();
+                            descriptionArgument = StringUtils.getWithoutNewLine('hero.name.or.part.of.name');
 
-                    if (it.category === 'HEROES') {
-                        argumentName = StringUtils.getWithoutNewLine('hero').toLowerCase();
-                        descriptionArgument = StringUtils.getWithoutNewLine('hero.name.or.part.of.name');
-
-                        if (it.name === 'Suggest') {
-                            argumentName = StringUtils.getWithoutNewLine('role').toLowerCase();
-                            descriptionArgument = StringUtils.getWithoutNewLine('role');
+                            if (it.name === 'Suggest') {
+                                argumentName = StringUtils.getWithoutNewLine('role').toLowerCase();
+                                descriptionArgument = StringUtils.getWithoutNewLine('role');
+                            }
+                        } else if (it.category === 'MAP') {
+                            argumentName = StringUtils.getWithoutNewLine('map').toLowerCase();
+                            descriptionArgument = StringUtils.getWithoutNewLine('map.name.or.part.of.name');
+                        } else if (it.name === 'Help') {
+                            argumentName = StringUtils.getWithoutNewLine('command').toLowerCase();
+                            descriptionArgument = StringUtils.getWithoutNewLine('command');
                         }
-                    } else if (it.category === 'MAP') {
-                        argumentName = StringUtils.getWithoutNewLine('map').toLowerCase();
-                        descriptionArgument = StringUtils.getWithoutNewLine('map.name.or.part.of.name');
-                    } else if (it.name === 'Help') {
-                        argumentName = StringUtils.getWithoutNewLine('command').toLowerCase();
-                        descriptionArgument = StringUtils.getWithoutNewLine('command');
-                    }
 
-                    if (it.requiredParam) {
-                        requiredParameter = true;
-                    }
+                        if (it.requiredParam) {
+                            requiredParameter = true;
+                        }
 
-                    commandSlashBuilder.addStringOption(option =>
-                        option.setName(argumentName)
-                            .setDescription(descriptionArgument)
-                            .setRequired(requiredParameter));
+                        commandSlashBuilder.addStringOption(option =>
+                            option.setName(argumentName)
+                                .setDescription(descriptionArgument)
+                                .setRequired(requiredParameter));
+                    }
                 }
 
                 await Network.postSlashCommandsToAPI(commandSlashBuilder);
@@ -97,7 +111,7 @@ exports.Commands = {
         }
     },
 
-    handleCommand: async function (args, receivedCommand, msg, isInteraction) {
+    handleCommand: async function (args, receivedCommand, msg) {
         let reply;
         let command = this.findCommand(receivedCommand);
         if (command != null && this.isCommandAllowed(msg, command)) {
@@ -116,19 +130,14 @@ exports.Commands = {
                     reply = StringUtils.get('hold.still.updating');
                 } else {
                     App.setBotStatus('Updating', 'WATCHING');
-                    Network.replyTo = msg;
-                    let callBackMessage = null;
-                    if (!isInteraction)
-                        callBackMessage = this.assembleUpdateReturnMessage;
-
-                    Network.updateData(callBackMessage);
+                    Network.updateData(args);
                     reply = StringUtils.get('update.process.started');
                 }
             } else {
-                reply = StringUtils.get('command.not.exists', receivedCommand, config.prefix);
+                reply = StringUtils.get('command.not.exists', receivedCommand);
             }
         } else {
-            reply = StringUtils.get('command.not.exists', receivedCommand, config.prefix);
+            reply = StringUtils.get('command.not.exists', receivedCommand);
         }
 
         if (command && command.source){
@@ -150,11 +159,6 @@ exports.Commands = {
         }
     },
 
-    assembleUpdateReturnMessage: function (message) {
-        Network.replyTo.reply(message);
-        Network.replyTo = null;
-    },
-
     assembleHelpReturnMessage: function (msg, commandAsked) {
         let reply = '';
         let list = [];
@@ -167,12 +171,12 @@ exports.Commands = {
                 if (command.acceptParams) {
                     list = [{
                         name: StringUtils.get('example'),
-                        value: StringUtils.get('command.example', config.prefix, this.getCommandName(command).toLowerCase()),
+                        value: StringUtils.get('command.example', '/', this.getCommandName(command).toLowerCase()),
                         inline: true
                     }]
                 }
             } else {
-                reply = StringUtils.get('command.not.exists', commandAsked, config.prefix);
+                reply = StringUtils.get('command.not.exists', commandAsked);
             }
         } else {
 
@@ -192,7 +196,7 @@ exports.Commands = {
             commandInfos += 'https://www.heroesprofile.com\n';
             commandInfos += 'https://nexuscompendium.com\n';
             commandInfos += 'https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2\n';
-            commandInfos += StringUtils.get('if.want.to.know.more.about.specific.command', config.prefix);
+            commandInfos += StringUtils.get('if.want.to.know.more.about.specific.command');
             commandInfos += StringUtils.get('version', config.version);
         }
 

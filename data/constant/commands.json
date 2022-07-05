@@ -147,7 +147,18 @@
       "localizedName": "Atualizar",
       "hint": "Update all bot database",
       "localizedHint": "Atualiza todo o banco de dados do bot",
-      "acceptParams": false,
+      "acceptParams": true,
+      "requiredParam": false,
+      "paramOptions": [
+        {
+          "name": "rotation",
+          "description": "updates.rotation"
+        },
+        {
+          "name": "everything",
+          "description": "updates.everything"
+        }
+      ],
       "defaultPermission": false,
       "category": "GENERAL"
     },

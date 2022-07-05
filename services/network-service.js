@@ -434,11 +434,17 @@ exports.Network = {
         return icyData.builds.concat(profileData?.builds?.slice(0, 4)).slice(0, 5);
     },
 
-    updateData: async function (callbackFunction) {
+    updateData: async function (args) {
         await this.setBrowser();
         App.log(`Started updating data process`);
         this.isUpdatingData = true;
 
+        if (args === "rotation") {
+            await this.gatherHeroesPrint();
+            await this.gatherHeroesRotation();
+            this.endUpdate();
+            return
+        }
         //write to file
         await this.gatherHeroesPrint();
         await this.gatherBanTierListInfo();
@@ -528,33 +534,27 @@ exports.Network = {
 
                 this.translateTips(heroesInfos).then(() => {
                     App.log(`Finished translate process`);
-                    this.isUpdatingData = false;
-                    App.bot.updatedAt = new Date().toLocaleString("pt-BR");
-                    App.setBotStatus('Heroes of the Storm', 'PLAYING');
-                    if (callbackFunction)
-                        callbackFunction(StringUtils.get('process.update.finished.time', (finishedTime - startTime) / 1000));
+                    this.endUpdate();
                 });
             });
         } catch (e) {
-            let replyMsg = StringUtils.get('could.not.update.data.try.again');
 
             if (e.stack.includes('Navigation timeout of 30000 ms exceeded')
                 || e.stack.includes('net::ERR_ABORTED')
                 || e.stack.includes('net::ERR_NETWORK_CHANGED')) {
-                replyMsg += StringUtils.get('try.to.update.again');
-                await this.updateData(callbackFunction);
+                await this.updateData();
             }
 
             App.log('Error while updating', e);
-            App.log(this.failedJobs.join('\n'));
             this.isUpdatingData = false;
-            if (callbackFunction)
-                callbackFunction(replyMsg);
         }
     },
 
-    updateRotation: async function () {
-        await this.gatherHeroesRotation();
+    endUpdate: function () {
+        App.log(`Finished update process`);
+        this.isUpdatingData = false;
+        App.bot.updatedAt = new Date().toLocaleString("pt-BR");
+        App.setBotStatus('Heroes of the Storm', 'PLAYING');
     },
 
     postSlashCommandsToAPI: async function (commandObj) {

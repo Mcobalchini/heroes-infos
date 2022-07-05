@@ -20,7 +20,7 @@ exports.Maps = {
                 }
                 return StringUtils.get('no.best.heroes.for.map', this.getMapName(map));
             }
-            return StringUtils.get('map.not.found', config.prefix);
+            return StringUtils.get('map.not.found');
         } else {
             return this.assembleMapReturnMessage({map: maps.map(it => it), heroes: []})
         }
