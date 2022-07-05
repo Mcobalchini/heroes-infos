@@ -1,5 +1,4 @@
 const fs = require('fs');
-const config = require('../config.json');
 const {App} = require("../app");
 const roles = JSON.parse(fs.readFileSync('./data/constant/roles.json'), {encoding: 'utf8', flag: 'r'});
 const StringUtils = require('./strings.js').StringUtils;
@@ -241,10 +240,45 @@ exports.Heroes = {
 
     setFreeHeroes: function (heroesParam) {
         this.freeHeroes = heroesParam;
+        App.writeFile('data/freeweek.json', heroesParam);
+    },
+
+    updateRotation: function (result) {
+        let freeHeroes = [];
+
+        for (let heroName of result.heroes) {
+            let freeHero = this.findHero(heroName, false, true);
+            let heroRole = this.findRoleById(freeHero.role);
+            freeHeroes.push({
+                name: freeHero.name,
+                role: heroRole.name
+            });
+        }
+
+        const rotation = {
+            startDate: result.startDate,
+            endDate: result.endDate,
+            heroes: freeHeroes
+        };
+        this.setFreeHeroes(rotation);
+    },
+
+    updateBanList: function (result) {
+        let banList = [];
+        result.forEach(it => {
+            let banHero = this.findHero(it, false, true);
+            let heroRole = this.findRoleById(banHero.role);
+            banList.push({
+                name: banHero.name,
+                role: heroRole.name,
+            });
+        });
+        this.setBanHeroes(banList);
     },
 
     setBanHeroes: function (heroesParam) {
         this.mustBanHeroes = heroesParam;
+        App.writeFile('data/banlist.json', heroesParam);
     },
 
     setCompositions: function (compositionsParam) {

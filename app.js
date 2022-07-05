@@ -6,10 +6,12 @@ exports.App = {
     setBotStatus: setBotStatus,
     bot: bot,
     log: log,
+    writeFile: writeFile,
 };
 const {StringUtils} = require('./services/strings.js');
 const {Commands} = require('./services/commands');
 const {Network} = require('./services/network-service.js');
+const fs = require("fs");
 StringUtils.setup();
 
 function setBotStatus(name, type) {
@@ -244,6 +246,14 @@ function assembleGuildData(guild) {
     ]
 }
 
+function writeFile (path, obj) {
+    fs.writeFile(path, JSON.stringify(obj), (e) => {
+        if (e != null) {
+            log(`error while writing file ${path}`, e);
+        }
+    });
+}
+
 bot.on('interactionCreate', async interaction => {
     if (!interaction.isCommand()) return;
     try {
@@ -253,7 +263,7 @@ bot.on('interactionCreate', async interaction => {
             interaction
         );
     } catch (e) {
-        log(`Error while handling response`, e);
+       this.log(`Error while handling response`, e);
     }
 });
 

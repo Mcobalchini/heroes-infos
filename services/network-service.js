@@ -1,5 +1,4 @@
 const translate = require('@vitalets/google-translate-api');
-const fs = require('fs');
 require('dotenv').config({path: './variables.env'});
 const Heroes = require('./heroes.js').Heroes;
 const StringUtils = require('./strings.js').StringUtils;
@@ -9,7 +8,6 @@ const PromisePool = require('es6-promise-pool');
 const {Routes} = require('discord-api-types/v9');
 const {REST} = require('@discordjs/rest');
 const {App} = require('../app.js');
-let msg = null;
 const rest = new REST({version: '9'}).setToken(process.env.HEROES_INFOS_TOKEN);
 
 exports.Network = {
@@ -19,58 +17,24 @@ exports.Network = {
     browser: null,
 
     gatherHeroesRotation: async function (remainingTrials) {
-        remainingTrials = remainingTrials ?? 3;
-        const page = await this.createPage();
-
-        let result
-        const url = `https://nexuscompendium.com/api/currently/RotationHero`;
-        try {
-            await page.goto(url, {waitUntil: 'domcontentloaded'})
-            result = await page.evaluate(() => {
-                const obj = JSON.parse(document.body.innerText).RotationHero;
-                return {
-                    startDate: obj.StartDate,
-                    endDate: obj.EndDate,
-                    heroes: obj.Heroes.map(it => it.ID)
-                }
-            });
-        } catch (ex) {
-            App.log(`Error while gathering rotation`, ex);
-            this.failedJobs.push(url)
-        } finally {
-            await page.close();
-        }
-
-        if (result != null) {
-            let freeHeroes = [];
-
-            for (let heroName of result.heroes) {
-                let freeHero = Heroes.findHero(heroName, false, true);
-                let heroRole = Heroes.findRoleById(freeHero.role);
-                freeHeroes.push({
-                    name: freeHero.name,
-                    role: heroRole.name
-                });
+        const fun = function () {
+            const obj = JSON.parse(document.body.innerText).RotationHero;
+            return {
+                startDate: obj.StartDate,
+                endDate: obj.EndDate,
+                heroes: obj.Heroes.map(it => it.ID)
             }
+        };
 
-            const rotation = {
-                startDate: result.startDate,
-                endDate: result.endDate,
-                heroes: freeHeroes
-            };
-
-            Heroes.setFreeHeroes(rotation);
-            this.writeFile('data/freeweek.json', rotation);
-            App.log(`Updated heroes rotation`);
-        } else {
-            if (remainingTrials > 0) {
-                remainingTrials--;
-                await this.gatherHeroesRotation(remainingTrials);
-            } else {
-                App.log(`No more tries remaining for gathering heroes rotation`);
-                return null;
-            }
+        const options = {
+            url: 'https://nexuscompendium.com/api/currently/RotationHero',
+            waitUntil: 'domcontentloaded',
+            function: fun
         }
+        const result = await this.performConnection(remainingTrials, options);
+
+        if (result)
+            Heroes.updateRotation(result);
     },
 
     gatherHeroesPrint: async function (remainingTrials) {
@@ -108,48 +72,52 @@ exports.Network = {
     },
 
     gatherBanTierListInfo: async function (remainingTrials) {
+        const fun = function () {
+            return [...new Set(Array.from(document.querySelectorAll('.htl_ban_true'))
+                .map(nameElements => nameElements.nextElementSibling.innerText))];
+        };
+
+        const options = {
+            url: 'https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list',
+            waitUntil: 'domcontentloaded',
+            function: fun
+        }
+
+        const result = await this.performConnection(remainingTrials, options);
+
+        if (result)
+            Heroes.updateBanList(result);
+    },
+
+    performConnection: async function(remainingTrials, options) {
+        const url = options.url;
+        const fun = options.function;
         remainingTrials = remainingTrials ?? 3;
-        App.log(`Gathering ban tier list`);
-        const page = await this.createPage();
-        const url = `https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list`;
+
+        const page = await this.createPage(false);
+        await page.exposeFunction("fun", fun);
         let result;
         try {
-            await page.goto(url, { waitUntil: 'domcontentloaded' });
-            result = await page.evaluate(() => {
-                return [...new Set(Array.from(document.querySelectorAll('.htl_ban_true')).map(nameElements => nameElements.nextElementSibling.innerText))];
-            });
-
+            await page.goto(url, {waitUntil: options.waitUntil});
+            result = await page.evaluate(fun);
         } catch (ex) {
-            App.log(`Error while gathering tier list info`, ex);
+            App.log(`Error while fetching ${options.url}`, ex);
             this.failedJobs.push(url)
         } finally {
             await page.close();
         }
 
         if (result != null) {
-            let banList = [];
-            result.forEach(it => {
-                let banHero = Heroes.findHero(it, false, true);
-                let heroRole = Heroes.findRoleById(banHero.role);
-                banList.push({
-                    name: banHero.name,
-                    role: heroRole.name,
-                });
-            });
-
-            Heroes.setBanHeroes(banList);
-            this.writeFile('data/banlist.json', banList);
-            App.log(`Updated ban list`);
+            return result;
         } else {
             if (remainingTrials > 0) {
                 remainingTrials--;
-                await this.gatherBanTierListInfo(remainingTrials);
+                await this.performConnection(remainingTrials, options);
             } else {
-                App.log(`No more tries remaining for ban tier list`);
+                App.log(`No more tries remaining for ${options.url}`);
                 return null;
             }
         }
-
     },
 
     gatherCompositionsInfo: async function (remainingTrials) {
@@ -195,7 +163,7 @@ exports.Network = {
             }).reverse();
 
             Heroes.setCompositions(sortedComposition);
-            this.writeFile('data/compositions.json', sortedComposition);
+            App.writeFile('data/compositions.json', sortedComposition);
             App.log(`Updated compositions list`);
         } else {
             if (remainingTrials > 0) {
@@ -404,7 +372,7 @@ exports.Network = {
             }
         });
         Heroes.setHeroesInfos(heroesAux);
-        this.writeFile('data/heroes-infos.json', heroesAux);
+        App.writeFile('data/heroes-infos.json', heroesAux);
     },
 
     assembleHeroBuilds: function (profileData, hero, index, icyData) {
@@ -439,17 +407,15 @@ exports.Network = {
         App.log(`Started updating data process`);
         this.isUpdatingData = true;
 
+        //write to file
+        await this.gatherHeroesPrint();
+        await this.gatherHeroesRotation();
         if (args === "rotation") {
-            await this.gatherHeroesPrint();
-            await this.gatherHeroesRotation();
             this.endUpdate();
             return
         }
-        //write to file
-        await this.gatherHeroesPrint();
         await this.gatherBanTierListInfo();
         await this.gatherCompositionsInfo();
-        await this.gatherHeroesRotation();
 
         const popularityWinRate = await this.gatherPopularityAndWinRateInfo();
         const cookieValue = await this.createHeroesProfileSession();
@@ -478,7 +444,9 @@ exports.Network = {
 
         let startTime = new Date();
 
-        const thread = new PromisePool(promiseProducer, 5);
+        const workers = process.env.THREAD_WORKERS ? Number(process.env.THREAD_WORKERS) : 5;
+
+        const thread = new PromisePool(promiseProducer, workers);
 
         try {
             App.log(`Started gathering heroes data`);
@@ -608,14 +576,4 @@ exports.Network = {
 
         return page;
     },
-
-    writeFile: function (path, obj) {
-        fs.writeFile(path, JSON.stringify(obj), (e) => {
-            if (e != null) {
-                App.log(`error while writing file ${path}`, e);
-                msg.reply(StringUtils.get('could.not.update.data.try.again'));
-            }
-        });
-    }
-
 }
