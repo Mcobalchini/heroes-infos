@@ -389,7 +389,7 @@ exports.Network = {
                 let finishedTime = new Date();
                 App.log(`Finished gathering process in ${(finishedTime.getTime() - startTime.getTime()) / 1000} seconds`);
 
-                heroesInfos = Heroes.updateHeroesInfos(heroesMap, popularityWinRate);
+                heroesInfos = Heroes.updateHeroesInfos(heroesMap, popularityWinRate, heroesInfos);
 
                 this.translateTips(heroesInfos).then(() => {
                     App.log(`Finished translate process`);
