@@ -146,9 +146,6 @@ function periodicUpdateCheck(interval) {
         setBotStatus('Updating', 'WATCHING')
         Network.updateData().then(() => setBotStatus('Heroes of the Storm', 'PLAYING'));
     }
-
-    if (interval)
-        setInterval(periodicUpdateCheck, 100000, false);
 }
 
 function addItemIntoListIfNeeded(array) {

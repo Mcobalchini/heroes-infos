@@ -261,10 +261,15 @@ exports.Network = {
         } catch (ex) {
             App.log(`Error while fetching profileData ${profileUrl}`, ex);
         } finally {
-            await page.close().catch();
+            try {
+                await page.close();
+            } catch (ex) {
+                App.log(`Error while closing page`, ex);
+            }
+
         }
 
-        if (icyData != null && profileData != null) {
+        if (icyData != null) {
             let returnObject = {
                 icyData: icyData,
                 profileData: profileData
@@ -379,13 +384,12 @@ exports.Network = {
         try {
             App.log(`Started gathering heroes data`);
             thread.start().then(() => {
+                this.browser.close().catch();
 
                 let finishedTime = new Date();
                 App.log(`Finished gathering process in ${(finishedTime.getTime() - startTime.getTime()) / 1000} seconds`);
 
-                this.browser.close().catch();
-
-                heroesInfos = Heroes.updateHeroesInfos(heroesMap, popularityWinRate, Maps.maps);
+                heroesInfos = Heroes.updateHeroesInfos(heroesMap, popularityWinRate);
 
                 this.translateTips(heroesInfos).then(() => {
                     App.log(`Finished translate process`);
