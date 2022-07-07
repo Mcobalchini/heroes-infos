@@ -397,6 +397,7 @@ exports.Network = {
             if (e.stack.includes('Navigation timeout of 30000 ms exceeded')
                 || e.stack.includes('net::ERR_ABORTED')
                 || e.stack.includes('net::ERR_NETWORK_CHANGED')) {
+                App.log("Updating again")
                 await this.updateData();
             }
 
@@ -431,7 +432,7 @@ exports.Network = {
     setBrowser: async function () {
         this.browser?.close()?.catch();
         this.browser = await puppeteer.launch({
-            // headless: true,
+            headless: true,
             // devtools: true,
             args: [
                 '--no-sandbox',
