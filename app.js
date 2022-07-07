@@ -1,4 +1,5 @@
 require('dotenv').config({path: './variables.env'});
+const fs = require("fs");
 const {Client, Intents, MessageEmbed, MessageAttachment} = require('discord.js');
 const bot = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]});
 
@@ -11,7 +12,6 @@ exports.App = {
 const {StringUtils} = require('./services/strings.js');
 const {Commands} = require('./services/commands');
 const {Network} = require('./services/network-service.js');
-const fs = require("fs");
 StringUtils.setup();
 
 function setBotStatus(name, type) {
@@ -144,7 +144,7 @@ async function handleResponse(args, receivedCommand, msg) {
 function periodicUpdateCheck(interval) {
     if (Network.isUpdateNeeded()) {
         setBotStatus('Updating', 'WATCHING')
-        Network.updateData(() => setBotStatus('Heroes of the Storm', 'PLAYING'));
+        Network.updateData().then(() => setBotStatus('Heroes of the Storm', 'PLAYING'));
     }
 
     if (interval)

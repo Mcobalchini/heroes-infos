@@ -16,7 +16,9 @@ exports.Network = {
     replyTo: null,
     browser: null,
 
-    gatherHeroesRotation: async function (remainingTrials) {
+    gatherHeroesRotation: async function () {
+        App.log(`Gathering heroes rotation`);
+
         const fun = function () {
             const obj = JSON.parse(document.body.innerText).RotationHero;
             return {
@@ -31,47 +33,14 @@ exports.Network = {
             waitUntil: 'domcontentloaded',
             function: fun
         }
-        const result = await this.performConnection(remainingTrials, options);
+        const result = await this.performConnection(options);
 
         if (result)
             Heroes.updateRotation(result);
     },
 
-    gatherHeroesPrint: async function (remainingTrials) {
-        remainingTrials = remainingTrials ?? 3;
-        const page = await this.createPage(false);
-
-        let result
-        const url = `https://nexuscompendium.com/currently`;
-
-        try {
-            await page.goto(url, {waitUntil: 'networkidle0'});
-            result = await page.$('.primary-table > table:nth-child(9)');
-            await result.screenshot({
-                path: 'images/freeweek.png'
-            });
-
-        } catch (ex) {
-            App.log(`Error while gathering rotation image`, ex);
-            this.failedJobs.push(url)
-        } finally {
-            await page.close();
-        }
-
-        if (result != null) {
-            return result;
-        } else {
-            if (remainingTrials > 0) {
-                remainingTrials--;
-                await this.gatherHeroesPrint(remainingTrials);
-            } else {
-                App.log(`No more tries remaining for gathering heroes print`);
-                return null;
-            }
-        }
-    },
-
-    gatherBanTierListInfo: async function (remainingTrials) {
+    gatherBanTierListInfo: async function () {
+        App.log(`Gathering ban list`);
         const fun = function () {
             return [...new Set(Array.from(document.querySelectorAll('.htl_ban_true'))
                 .map(nameElements => nameElements.nextElementSibling.innerText))];
@@ -83,135 +52,57 @@ exports.Network = {
             function: fun
         }
 
-        const result = await this.performConnection(remainingTrials, options);
+        const result = await this.performConnection(options);
 
         if (result)
             Heroes.updateBanList(result);
     },
 
-    performConnection: async function(remainingTrials, options) {
-        const url = options.url;
-        const fun = options.function;
-        remainingTrials = remainingTrials ?? 3;
-
-        const page = await this.createPage(false);
-        await page.exposeFunction("fun", fun);
-        let result;
-        try {
-            await page.goto(url, {waitUntil: options.waitUntil});
-            result = await page.evaluate(fun);
-        } catch (ex) {
-            App.log(`Error while fetching ${options.url}`, ex);
-            this.failedJobs.push(url)
-        } finally {
-            await page.close();
-        }
-
-        if (result != null) {
-            return result;
-        } else {
-            if (remainingTrials > 0) {
-                remainingTrials--;
-                await this.performConnection(remainingTrials, options);
-            } else {
-                App.log(`No more tries remaining for ${options.url}`);
-                return null;
-            }
-        }
-    },
-
-    gatherCompositionsInfo: async function (remainingTrials) {
-        remainingTrials = remainingTrials ?? 3;
+    gatherCompositionsInfo: async function () {
         App.log(`Gathering compositions`);
-        const page = await this.createPage();
-        const url = `https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1`;
-        let result
-        try {
-            await page.goto(url);
-            result = await page.evaluate(() => {
-                return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
-                    return {
-                        games: it.children[0].innerText,
-                        winRate: parseFloat(it.children[1].innerText.replace(',', '.')),
-                        roles: Array.from(it.children).filter(it => it.style.display === 'none').map(it => it.innerText)
-                    }
-                });
-            });
 
-        } catch (ex) {
-            App.log(`Error while gathering compositions`, ex);
-            this.failedJobs.push(url)
-        } finally {
-            await page.close();
+        const fun = function () {
+            return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
+                return {
+                    games: it.children[0].innerText,
+                    winRate: parseFloat(it.children[1].innerText.replace(',', '.')),
+                    roles: Array.from(it.children).filter(it => it.style.display === 'none').map(it => it.innerText)
+                }
+            });
+        };
+
+        const options = {
+            url: 'https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1',
+            waitUntil: 'domcontentloaded',
+            function: fun
         }
 
-        if (result != null) {
-            result.sort(function (a, b) {
-                return a.games - b.games;
-            }).forEach((it, idx) => {
-                it.tierPosition = parseInt(idx + 1);
-            });
+        const result = await this.performConnection(options);
 
-            result.sort(function (a, b) {
-                return a.winRate - b.winRate;
-            }).forEach((it, idx) => {
-                it.tierPosition = parseInt(it.tierPosition) + parseInt(idx + 1);
-            });
-
-            let sortedComposition = result.sort(function (a, b) {
-                return a.tierPosition - b.tierPosition
-            }).reverse();
-
-            Heroes.setCompositions(sortedComposition);
-            App.writeFile('data/compositions.json', sortedComposition);
-            App.log(`Updated compositions list`);
-        } else {
-            if (remainingTrials > 0) {
-                remainingTrials--;
-                await this.gatherCompositionsInfo(remainingTrials);
-            } else {
-                App.log(`No more tries remaining for gathering compositions`);
-                return null;
-            }
-        }
+        if (result)
+            Heroes.updateCompositions(result);
     },
 
-    gatherPopularityAndWinRateInfo: async function (remainingTrials) {
-        remainingTrials = remainingTrials ?? 3;
+    gatherPopularityAndWinRateInfo: async function () {
         App.log(`Gathering win rate`);
-        const page = await this.createPage();
-        const url = `https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2`;
-        let result
-        try {
-            await page.goto(url, {waitUntil: 'domcontentloaded'});
-            result = await page.evaluate(() => {
-                return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
-                    return {
-                        name: it.children[1].firstElementChild.innerText,
-                        winRate: parseFloat(it.children[3].innerText.replace(',', '.')),
-                        games: parseFloat(it.children[2].innerText.replace(',', '.')),
-                    }
-                });
+
+        const fun = function () {
+            return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
+                return {
+                    name: it.children[1].firstElementChild.innerText,
+                    winRate: parseFloat(it.children[3].innerText.replace(',', '.')),
+                    games: parseFloat(it.children[2].innerText.replace(',', '.')),
+                }
             });
+        };
 
-        } catch (ex) {
-            App.log(`Error while gathering popularity and WR info`, ex);
-            this.failedJobs.push(url);
-        } finally {
-            await page.close();
+        const options = {
+            url: 'https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2',
+            waitUntil: 'domcontentloaded',
+            function: fun
         }
 
-        if (result != null) {
-            return result;
-        } else {
-            if (remainingTrials > 0) {
-                remainingTrials--;
-                await this.gatherPopularityAndWinRateInfo(remainingTrials);
-            } else {
-                App.log(`No more tries remaining for gathering popularity and WR`);
-                return null;
-            }
-        }
+        return await this.performConnection(options);
     },
 
     gatherNews: async function () {
@@ -269,6 +160,40 @@ exports.Network = {
             }
         } finally {
             await page.close();
+        }
+    },
+
+    gatherHeroesPrint: async function (remainingTrials) {
+        remainingTrials = remainingTrials ?? 3;
+        const page = await this.createPage(false);
+
+        let result
+        const url = `https://nexuscompendium.com/currently`;
+
+        try {
+            await page.goto(url, {waitUntil: 'networkidle0'});
+            result = await page.$('.primary-table > table:nth-child(9)');
+            await result.screenshot({
+                path: 'images/freeweek.png'
+            });
+
+        } catch (ex) {
+            App.log(`Error while gathering rotation image`, ex);
+            this.failedJobs.push(url)
+        } finally {
+            await page.close();
+        }
+
+        if (result != null) {
+            return result;
+        } else {
+            if (remainingTrials > 0) {
+                remainingTrials--;
+                await this.gatherHeroesPrint(remainingTrials);
+            } else {
+                App.log(`No more tries remaining for gathering heroes print`);
+                return null;
+            }
         }
     },
 
@@ -334,9 +259,9 @@ exports.Network = {
                 };
             }, profileUrl);
         } catch (ex) {
-            App.log(`Error while fetching profileData`, ex);
+            App.log(`Error while fetching profileData ${profileUrl}`, ex);
         } finally {
-            await page.close();
+            await page.close().catch();
         }
 
         if (icyData != null && profileData != null) {
@@ -347,7 +272,7 @@ exports.Network = {
 
             heroesMap.set(heroId, returnObject);
         } else {
-             await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
+            await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
         }
     },
 
@@ -375,31 +300,36 @@ exports.Network = {
         App.writeFile('data/heroes-infos.json', heroesAux);
     },
 
-    assembleHeroBuilds: function (profileData, hero, index, icyData) {
+    performConnection: async function(options, remainingTrials) {
+        const url = options.url;
+        const fun = options.function;
+        const blockStuff = options.blockStuff ?? true;
+        remainingTrials = remainingTrials ?? 3;
 
-        if (profileData?.builds?.length === 0) {
-            App.log(`No (profile) builds found for ${hero.name}`);
+        const page = await this.createPage(blockStuff);
+        await page.exposeFunction("fun", fun);
+        let result;
+        try {
+            await page.goto(url, {waitUntil: options.waitUntil});
+            result = await page.evaluate(fun);
+        } catch (ex) {
+            App.log(`Error while fetching ${options.url}`, ex);
+            this.failedJobs.push(url)
+        } finally {
+            await page.close();
         }
 
-        //retrieves the duplicate items
-        let repeatedBuilds = profileData?.builds?.filter(item =>
-            (icyData.builds.map(it => it.skills.unaccent()).includes(item.skills.unaccent()))
-        );
-
-        //applies winrate on known builds names
-        icyData.builds.forEach(it => {
-            for (let item of repeatedBuilds) {
-                if (item.skills.unaccent() === it.skills.unaccent()) {
-                    it.name = `${it.name} (${item.name.match(/([\d.]%*)/g, '').join('').replace('..', '')} win rate)`
-                }
+        if (result != null) {
+            return result;
+        } else {
+            if (remainingTrials > 0) {
+                remainingTrials--;
+                await this.performConnection(remainingTrials, options);
+            } else {
+                App.log(`No more tries remaining for ${options.url}`);
+                return null;
             }
-        });
-
-        //removes the duplicate items
-        if (profileData)
-            profileData.builds = profileData?.builds?.filter(item => !repeatedBuilds.includes(item));
-
-        return icyData.builds.concat(profileData?.builds?.slice(0, 4)).slice(0, 5);
+        }
     },
 
     updateData: async function (args) {
@@ -443,9 +373,7 @@ exports.Network = {
         };
 
         let startTime = new Date();
-
         const workers = process.env.THREAD_WORKERS ? Number(process.env.THREAD_WORKERS) : 5;
-
         const thread = new PromisePool(promiseProducer, workers);
 
         try {
@@ -453,52 +381,11 @@ exports.Network = {
             thread.start().then(() => {
 
                 let finishedTime = new Date();
-
                 App.log(`Finished gathering process in ${(finishedTime.getTime() - startTime.getTime()) / 1000} seconds`);
+
                 this.browser.close().catch();
 
-                for (let [heroKey, heroData] of heroesMap) {
-                    let index = heroesInfos.findIndex(it => it.id === heroKey);
-                    let icyData = heroData.icyData
-                    let profileData = heroData.profileData
-                    let heroMaps = [];
-
-                    for (let strongerMap of icyData.strongerMaps) {
-                        let heroMap = Maps.findMap(strongerMap);
-                        if (heroMap)
-                            heroMaps.push({
-                                name: heroMap.name,
-                                localizedName: heroMap.localizedName
-                            });
-                    }
-
-                    if (heroesInfos[index] == null) {
-                        heroesInfos[index] = {};
-                    }
-
-                    heroesInfos[index].infos = {};
-                    heroesInfos[index].id = heroKey;
-                    heroesInfos[index].name = Heroes.findHero(heroKey, false, true).name;
-                    heroesInfos[index].infos.builds = this.assembleHeroBuilds(profileData,
-                        heroesInfos,
-                        heroesInfos[index],
-                        icyData
-                    );
-
-                    heroesInfos[index].infos.synergies = icyData.synergies;
-                    heroesInfos[index].infos.counters = icyData.counters;
-                    heroesInfos[index].infos.strongerMaps = heroMaps;
-                    heroesInfos[index].infos.tips = icyData.tips.map(tip => `${tip}\n`).join('');
-
-                    let obj = popularityWinRate?.find(it => {
-                        return it.name.cleanVal() === heroesInfos[index].name.cleanVal()
-                    });
-                    heroesInfos[index].infos.winRate = obj?.winRate ?? 0;
-                    heroesInfos[index].infos.games = obj?.games ?? 0;
-                }
-
-                Heroes.setHeroesInfos(heroesInfos);
-                Heroes.setHeroesTierPosition();
+                heroesInfos = Heroes.updateHeroesInfos(heroesMap, popularityWinRate, Maps.maps);
 
                 this.translateTips(heroesInfos).then(() => {
                     App.log(`Finished translate process`);
@@ -541,18 +428,10 @@ exports.Network = {
         return !Heroes.findHero('1', true)?.infos?.builds?.length > 0
     },
 
-    startSession: async function (blockStuff = true) {
-        try {
-            await this.createPage(blockStuff);
-        } catch (e) {
-            await this.setBrowser();
-            await this.createPage();
-        }
-    },
-
     setBrowser: async function () {
+        this.browser?.close()?.catch();
         this.browser = await puppeteer.launch({
-            headless: true,
+            // headless: true,
             // devtools: true,
             args: [
                 '--no-sandbox',

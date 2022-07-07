@@ -1,5 +1,6 @@
 const fs = require('fs');
 const {App} = require("../app");
+const {Maps} = require("./maps");
 const roles = JSON.parse(fs.readFileSync('./data/constant/roles.json'), {encoding: 'utf8', flag: 'r'});
 const StringUtils = require('./strings.js').StringUtils;
 const heroesBase = JSON.parse(fs.readFileSync('./data/constant/heroes-base.json'), {encoding: 'utf8', flag: 'r'});
@@ -223,6 +224,79 @@ exports.Heroes = {
         this.heroesInfos = heroesParam;
     },
 
+    updateHeroesInfos: function (heroesMap, popularityWinRate, allMaps) {
+        for (let [heroKey, heroData] of heroesMap) {
+            let index = heroesInfos.findIndex(it => it.id === heroKey);
+            let icyData = heroData.icyData
+            let profileData = heroData.profileData
+            let heroMaps = [];
+
+            for (let strongerMap of icyData.strongerMaps) {
+                let heroMap = Maps.findMap(strongerMap);
+                if (heroMap)
+                    heroMaps.push({
+                        name: heroMap.name,
+                        localizedName: heroMap.localizedName
+                    });
+            }
+
+            if (heroesInfos[index] == null) {
+                heroesInfos[index] = {};
+            }
+
+            heroesInfos[index].infos = {};
+            heroesInfos[index].id = heroKey;
+            heroesInfos[index].name = this.findHero(heroKey, false, true).name;
+            heroesInfos[index].infos.builds = this.assembleHeroBuilds(profileData,
+                heroesInfos,
+                heroesInfos[index],
+                icyData
+            );
+
+            heroesInfos[index].infos.synergies = icyData.synergies;
+            heroesInfos[index].infos.counters = icyData.counters;
+            heroesInfos[index].infos.strongerMaps = heroMaps;
+            heroesInfos[index].infos.tips = icyData.tips.map(tip => `${tip}\n`).join('');
+
+            let obj = popularityWinRate?.find(it => {
+                return it.name.cleanVal() === heroesInfos[index].name.cleanVal()
+            });
+            heroesInfos[index].infos.winRate = obj?.winRate ?? 0;
+            heroesInfos[index].infos.games = obj?.games ?? 0;
+        }
+        this.setHeroesInfos(heroesInfos);
+        this.setHeroesTierPosition();
+        return this.heroesInfos;
+    },
+
+    assembleHeroBuilds: function (profileData, hero, index, icyData) {
+
+        if (profileData?.builds?.length === 0) {
+            App.log(`No (profile) builds found for ${hero.name}`);
+        }
+
+        //retrieves the duplicate items
+        let repeatedBuilds = profileData?.builds?.filter(item =>
+            (icyData.builds.map(it => it.skills.unaccent()).includes(item.skills.unaccent()))
+        );
+
+        //applies winrate on known builds names
+        icyData.builds.forEach(it => {
+            for (let item of repeatedBuilds) {
+                if (item.skills.unaccent() === it.skills.unaccent()) {
+                    it.name = `${it.name} (${item.name.match(/([\d.]%*)/g, '').join('').replace('..', '')} win rate)`
+                }
+            }
+        });
+
+        //removes the duplicate items
+        if (profileData)
+            profileData.builds = profileData?.builds?.filter(item => !repeatedBuilds.includes(item));
+
+        return icyData.builds.concat(profileData?.builds?.slice(0, 4)).slice(0, 5);
+    },
+
+
     setHeroesTierPosition: function () {
         App.log(`setting heroes tier position`);
         this.heroesInfos.sort(function (a, b) {
@@ -274,6 +348,28 @@ exports.Heroes = {
             });
         });
         this.setBanHeroes(banList);
+    },
+
+    updateCompositions: function (result) {
+        result.sort(function (a, b) {
+            return a.games - b.games;
+        }).forEach((it, idx) => {
+            it.tierPosition = parseInt(idx + 1);
+        });
+
+        result.sort(function (a, b) {
+            return a.winRate - b.winRate;
+        }).forEach((it, idx) => {
+            it.tierPosition = parseInt(it.tierPosition) + parseInt(idx + 1);
+        });
+
+        let sortedComposition = result.sort(function (a, b) {
+            return a.tierPosition - b.tierPosition
+        }).reverse();
+
+        this.setCompositions(sortedComposition);
+        App.writeFile('data/compositions.json', sortedComposition);
+        App.log(`Updated compositions list`);
     },
 
     setBanHeroes: function (heroesParam) {
