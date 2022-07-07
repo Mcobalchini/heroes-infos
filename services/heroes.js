@@ -224,7 +224,7 @@ exports.Heroes = {
         this.heroesInfos = heroesParam;
     },
 
-    updateHeroesInfos: function (heroesMap, popularityWinRate) {
+    updateHeroesInfos: function (heroesMap, popularityWinRate, heroesInfos) {
         for (let [heroKey, heroData] of heroesMap) {
             let index = heroesInfos.findIndex(it => it.id === heroKey);
             let icyData = heroData.icyData
