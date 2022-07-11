@@ -84,20 +84,19 @@ exports.Network = {
     },
 
     gatherPopularityAndWinRateInfo: async function () {
-        App.log(`Gathering win rate`);
+        App.log(`Gathering influence`);
 
         const fun = function () {
-            return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
+            return Array.from(document.querySelectorAll('#hero-stat-data tr')).filter(f => f.firstElementChild).map((it) => {
                 return {
-                    name: it.children[1].firstElementChild.innerText,
-                    winRate: parseFloat(it.children[3].innerText.replace(',', '.')),
-                    games: parseFloat(it.children[2].innerText.replace(',', '.')),
+                    name: it.firstElementChild?.children[0]?.children[1].innerText,
+                    influence: it.children[7].innerText,
                 }
             });
         };
 
         const options = {
-            url: 'https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2',
+            url: 'https://heroesprofile.com/Global/Hero/',
             waitUntil: 'domcontentloaded',
             function: fun
         }
@@ -215,6 +214,8 @@ exports.Network = {
                 const skills = Array.from(document.querySelectorAll('.talent_build_copy_button > input')).map(skillsElements => skillsElements.value);
                 const counters = Array.from(document.querySelectorAll('.hero_portrait_bad')).map(nameElements => nameElements.title);
                 const synergies = Array.from(document.querySelectorAll('.hero_portrait_good')).map(nameElements => nameElements.title);
+                const synergiesText = document.querySelector('.heroes_synergies .heroes_synergies_counters_content').innerText;
+                const countersText = document.querySelector('.heroes_counters .heroes_synergies_counters_content').innerText;
                 const strongerMaps = Array.from(document.querySelectorAll('.heroes_maps_stronger .heroes_maps_content span img')).map(i => i.title);
                 const tips = Array.from(document.querySelectorAll('.heroes_tips li')).map(i => i.innerText.trim().replaceAll('  ', ' '));
 
@@ -228,15 +229,15 @@ exports.Network = {
 
                 return {
                     builds: builds,
-                    counters: counters,
-                    synergies: synergies,
+                    counters: { countersText, heroes: counters },
+                    synergies: { synergiesText, heroes: synergies },
                     strongerMaps: strongerMaps,
                     tips: tips
                 };
 
             }, icyUrl);
         } catch (ex) {
-            App.log(`Error while fetching icyData`, ex);
+            App.log(`Error while fetching icyData ${icyUrl}`, ex);
         }
 
         try {
@@ -270,6 +271,14 @@ exports.Network = {
         }
 
         if (icyData != null) {
+            icyData.strongerMaps = icyData.strongerMaps.map(it => {
+                const strongerMap = Maps.findMap(it);
+                return {
+                    name: strongerMap.name,
+                    localizedName: strongerMap.localizedName
+                }
+            });
+
             let returnObject = {
                 icyData: icyData,
                 profileData: profileData

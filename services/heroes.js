@@ -1,6 +1,5 @@
 const fs = require('fs');
 const {App} = require("../app");
-const {Maps} = require("./maps");
 const roles = JSON.parse(fs.readFileSync('./data/constant/roles.json'), {encoding: 'utf8', flag: 'r'});
 const StringUtils = require('./strings.js').StringUtils;
 const heroesBase = JSON.parse(fs.readFileSync('./data/constant/heroes-base.json'), {encoding: 'utf8', flag: 'r'});
@@ -45,7 +44,7 @@ exports.Heroes = {
         let list = this.heroesInfos.sort(this.sortByTierPosition);
 
         if (isNaN(roleId) === false) {
-            list = list.filter(hero => (hero.role === roleId))
+            list = list.filter(hero => (hero.role === roleId)).sort(this.sortByTierPosition)
         }
 
         return list.sort(this.sortByTierPosition).reverse().map(it => {
@@ -132,7 +131,8 @@ exports.Heroes = {
     getHeroCounters: function () {
         return {
             featureName: StringUtils.get('counters'),
-            counter: this.hero.infos.counters.map(counter => {
+            featureDescription: this.hero.infos.counters.countersText,
+            counter: this.hero.infos.counters.heroes.map(counter => {
                 const hero = this.findHero(counter, true, false);
                 return {
                     name: this.getHeroName(hero),
@@ -160,7 +160,8 @@ exports.Heroes = {
     getHeroSynergies: function () {
         return {
             featureName: StringUtils.get('synergies'),
-            synergies: this.hero.infos.synergies.map(synergy => {
+            featureDescription: this.hero.infos.synergies.synergiesText,
+            synergies: this.hero.infos.synergies.heroes.map(synergy => {
                 const hero = this.findHero(synergy, true, false);
                 return {
                     name: this.getHeroName(hero),
@@ -229,16 +230,6 @@ exports.Heroes = {
             let index = heroesInfos.findIndex(it => it.id === heroKey);
             let icyData = heroData.icyData
             let profileData = heroData.profileData
-            let heroMaps = [];
-
-            for (let strongerMap of icyData.strongerMaps) {
-                let heroMap = Maps.findMap(strongerMap);
-                if (heroMap)
-                    heroMaps.push({
-                        name: heroMap.name,
-                        localizedName: heroMap.localizedName
-                    });
-            }
 
             if (heroesInfos[index] == null) {
                 heroesInfos[index] = {};
@@ -248,28 +239,43 @@ exports.Heroes = {
             heroesInfos[index].id = heroKey;
             heroesInfos[index].name = this.findHero(heroKey, false, true).name;
             heroesInfos[index].infos.builds = this.assembleHeroBuilds(profileData,
-                heroesInfos,
                 heroesInfos[index],
                 icyData
             );
 
             heroesInfos[index].infos.synergies = icyData.synergies;
             heroesInfos[index].infos.counters = icyData.counters;
-            heroesInfos[index].infos.strongerMaps = heroMaps;
+            heroesInfos[index].infos.strongerMaps = icyData.strongerMaps;
             heroesInfos[index].infos.tips = icyData.tips.map(tip => `${tip}\n`).join('');
 
             let obj = popularityWinRate?.find(it => {
                 return it.name.cleanVal() === heroesInfos[index].name.cleanVal()
             });
-            heroesInfos[index].infos.winRate = obj?.winRate ?? 0;
-            heroesInfos[index].infos.games = obj?.games ?? 0;
+            heroesInfos[index].infos.influence = parseInt(obj.influence) ?? -1000;
         }
-        this.setHeroesInfos(heroesInfos);
-        this.setHeroesTierPosition();
+        const heroes = this.setHeroesTierPosition(heroesInfos);
+        this.setHeroesInfos(heroes);
+        this.setHeroesCommonSynergies();
         return this.heroesInfos;
     },
 
-    assembleHeroBuilds: function (profileData, hero, index, icyData) {
+    setHeroesCommonSynergies: function () {
+        this.heroesInfos.forEach(hero => {
+            const crossSynergies = this.heroesInfos.filter(it => it.infos.synergies.heroes.map(clean => clean.cleanVal()).includes(
+                hero.name.cleanVal()
+            )).map(synergy => synergy.name);
+            hero.infos.synergies.heroes.push(...crossSynergies);
+            hero.infos.synergies.heroes = Array.from(new Set(hero.infos.synergies.heroes));
+        });
+    },
+
+    assembleHeroBuilds: function (profileData, hero, icyData) {
+
+        if (profileData == null)
+            profileData = {};
+
+        if (profileData?.builds == null)
+            profileData.builds = [];
 
         if (profileData?.builds?.length === 0) {
             App.log(`No (profile) builds found for ${hero.name}`);
@@ -281,13 +287,15 @@ exports.Heroes = {
         );
 
         //applies winrate on known builds names
-        icyData.builds.forEach(it => {
-            for (let item of repeatedBuilds) {
-                if (item.skills.unaccent() === it.skills.unaccent()) {
-                    it.name = `${it.name} (${item.name.match(/([\d.]%*)/g, '').join('').replace('..', '')} win rate)`
+        if (repeatedBuilds != null) {
+            icyData.builds.forEach(it => {
+                for (let item of repeatedBuilds) {
+                    if (item.skills.unaccent() === it.skills.unaccent()) {
+                        it.name = `${it.name} (${item.name.match(/([\d.]%*)/g, '').join('').replace('..', '')} win rate)`
+                    }
                 }
-            }
-        });
+            });
+        }
 
         //removes the duplicate items
         if (profileData)
@@ -297,19 +305,14 @@ exports.Heroes = {
     },
 
 
-    setHeroesTierPosition: function () {
+    setHeroesTierPosition: function (heroesParam) {
         App.log(`setting heroes tier position`);
-        this.heroesInfos.sort(function (a, b) {
-            return a.infos.games - b.infos.games;
-        }).forEach((it, idx) => {
-            it.infos.tierPosition = parseInt(idx + 1);
+        heroesParam.sort(function (a, b) {
+            return a.influence - b.influence;
+        }).forEach(it => {
+            it.infos.tierPosition = it.infos.influence;
         });
-
-        this.heroesInfos.sort(function (a, b) {
-            return a.infos.winRate - b.infos.winRate;
-        }).forEach((it, idx) => {
-            it.infos.tierPosition = parseInt(it.infos.tierPosition) + parseInt(idx + 1);
-        })
+        return heroesParam;
     },
 
     setFreeHeroes: function (heroesParam) {
@@ -477,7 +480,7 @@ exports.Heroes = {
             currentCompRoles = currentCompRoles.sort();
 
             for (let currentCompHero of currentCompHeroes.values()) {
-                let synergies = currentCompHero.infos.synergies.map(it => this.findHero(it, false, true));
+                let synergies = currentCompHero.infos.synergies.heroes.map(it => this.findHero(it, false, true));
                 synergies.forEach((synergy) => {
                     let hero = heroesSorted.find(it => it.id === synergy.id)
                     if (hero != null)
@@ -593,8 +596,8 @@ exports.Heroes = {
             if (argument.length > 0) {
                 this.findHero(argument, true, true);
                 if (this.hero != null) {
-                    if (this.hero.infos != null && (this.hero.infos.counters.length > 0 &&
-                        this.hero.infos.synergies.length > 0 &&
+                    if (this.hero.infos != null && (this.hero.infos.counters.heroes.length > 0 &&
+                        this.hero.infos.synergies.heroes.length > 0 &&
                         this.hero.infos.builds.length > 0)) {
                         let returnedValues = eval(`this.getHero${commandObj.name}()`);
                         return {
