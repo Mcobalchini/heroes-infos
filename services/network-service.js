@@ -143,11 +143,11 @@ exports.Network = {
         App.log(`Creating heroes profile session`);
         const page = await this.createPage();
         const url = 'https://www.heroesprofile.com/Global/Talents/';
-        let response;
         try {
-            response = await page.goto(url, {waitUntil: 'domcontentloaded'})
+            await page.goto(url, {waitUntil: 'domcontentloaded'})
             App.log(`Created heroes profile session`);
-            return response._headers['set-cookie'];
+            const cookies = await page.cookies();
+            return `${cookies[0].name}=${cookies[0].value};`
         } catch (ex) {
             App.log(`Error while creating heroes session`, ex);
             if (remainingTrials > 0) {
@@ -171,7 +171,7 @@ exports.Network = {
 
         try {
             await page.goto(url, {waitUntil: 'networkidle0'});
-            result = await page.$('.primary-table > table:nth-child(9)');
+            result = await page.$('.primary-table > table:nth-child(6)');
             await result.screenshot({
                 path: 'images/freeweek.png'
             });
@@ -242,7 +242,7 @@ exports.Network = {
 
         try {
 
-            await page.goto(profileUrl, {waitUntil: 'domcontentloaded'});
+            await page.goto(profileUrl, {waitUntil: 'domcontentloaded', timeout: 60000});
 
             profileData = await page.evaluate((profileUrl) => {
                 const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `(${it.innerText}% win rate)`)
