@@ -270,7 +270,7 @@ exports.Network = {
 
         }
 
-        if (icyData != null) {
+        if (icyData != null && profileData != null) {
             icyData.strongerMaps = icyData.strongerMaps.map(it => {
                 const strongerMap = Maps.findMap(it);
                 return {
