@@ -227,7 +227,7 @@ function assembleGuildData(guild) {
     return [
         {
             name: StringUtils.get('server.name'),
-            value: guild?.name ?? '',
+            value: guild?.name ?? `_ _`,
             inline: false
         },
         {
