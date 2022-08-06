@@ -227,17 +227,17 @@ function assembleGuildData(guild) {
     return [
         {
             name: StringUtils.get('server.name'),
-            value: guild.name ?? '',
+            value: guild?.name ?? '',
             inline: false
         },
         {
             name: StringUtils.get('server.id'),
-            value: guild.id.toString() ?? '0',
+            value: guild?.id?.toString() ?? '0',
             inline: true
         },
         {
             name: StringUtils.get('server.member.count'),
-            value: guild.memberCount.toString() ?? '0',
+            value: guild?.memberCount?.toString() ?? '0',
             inline: true
         }
     ]
