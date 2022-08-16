@@ -1,36 +1,46 @@
 const fs = require('fs');
-const strings = JSON.parse(fs.readFileSync('./data/constant/strings.json'), { encoding: 'utf8', flag: 'r' });
+const {FileService} = require("./file-service");
+const strings = FileService.openJsonSync('./data/constant/strings.json');
 
-exports.StringUtils = {
+exports.StringService = {
 	EN_US: 'en-US',
+
 	PT_BR: 'pt-BR',
 	language: this.EN_US,
 
 	accentsMap: new Map([
 		['A', 'Á|À|Ã|Â|Ä'],
 		['a', 'á|à|ã|â|ä'],
-		['E', 'É|È|Ê|Ë'],
-		['e', 'é|è|ê|ë'],
-		['I', 'Í|Ì|Î|Ï'],
-		['i', 'í|ì|î|ï'],
-		['O', 'Ó|Ò|Ô|Õ|Ö'],
-		['o', 'ó|ò|ô|õ|ö'],
-		['U', 'Ú|Ù|Û|Ü'],
-		['u', 'ú|ù|û|ü'],
 		['C', 'Ç'],
 		['c', 'ç'],
+		['D', 'Đ'],
+		['d', 'đ'],
+		['E', 'É|È|Ẽ|Ẻ|Ẹ|Ê|Ë'],
+		['e', 'é|è|ẽ|ẻ|ẹ|ê|ë'],
+		['I', 'Í|Ì|Ĩ|Ị|Ỉ|Î|Ï'],
+		['i', 'í|ì|ĩ|ị|ỉ|î|ï'],
 		['N', 'Ñ'],
-		['n', 'ñ']
+		['n', 'ñ'],
+		['O', 'Ó|Ò|Õ|Ô|Ö'],
+		['o', 'ó|ò|õ|ô|ö'],
+		['U', 'Ú|Ù|Ũ|Ụ|Ủ|Ũ|Ü'],
+		['u', 'ú|ù|ũ|ụ|ủ|ũ|ü'],
+		['Y', 'Ý|Ỳ|Ỷ|Ỹ|Ỵ'],
+		['y', 'ý|ỳ|ỷ|ỹ|ỵ']
 	]),
+
+	openFile: function(filePath) {
+		return fs.readFileSync(filePath, { encoding: 'utf8', flag: 'r' });
+	},
 
 	get: function (property) {
         let args = Array.prototype.slice.call(arguments, 1);
-        
+
 		if (property != null) {
 			let string = property
 			try {
 				string = Object.values(strings[this.language].find(it => Object.keys(it) == property))[0];
-				args.forEach((it, idx) => {					
+				args.forEach((it, idx) => {
 					string = string.replace(`\{${idx}\}`, args[idx])
 				});
 			} catch (e) {}

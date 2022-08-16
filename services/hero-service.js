@@ -1,32 +1,57 @@
-const fs = require('fs');
 const {App} = require("../app");
-const roles = JSON.parse(fs.readFileSync('./data/constant/roles.json'), {encoding: 'utf8', flag: 'r'});
-const StringUtils = require('./strings.js').StringUtils;
-const heroesBase = JSON.parse(fs.readFileSync('./data/constant/heroes-base.json'), {encoding: 'utf8', flag: 'r'});
+const {FileService} = require("./file-service");
+const roles = FileService.openJsonSync('./data/constant/roles.json');
+const StringService = require('./string-service.js').StringService;
+const heroesBase = FileService.openJsonSync('./data/constant/heroes-base.json');
+const heroesPropertiesDir = './data/constant/heroes-names/';
 let heroesInfos = [];
 let freeHeroes = [];
 let mustBanHeroes = [];
 let compositions = [];
 
 try {
-    heroesInfos = JSON.parse(fs.readFileSync('./data/heroes-infos.json'));
-    mustBanHeroes = JSON.parse(fs.readFileSync('./data/banlist.json'));
-    compositions = JSON.parse(fs.readFileSync('./data/compositions.json'));
-    freeHeroes = JSON.parse(fs.readFileSync('./data/freeweek.json'));
+    heroesInfos = FileService.openJsonSync('./data/heroes-infos.json');
+    mustBanHeroes = FileService.openJsonSync('./data/banlist.json');
+    compositions = FileService.openJsonSync('./data/compositions.json');
+    freeHeroes = FileService.openJsonSync('./data/freeweek.json');
 } catch (e) {
     App.log('error while reading json data', e);
 }
 
-exports.Heroes = {
+exports.HeroService = {
 
     hero: null,
     mustBanHeroes: mustBanHeroes,
     freeHeroes: freeHeroes,
     heroesInfos: heroesInfos,
     compositions: compositions,
+    heroesNamesMap: new Map(),
 
     init: function (command, heroName) {
         return this.assembleReturnMessage(command, heroName);
+    },
+
+    assembleHeroesNames: function() {
+        const heroesNames = [];
+        const folder = FileService.openDir(heroesPropertiesDir);
+        folder.forEach(folderLanguage => {
+            heroesNames.push(
+                JSON.parse(
+                    FileService.openFile(heroesPropertiesDir + folderLanguage + '/heroes.json')
+                )
+            );
+        });
+        heroesNames.forEach(language => {
+            language.forEach(hero => {
+                Object.keys(hero).forEach(key => {
+                    if (this.heroesNamesMap.has(key)) {
+                        this.heroesNamesMap.set(key, this.heroesNamesMap.get(key).concat(`,${hero[key]}`));
+                    } else {
+                        this.heroesNamesMap.set(key, hero[key]);
+                    }
+                });
+            });
+        });
     },
 
     sortByTierPosition: function (a, b) {
@@ -50,22 +75,20 @@ exports.Heroes = {
         return list.sort(this.sortByTierPosition).reverse().map(it => {
             return {
                 name: this.getHeroName(it),
-                score: StringUtils.get('hero.score', it.infos.tierPosition)
+                score: StringService.get('hero.score', it.infos.tierPosition)
             }
         }).splice(0, 12)
     },
 
     findHero: function (searchTerm, searchInfos, evaluateThis) {
-        let hero = heroesBase.find(hero =>
-            hero.name.unaccentClean() === searchTerm.unaccentClean() ||
-            hero.localizedName.unaccentClean() === searchTerm.unaccentClean()
-        );
+        const search = searchTerm.unaccentClean();
+
+        let hero = this.findHeroByName(search);
 
         if (hero == null) {
-            hero = heroesBase.find(hero => hero.accessLink.unaccentClean() === searchTerm.unaccentClean() ||
-                hero.id.unaccentClean() === searchTerm.unaccentClean() ||
-                (hero.name.unaccentClean().includes(searchTerm.unaccentClean()) ||
-                    hero.localizedName.unaccentClean().includes(searchTerm.unaccentClean())));
+            hero = heroesBase.find(hero =>
+                hero.accessLink.unaccentClean() === search ||
+                hero.id.unaccentClean() === search);
         }
 
         if (hero != null && searchInfos)
@@ -74,6 +97,24 @@ exports.Heroes = {
             this.hero = hero;
         }
         return hero
+    },
+
+    findHeroByName(search) {
+        if (this.heroesNamesMap.size === 0) {
+            this.assembleHeroesNames();
+        }
+        let heroProperty = null;
+        for (let [heroProp, heroNames] of this.heroesNamesMap.entries()) {
+            if (heroNames.split(",").find(it => it.unaccentClean() === search || it.unaccentClean().startsWith(search))) {
+                heroProperty = heroProp;
+                break;
+            }
+        }
+
+        if (heroProperty) {
+            return heroesBase.find(hero => hero.propertyName === heroProperty);
+        }
+        return null;
     },
 
     findHeroInfos: function (idParam) {
@@ -96,16 +137,16 @@ exports.Heroes = {
     },
 
     getRoleName: function (roleParam) {
-        return StringUtils.isEn() ? roleParam.name : roleParam.localizedName;
+        return StringService.isEn() ? roleParam.name : roleParam.localizedName;
     },
 
     getHeroName: function (heroParam) {
-        return StringUtils.isEn() ? heroParam.name : heroParam.localizedName;
+        return StringService.isEn() ? heroParam.name : heroParam.localizedName;
     },
 
     getHeroBuilds: function () {
         return {
-            featureName: StringUtils.get('builds'),
+            featureName: StringService.get('builds'),
             builds: this.hero.infos.builds.map(build => {
                 return {
                     name: build.skills,
@@ -130,7 +171,7 @@ exports.Heroes = {
 
     getHeroCounters: function () {
         return {
-            featureName: StringUtils.get('counters'),
+            featureName: StringService.get('counters'),
             featureDescription: this.hero.infos.counters.countersText,
             counter: this.hero.infos.counters.heroes.map(counter => {
                 const hero = this.findHero(counter, true, false);
@@ -145,9 +186,9 @@ exports.Heroes = {
 
     getHeroStrongerMaps: function () {
         return {
-            featureName: StringUtils.get('stronger.maps'),
+            featureName: StringService.get('stronger.maps'),
             strongerMaps: this.hero.infos.strongerMaps.map(strongerMap => {
-                const mapName = StringUtils.isEn() ? strongerMap.name : strongerMap.localizedName;
+                const mapName = StringService.isEn() ? strongerMap.name : strongerMap.localizedName;
                 return {
                     name: "** **",
                     value: mapName,
@@ -159,7 +200,7 @@ exports.Heroes = {
 
     getHeroSynergies: function () {
         return {
-            featureName: StringUtils.get('synergies'),
+            featureName: StringService.get('synergies'),
             featureDescription: this.hero.infos.synergies.synergiesText,
             synergies: this.hero.infos.synergies.heroes.map(synergy => {
                 const hero = this.findHero(synergy, true, false);
@@ -174,34 +215,34 @@ exports.Heroes = {
 
     getHeroTips: function () {
         let tips
-        if (StringUtils.language === 'pt-br') {
+        if (StringService.language === 'pt-br') {
             tips = this.hero.infos.localizedTips ? this.hero.infos.localizedTips : ' ';
         } else {
             tips = this.hero.infos.tips;
         }
 
         return {
-            featureName: StringUtils.get('tips'),
+            featureName: StringService.get('tips'),
             description: tips
         }
     },
 
     getHeroOverview: function () {
         return {
-            featureName: StringUtils.get('overview'),
+            featureName: StringService.get('overview'),
             overview: [
                 {
-                    name: StringUtils.get('role'),
+                    name: StringService.get('role'),
                     value: this.getHeroRole(),
                     inline: false
                 },
                 {
-                    name: StringUtils.get('universe'),
+                    name: StringService.get('universe'),
                     value: this.getHeroUniverse(),
                     inline: true
                 },
                 {
-                    name: StringUtils.get('score'),
+                    name: StringService.get('score'),
                     value: this.getHeroTierPosition().toString(),
                     inline: true
                 }
@@ -387,7 +428,7 @@ exports.Heroes = {
     assembleBanListReturnMessage: function () {
         return {
             data: {
-                featureName: StringUtils.get('suggested.bans'),
+                featureName: StringService.get('suggested.bans'),
                 mustBanHeroes: this.mustBanHeroes.map(ban => {
                     const hero = this.findHero(ban.name, false, false);
                     return {
@@ -404,11 +445,11 @@ exports.Heroes = {
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         return {
             data: {
-                featureName: StringUtils.get('free.heroes'),
-                featureDescription: StringUtils.get('rotation.dates',
-                    new Date(`${this.freeHeroes?.startDate} `).toLocaleDateString(StringUtils.language, options),
-                    new Date(`${this.freeHeroes?.endDate} `).toLocaleDateString(StringUtils.language, options)),
-                freeHeroes: (this.freeHeroes?.heroes?.length <= 0 ? StringUtils.get('no.free.heroes') : this.freeHeroes?.heroes?.map(freeHero => {
+                featureName: StringService.get('free.heroes'),
+                featureDescription: StringService.get('rotation.dates',
+                    new Date(`${this.freeHeroes?.startDate} `).toLocaleDateString(StringService.language, options),
+                    new Date(`${this.freeHeroes?.endDate} `).toLocaleDateString(StringService.language, options)),
+                freeHeroes: (this.freeHeroes?.heroes?.length <= 0 ? StringService.get('no.free.heroes') : this.freeHeroes?.heroes?.map(freeHero => {
                     const hero = this.findHero(freeHero.name, false, false);
                     return {
                         name: this.getHeroName(hero),
@@ -427,17 +468,17 @@ exports.Heroes = {
         if (roleName != null && roleName !== '') {
             role = this.findRoleByName(roleName)
             if (role == null) {
-                return StringUtils.get('role.not.found', roleName);
+                return StringService.get('role.not.found', roleName);
             } else {
-                actualName = StringUtils.isEn() ? role.name : role.localizedName;
+                actualName = StringService.isEn() ? role.name : role.localizedName;
             }
         }
 
-        const str = role !== null ? StringUtils.get('on.role', actualName) : ''
+        const str = role !== null ? StringService.get('on.role', actualName) : ''
 
         return {
             data: {
-                featureName: StringUtils.get('suggested.heroes', str),
+                featureName: StringService.get('suggested.heroes', str),
                 suggestions: this.findHeroesByScore(parseInt(role?.id)).map(it => {
                     return {
                         name: it.name,
@@ -543,8 +584,8 @@ exports.Heroes = {
 
                 return {
                     data: {
-                        featureName: StringUtils.get('suggested.team'),
-                        featureDescription: StringUtils.get('current.team', currentHeroes.map(it => `*${it.name}*`)?.join(', ')),
+                        featureName: StringService.get('suggested.team'),
+                        featureDescription: StringService.get('current.team', currentHeroes.map(it => `*${it.name}*`)?.join(', ')),
                         suggestedHeroes: Array.from(missingRolesMap).map(([rolesArray, heroes]) => {
                             const missingHeroes = heroes.map(it => {
                                 return `${this.getHeroName(it)} - **${this.getRoleName(this.findRoleById(it.role))}**\n`
@@ -565,8 +606,8 @@ exports.Heroes = {
             } else {
                 return {
                     data: {
-                        featureName: StringUtils.get('suggested.team'),
-                        featureDescription: `${StringUtils.get('current.team', Array.from(currentCompHeroes).map(([_, value]) => `${this.getHeroName(value)}`).join(', '))}`,
+                        featureName: StringService.get('suggested.team'),
+                        featureDescription: `${StringService.get('current.team', Array.from(currentCompHeroes).map(([_, value]) => `${this.getHeroName(value)}`).join(', '))}`,
                         suggestedHeroes: Array.from(heroesSorted.splice(0, remainingHeroes)).map(it => {
                             return {
                                 name: this.getHeroName(it),
@@ -607,15 +648,15 @@ exports.Heroes = {
                             data: returnedValues
                         };
                     } else {
-                        reply = StringUtils.get('not.enough.hero.infos', argument);
+                        reply = StringService.get('not.enough.hero.infos', argument);
                     }
                 } else {
-                    reply = StringUtils.get('hero.not.found', argument);
+                    reply = StringService.get('hero.not.found', argument);
                 }
             } else {
-                reply = StringUtils.get('hero.not.found', argument);
+                reply = StringService.get('hero.not.found', argument);
             }
         }
         return reply;
-    }
+    },
 };

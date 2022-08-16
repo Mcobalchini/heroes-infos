@@ -1,5 +1,4 @@
 require('dotenv').config({path: './variables.env'});
-const fs = require("fs");
 const {Client, Intents, MessageEmbed, MessageAttachment} = require('discord.js');
 const bot = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]});
 
@@ -9,10 +8,11 @@ exports.App = {
     log: log,
     writeFile: writeFile,
 };
-const {StringUtils} = require('./services/strings.js');
+const {StringService} = require('./services/string-service.js');
 const {Commands} = require('./services/commands');
 const {Network} = require('./services/network-service.js');
-StringUtils.setup();
+const {FileService} = require("./services/file-service");
+StringService.setup();
 
 function setBotStatus(name, type) {
     bot.user.setActivity(name, {
@@ -40,7 +40,7 @@ function log(text, error) {
 function sendError(errorMessage){
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.LOGS_CHANNEL_ID);
     const reply = {
-        featureName: StringUtils.get('bot.error'),
+        featureName: StringService.get('bot.error'),
         data: errorMessage.message,
     }
     const embed = createEmbed(reply, null, null, null, 'attachment://fire.png');
@@ -53,7 +53,7 @@ function fillFooter(attachment, embeds, footerObj) {
     embeds.forEach(it => {
         if (footerObj) {
             let footer = {
-                text: StringUtils.get('data.from', footerObj.source),
+                text: StringService.get('data.from', footerObj.source),
                 iconURL: footerObj.sourceImage
             }
             it.setFooter(footer)
@@ -80,8 +80,8 @@ function createResponse(reply) {
 
     if (Network.isUpdatingData) {
         let updatingWarningEmbed = createEmbed({
-            featureName: StringUtils.get('note'),
-            message: StringUtils.get('hold.still.updating.data')
+            featureName: StringService.get('note'),
+            message: StringService.get('hold.still.updating.data')
         }, null, null,null, 'attachment://download.png');
 
         embeds.push(updatingWarningEmbed);
@@ -141,7 +141,7 @@ async function handleResponse(args, receivedCommand, msg) {
 
 }
 
-function periodicUpdateCheck(interval) {
+function periodicUpdateCheck() {
     if (Network.isUpdateNeeded()) {
         setBotStatus('Updating', 'WATCHING')
         Network.updateData().then(() => setBotStatus('Heroes of the Storm', 'PLAYING'));
@@ -226,17 +226,17 @@ function isNotReservedKey(key) {
 function assembleGuildData(guild) {
     return [
         {
-            name: StringUtils.get('server.name'),
+            name: StringService.get('server.name'),
             value: guild?.name ?? `_ _`,
             inline: false
         },
         {
-            name: StringUtils.get('server.id'),
+            name: StringService.get('server.id'),
             value: guild?.id?.toString() ?? '0',
             inline: true
         },
         {
-            name: StringUtils.get('server.member.count'),
+            name: StringService.get('server.member.count'),
             value: guild?.memberCount?.toString() ?? '0',
             inline: true
         }
@@ -244,7 +244,7 @@ function assembleGuildData(guild) {
 }
 
 function writeFile (path, obj) {
-    fs.writeFile(path, JSON.stringify(obj), (e) => {
+    FileService.writeFile(path, JSON.stringify(obj), (e) => {
         if (e != null) {
             log(`error while writing file ${path}`, e);
         }
@@ -265,16 +265,14 @@ bot.on('interactionCreate', async interaction => {
 });
 
 bot.once('ready', function () {
-    StringUtils.setLanguage(StringUtils.EN_US);
-    bot.updatedAt = StringUtils.get('not.updated.yet');
+    StringService.setLanguage(StringService.EN_US);
+    bot.updatedAt = StringService.get('not.updated.yet');
     setBotStatus('Heroes of the Storm', 'PLAYING');
     periodicUpdateCheck(true);
     log(`Application ready!`);
     Commands.isUpdateSlashCommandsNeeded().then(needed => {
         if (needed) {
-            Commands.assembleSlashCommands().then(() => {
-                Commands.assembleSlashCommands(true)
-            });
+            Commands.assembleSlashCommands();
         } else {
             log(`Slash commands update not needed`);
         }
@@ -286,7 +284,7 @@ bot.on('guildCreate', guild => {
     log(`Owner id ${guild.ownerId}`);
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.JOIN_SERVER_CHANNEL_ID);
     const embed = createEmbed( {
-            featureName: StringUtils.get('joined.new.server'),
+            featureName: StringService.get('joined.new.server'),
             guildData: assembleGuildData(guild)
         }, null, null, null, guild.iconURL());
     channel?.send(assembleEmbedObject(embed));
@@ -294,11 +292,13 @@ bot.on('guildCreate', guild => {
 
 bot.on('guildDelete', guild => {
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.LEAVE_SERVER_CHANNEL_ID);
-    const embed = createEmbed( {
-            featureName: StringUtils.get('left.server'),
+    if (guild?.name) {
+        const embed = createEmbed({
+            featureName: StringService.get('left.server'),
             guildData: assembleGuildData(guild)
         }, null, null, null, guild.iconURL());
-    channel?.send(assembleEmbedObject(embed));
+        channel?.send(assembleEmbedObject(embed));
+    }
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN);

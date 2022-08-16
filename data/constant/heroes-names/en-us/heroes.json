@@ -1,0 +1,272 @@
+[
+  {
+    "hero.zuljin": "Zul'jin"
+  },
+  {
+    "hero.zagara": "Zagara"
+  },
+  {
+    "hero.valla": "Valla"
+  },
+  {
+    "hero.tychus": "Tychus"
+  },
+  {
+    "hero.tracer": "Tracer"
+  },
+  {
+    "hero.tassadar": "Tassadar"
+  },
+  {
+    "hero.sylvanas": "Sylvanas"
+  },
+  {
+    "hero.sgthammer": "Sgt. Hammer"
+  },
+  {
+    "hero.raynor": "Raynor"
+  },
+  {
+    "hero.probius": "Probius"
+  },
+  {
+    "hero.orphea": "Orphea"
+  },
+  {
+    "hero.nova": "Nova"
+  },
+  {
+    "hero.nazeebo": "Nazeebo"
+  },
+  {
+    "hero.mephisto": "Mephisto"
+  },
+  {
+    "hero.lunara": "Lunara"
+  },
+  {
+    "hero.liming": "Li-Ming"
+  },
+  {
+    "hero.kelthuzad": "Kel'Thuzad"
+  },
+  {
+    "hero.kaelthas": "Kael'thas"
+  },
+  {
+    "hero.junkrat": "Junkrat"
+  },
+  {
+    "hero.jaina": "Jaina"
+  },
+  {
+    "hero.hanzo": "Hanzo"
+  },
+  {
+    "hero.guldan": "Gul'dan"
+  },
+  {
+    "hero.greymane": "Greymane"
+  },
+  {
+    "hero.genji": "Genji"
+  },
+  {
+    "hero.gall": "Gall"
+  },
+  {
+    "hero.fenix": "Fenix"
+  },
+  {
+    "hero.falstad": "Falstad"
+  },
+  {
+    "hero.chromie": "Chromie"
+  },
+  {
+    "hero.cassia": "Cassia"
+  },
+  {
+    "hero.azmodan": "Azmodan"
+  },
+  {
+    "hero.whitemane": "Whitemane"
+  },
+  {
+    "hero.uther": "Uther"
+  },
+  {
+    "hero.tyrande": "Tyrande"
+  },
+  {
+    "hero.stukov": "Stukov"
+  },
+  {
+    "hero.rehgar": "Rehgar"
+  },
+  {
+    "hero.malfurion": "Malfurion"
+  },
+  {
+    "hero.lucio": "Lúcio"
+  },
+  {
+    "hero.ltmorales": "Lt. Morales"
+  },
+  {
+    "hero.lili": "Li Li"
+  },
+  {
+    "hero.kharazim": "Kharazim"
+  },
+  {
+    "hero.deckard": "Deckard"
+  },
+  {
+    "hero.brightwing": "Brightwing"
+  },
+  {
+    "hero.auriel": "Auriel"
+  },
+  {
+    "hero.anduin": "Anduin"
+  },
+  {
+    "hero.ana": "Ana"
+  },
+  {
+    "hero.alexstrasza": "Alexstrasza"
+  },
+  {
+    "hero.zeratul": "Zeratul"
+  },
+  {
+    "hero.valeera": "Valeera"
+  },
+  {
+    "hero.thebutcher": "The Butcher"
+  },
+  {
+    "hero.samuro": "Samuro"
+  },
+  {
+    "hero.qhira": "Qhira"
+  },
+  {
+    "hero.murky": "Murky"
+  },
+  {
+    "hero.maiev": "Maiev"
+  },
+  {
+    "hero.kerrigan": "Kerrigan"
+  },
+  {
+    "hero.illidan": "Illidan"
+  },
+  {
+    "hero.alarak": "Alarak"
+  },
+  {
+    "hero.tyrael": "Tyrael"
+  },
+  {
+    "hero.stitches": "Stitches"
+  },
+  {
+    "hero.muradin": "Muradin"
+  },
+  {
+    "hero.mei": "Mei"
+  },
+  {
+    "hero.malganis": "Mal'Ganis"
+  },
+  {
+    "hero.johanna": "Johanna"
+  },
+  {
+    "hero.garrosh": "Garrosh"
+  },
+  {
+    "hero.etc": "E.T.C."
+  },
+  {
+    "hero.diablo": "Diablo"
+  },
+  {
+    "hero.cho": "Cho"
+  },
+  {
+    "hero.blaze": "Blaze"
+  },
+  {
+    "hero.arthas": "Arthas"
+  },
+  {
+    "hero.anubarak": "Anub'arak"
+  },
+  {
+    "hero.zarya": "Zarya"
+  },
+  {
+    "hero.thelostvikings": "The Lost Vikings"
+  },
+  {
+    "hero.medivh": "Medivh"
+  },
+  {
+    "hero.abathur": "Abathur"
+  },
+  {
+    "hero.yrel": "Yrel"
+  },
+  {
+    "hero.xul": "Xul"
+  },
+  {
+    "hero.varian": "Varian"
+  },
+  {
+    "hero.thrall": "Thrall"
+  },
+  {
+    "hero.sonya": "Sonya"
+  },
+  {
+    "hero.rexxar": "Rexxar"
+  },
+  {
+    "hero.ragnaros": "Ragnaros"
+  },
+  {
+    "hero.malthael": "Malthael"
+  },
+  {
+    "hero.leoric": "Leoric"
+  },
+  {
+    "hero.imperius": "Imperius"
+  },
+  {
+    "hero.hogger": "Hogger"
+  },
+  {
+    "hero.gazlowe": "Gazlowe"
+  },
+  {
+    "hero.dva": "D.Va"
+  },
+  {
+    "hero.dehaka": "Dehaka"
+  },
+  {
+    "hero.deathwing": "Deathwing"
+  },
+  {
+    "hero.chen": "Chen"
+  },
+  {
+    "hero.artanis": "Artanis"
+  }
+]

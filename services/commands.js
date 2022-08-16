@@ -1,55 +1,41 @@
-const fs = require('fs');
 const config = require('../config.json');
-const {StringUtils} = require('./strings.js');
-const {Heroes} = require('./heroes.js');
-const {Maps} = require('./maps.js');
+const {StringService} = require('./string-service.js');
+const {HeroService} = require('./hero-service.js');
+const {Maps} = require('./map-service.js');
 const {Network} = require('./network-service.js');
 const {SlashCommandBuilder} = require('@discordjs/builders');
 const {App} = require('../app.js');
-const commands = JSON.parse(fs.readFileSync('./data/constant/commands.json'),
-    {encoding: 'utf8', flag: 'r'}).commands;
+const {FileService} = require("./file-service");
+const commands = FileService.openJsonSync('./data/constant/commands.json').commands;
 
 exports.Commands = {
 
     findCommand: function (commandName) {
         let clearName = commandName.unaccentClean();
-        let commandEn = commands.find(command => (command.name.unaccentClean() === clearName));
-        let commandBr = commands.find(command => (command.localizedName.unaccentClean() === clearName));
-
-        let language = StringUtils.language;
-        if (commandBr != null) {
-            language = StringUtils.PT_BR;
-        } else if (commandEn != null) {
-            language = StringUtils.EN_US;
-        }
-
-        StringUtils.setLanguage(language);
-
-        return commandEn || commandBr
+        return commands.find(command => (command.name.unaccentClean() === clearName));
     },
 
     getCommandHint: function (command) {
-        return StringUtils.language === 'pt-br' ? command.localizedHint : command.hint;
+        return command.hint;
     },
 
     getCommandName: function (command) {
-        return StringUtils.isEn() ? command.name : command.localizedName;
+        return command.name;
     },
 
     isUpdateSlashCommandsNeeded: async function () {
-        const apiCommands = await Network.getApiCommandsSize();
-        return process.env.UPDATE_COMMANDS === 'true' || ((commands.length * 2) !== apiCommands);
+        const apiCommandsSize = await Network.getApiCommandsSize();
+        return process.env.UPDATE_COMMANDS === 'true' || (commands.length !== apiCommandsSize);
     },
 
-    assembleSlashCommands: async function (localized = false) {
-        App.log(`Started refreshing application (/) commands. ${localized}`);
-        let language = localized ? StringUtils.PT_BR : StringUtils.EN_US;
-        StringUtils.setLanguage(language);
+    assembleSlashCommands: async function () {
+        App.log(`Started refreshing application (/) commands.`);
+        StringService.setLanguage(StringService.EN_US);
 
         try {
             for (let it of commands) {
-                let name = localized ? it.localizedName.unaccent() : it.name;
-                let description = localized ? it.localizedHint : it.hint;
+                let name = it.name;
+                let description = it.hint;
 
                 let commandSlashBuilder = new SlashCommandBuilder()
                     .setName(name.toLowerCase())
@@ -60,7 +46,7 @@ exports.Commands = {
                     if (it.paramOptions) {
                         const options = it.paramOptions.map(param => {
                             return {
-                                name: StringUtils.getWithoutNewLine(param.description).toLowerCase(),
+                                name: StringService.getWithoutNewLine(param.description).toLowerCase(),
                                 value: param.name
                             }
                         });
@@ -71,24 +57,24 @@ exports.Commands = {
                                 .addChoices(...options)
                         );
                     } else {
-                        let argumentName = StringUtils.getWithoutNewLine('argument').toLowerCase();
-                        let descriptionArgument = StringUtils.getWithoutNewLine('some.name');
+                        let argumentName = StringService.getWithoutNewLine('argument').toLowerCase();
+                        let descriptionArgument = StringService.getWithoutNewLine('some.name');
                         let requiredParameter = false;
 
                         if (it.category === 'HEROES') {
-                            argumentName = StringUtils.getWithoutNewLine('hero').toLowerCase();
-                            descriptionArgument = StringUtils.getWithoutNewLine('hero.name.or.part.of.name');
+                            argumentName = StringService.getWithoutNewLine('hero').toLowerCase();
+                            descriptionArgument = StringService.getWithoutNewLine('hero.name.or.part.of.name');
 
                             if (it.name === 'Suggest') {
-                                argumentName = StringUtils.getWithoutNewLine('role').toLowerCase();
-                                descriptionArgument = StringUtils.getWithoutNewLine('role');
+                                argumentName = StringService.getWithoutNewLine('role').toLowerCase();
+                                descriptionArgument = StringService.getWithoutNewLine('role');
                             }
                         } else if (it.category === 'MAP') {
-                            argumentName = StringUtils.getWithoutNewLine('map').toLowerCase();
-                            descriptionArgument = StringUtils.getWithoutNewLine('map.name.or.part.of.name');
+                            argumentName = StringService.getWithoutNewLine('map').toLowerCase();
+                            descriptionArgument = StringService.getWithoutNewLine('map.name.or.part.of.name');
                         } else if (it.name === 'Help') {
-                            argumentName = StringUtils.getWithoutNewLine('command').toLowerCase();
-                            descriptionArgument = StringUtils.getWithoutNewLine('command');
+                            argumentName = StringService.getWithoutNewLine('command').toLowerCase();
+                            descriptionArgument = StringService.getWithoutNewLine('command');
                         }
 
                         if (it.requiredParam) {
@@ -105,9 +91,9 @@ exports.Commands = {
                 await Network.postSlashCommandsToAPI(commandSlashBuilder);
             }
 
-            App.log(`Successfully reloaded application (/) commands. ${localized}`);
+            App.log(`Successfully reloaded application (/) commands.`);
         } catch (error) {
-            App.log(`Error while reloading / commands ${localized}`, error);
+            App.log(`Error while reloading / commands`, error);
         }
     },
 
@@ -116,7 +102,7 @@ exports.Commands = {
         let command = this.findCommand(receivedCommand);
         if (command != null && this.isCommandAllowed(msg, command)) {
             if (command.category === 'HEROES') {
-                reply = Heroes.init(command, args);
+                reply = HeroService.init(command, args);
             } else if (command.name === 'BotInfo') {
                 reply = this.assembleBotInfosReturnMessage();
             } else if (command.name === 'Map') {
@@ -127,17 +113,17 @@ exports.Commands = {
                 reply = await this.assembleNewsReturnMessage();
             } else if (command.name === 'Update') {
                 if (Network.isUpdatingData) {
-                    reply = StringUtils.get('hold.still.updating');
+                    reply = StringService.get('hold.still.updating');
                 } else {
                     App.setBotStatus('Updating', 'WATCHING');
                     Network.updateData(args);
-                    reply = StringUtils.get('update.process.started');
+                    reply = StringService.get('update.process.started');
                 }
             } else {
-                reply = StringUtils.get('command.not.exists', receivedCommand);
+                reply = StringService.get('command.not.exists', receivedCommand);
             }
         } else {
-            reply = StringUtils.get('command.not.exists', receivedCommand);
+            reply = StringService.get('command.not.exists', receivedCommand);
         }
 
         if (command && command.source){
@@ -170,17 +156,17 @@ exports.Commands = {
                 reply += `${this.getCommandHint(command)}`;
                 if (command.acceptParams) {
                     list = [{
-                        name: StringUtils.get('example'),
-                        value: StringUtils.get('command.example', '/', this.getCommandName(command).toLowerCase()),
+                        name: StringService.get('example'),
+                        value: StringService.get('command.example', '/', this.getCommandName(command).toLowerCase()),
                         inline: true
                     }]
                 }
             } else {
-                reply = StringUtils.get('command.not.exists', commandAsked);
+                reply = StringService.get('command.not.exists', commandAsked);
             }
         } else {
 
-            reply = StringUtils.get('available.commands.are');
+            reply = StringService.get('available.commands.are');
             list = commands.filter(command => this.isCommandAllowed(msg, command)).map(it => {
                 const name = this.getCommandName(it);
                 return {
@@ -190,25 +176,25 @@ exports.Commands = {
                 };
             })
 
-            commandInfos = StringUtils.get('all.commands.supported.both.languages');
-            commandInfos += StringUtils.get('all.data.gathered.from');
+            commandInfos = StringService.get('all.commands.supported.both.languages');
+            commandInfos += StringService.get('all.data.gathered.from');
             commandInfos += 'https://www.icy-veins.com/heroes/\n';
             commandInfos += 'https://www.heroesprofile.com\n';
             commandInfos += 'https://nexuscompendium.com\n';
             commandInfos += 'https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2\n';
-            commandInfos += StringUtils.get('if.want.to.know.more.about.specific.command');
-            commandInfos += StringUtils.get('version', config.version);
+            commandInfos += StringService.get('if.want.to.know.more.about.specific.command');
+            commandInfos += StringService.get('version', config.version);
         }
 
         const responseData = {
-            featureName: StringUtils.get('help'),
+            featureName: StringService.get('help'),
             featureDescription: reply,
             list: list
         };
 
         if (commandInfos?.length) {
             responseData.commandInfos = {
-                featureName: StringUtils.get('help'),
+                featureName: StringService.get('help'),
                 featureDescription: commandInfos,
             };
         }
@@ -220,7 +206,7 @@ exports.Commands = {
     },
 
     assembleBotInfosReturnMessage: function () {
-        let reply = StringUtils.get('some.infos.about.me');
+        let reply = StringService.get('some.infos.about.me');
 
         let totalSeconds = (App.bot.uptime / 1000);
         const days = Math.floor(totalSeconds / 86400);
@@ -229,27 +215,27 @@ exports.Commands = {
         totalSeconds %= 3600;
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = Math.floor(totalSeconds % 60);
-        const uptime = StringUtils.get('uptime.string', days, hours, minutes, seconds);
+        const uptime = StringService.get('uptime.string', days, hours, minutes, seconds);
         const servers = App.bot.guilds._cache;
         App.log(`Servers. ${servers.map(it => it.name )}`);
         let list = [
             {
-                name: StringUtils.get('im.on'),
-                value: StringUtils.get('number.of.servers', servers.size.toString()),
+                name: StringService.get('im.on'),
+                value: StringService.get('number.of.servers', servers.size.toString()),
                 inline: true
             },
             {
-                name: StringUtils.get('online.for'),
+                name: StringService.get('online.for'),
                 value: uptime,
                 inline: false
             },
             {
-                name: StringUtils.get('last.time.database.updated'),
+                name: StringService.get('last.time.database.updated'),
                 value: App.bot.updatedAt,
                 inline: false
             },
             {
-                name: StringUtils.get('my.invitation.link.is'),
+                name: StringService.get('my.invitation.link.is'),
                 value: `https://discord.com/api/oauth2/authorize?client_id=${process.env.CLIENT_ID}&permissions=277025508352&scope=applications.commands%20bot`,
                 inline: false
             }
@@ -258,7 +244,7 @@ exports.Commands = {
 
         return {
             data: {
-                featureName: StringUtils.get('bot.general.information'),
+                featureName: StringService.get('bot.general.information'),
                 featureDescription: reply,
                 list: list,
             },
@@ -271,7 +257,7 @@ exports.Commands = {
             returnedNews => {
                 return {
                     data: {
-                        featureName: StringUtils.get('news'),
+                        featureName: StringService.get('news'),
                         news: returnedNews.map(it => {
                             return {
                                 name: it.header,
