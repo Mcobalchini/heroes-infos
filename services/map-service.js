@@ -1,9 +1,9 @@
 const {FileService} = require("./file-service");
 let HeroService = require('./hero-service.js').HeroService;
-const mapService = FileService.openJsonSync('./data/constant/maps.json');
+const maps = FileService.openJsonSync('./data/constant/maps.json');
 const StringService = require('./string-service.js').StringService;
 
-exports.Maps = {
+exports.MapService = {
 
     init: function (mapName) {
         if (mapName != null && mapName.trim().length > 0) {
@@ -21,13 +21,13 @@ exports.Maps = {
             }
             return StringService.get('map.not.found');
         } else {
-            return this.assembleMapReturnMessage({map: mapService.map(it => it), heroes: []})
+            return this.assembleMapReturnMessage({map: maps.map(it => it), heroes: []})
         }
     },
 
     findMap: function (mapName) {
         let mapLowerCase = mapName.unaccentClean();
-        return mapService.find(map =>
+        return maps.find(map =>
             mapLowerCase.length > 2 &&
             ((map.name.unaccentClean() === mapLowerCase ||
                     map.localizedName.unaccentClean() === mapLowerCase) ||

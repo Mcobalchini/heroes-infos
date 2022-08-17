@@ -1,6 +1,6 @@
 require('dotenv').config({path: './variables.env'});
 const HeroService = require('./hero-service.js').HeroService;
-const Maps = require('./map-service.js').Maps;
+const MapService = require('./map-service.js').MapService;
 const puppeteer = require('puppeteer');
 const PromisePool = require('es6-promise-pool');
 const {Routes} = require('discord-api-types/v9');
@@ -264,7 +264,7 @@ exports.Network = {
 
         if (icyData != null && profileData != null) {
             icyData.strongerMaps = icyData.strongerMaps.map(it => {
-                const strongerMap = Maps.findMap(it);
+                const strongerMap = MapService.findMap(it);
                 return {
                     name: strongerMap.name,
                     localizedName: strongerMap.localizedName

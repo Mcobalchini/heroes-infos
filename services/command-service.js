@@ -1,7 +1,7 @@
 const config = require('../config.json');
 const {StringService} = require('./string-service.js');
 const {HeroService} = require('./hero-service.js');
-const {Maps} = require('./map-service.js');
+const {MapService} = require('./map-service.js');
 const {Network} = require('./network-service.js');
 const {SlashCommandBuilder} = require('@discordjs/builders');
 const {App} = require('../app.js');
@@ -112,7 +112,7 @@ exports.CommandService = {
             } else if (command.name === 'BotInfo') {
                 reply = this.assembleBotInfosReturnMessage();
             } else if (command.name === 'Map') {
-                reply = Maps.init(args);
+                reply = MapService.init(args);
             } else if (command.name === 'Help') {
                 reply = this.assembleHelpReturnMessage(msg, args);
             } else if (command.name === 'News') {
