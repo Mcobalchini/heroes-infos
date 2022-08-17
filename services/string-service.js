@@ -3,7 +3,6 @@ const strings = FileService.openJsonSync('./data/constant/strings.json');
 
 exports.StringService = {
     EN_US: 'en-US',
-    language: this.EN_US,
 
     accentsMap: new Map([
         ['A', 'Á|À|Ã|Â|Ä'],

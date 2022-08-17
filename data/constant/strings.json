@@ -3,7 +3,7 @@
     "update.process.started": "The update process has started..."
   },
   {
-    "hold.still.updating.data": "Hold still, i'm updating heroes data"
+    "hold.still.updating.data": "Hold still, I'm updating heroes data"
   },
   {
     "command.not.exists": "The command {0} does not exists!\nType /help to know more about commands"
@@ -12,7 +12,7 @@
     "available.commands.are": "The available commands are:"
   },
   {
-    "all.commands.supported.both.languages": "\nAll the commands above supports both english and portuguese languages"
+    "all.commands.supported.both.languages": "\nAll the commands above supports only english language, but the arguments can be passed in spanish, portuguese and korean"
   },
   {
     "all.data.gathered.from": "All the data shown here is gathered from"

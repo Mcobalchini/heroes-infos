@@ -443,8 +443,8 @@ exports.HeroService = {
             data: {
                 featureName: StringService.get('free.heroes'),
                 featureDescription: StringService.get('rotation.dates',
-                    new Date(`${this.freeHeroes?.startDate} `).toLocaleDateString(StringService.language, options),
-                    new Date(`${this.freeHeroes?.endDate} `).toLocaleDateString(StringService.language, options)),
+                    new Date(`${this.freeHeroes?.startDate} `).toLocaleDateString(StringService.EN_US, options),
+                    new Date(`${this.freeHeroes?.endDate} `).toLocaleDateString(StringService.EN_US, options)),
                 freeHeroes: (this.freeHeroes?.heroes?.length <= 0 ? StringService.get('no.free.heroes') : this.freeHeroes?.heroes?.map(freeHero => {
                     const hero = this.findHero(freeHero.name, false, false);
                     return {

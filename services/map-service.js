@@ -31,8 +31,8 @@ exports.MapService = {
             mapLowerCase.length > 2 &&
             ((map.name.unaccentClean() === mapLowerCase ||
                     map.localizedName.unaccentClean() === mapLowerCase) ||
-                (map.name.unaccentClean().startsWith(mapLowerCase) ||
-                    map.localizedName.unaccentClean().startsWith(mapLowerCase))));
+                (map.name.unaccentClean().includes(mapLowerCase) ||
+                    map.localizedName.unaccentClean().includes(mapLowerCase))));
     },
 
     getMapName: function (map) {
@@ -56,7 +56,7 @@ exports.MapService = {
                 }
             });
         } else {
-            featureName = StringService.get('available.mapService');
+            featureName = StringService.get('available.maps');
             array = args.map.map(map => {
                 const name = this.getMapName(map);
                 return {
