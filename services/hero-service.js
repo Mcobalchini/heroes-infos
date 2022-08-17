@@ -2,7 +2,7 @@ const {App} = require("../app");
 const {FileService} = require("./file-service");
 const roles = FileService.openJsonSync('./data/constant/roles.json');
 const StringService = require('./string-service.js').StringService;
-const heroesBase = FileService.openJsonSync('./data/constant/heroes-base.json');
+const heroesBase = FileService.openJsonSync('./data/constant/heroes-base.json').sort((a, b) => a.name.localeCompare(b.name));
 const heroesPropertiesDir = './data/constant/heroes-names/';
 let heroesInfos = [];
 let freeHeroes = [];
@@ -31,7 +31,7 @@ exports.HeroService = {
         return this.assembleReturnMessage(command, heroName);
     },
 
-    assembleHeroesNames: function() {
+    assembleHeroesNames: function () {
         const heroesNames = [];
         const folder = FileService.openDir(heroesPropertiesDir);
         folder.forEach(folderLanguage => {
@@ -99,22 +99,26 @@ exports.HeroService = {
         return hero
     },
 
-    findHeroByName(search) {
+    findHeroByName: function (search) {
+        let hero = heroesBase.find(heroInfo =>
+            heroInfo.name.unaccentClean() === search ||
+            heroInfo.name.unaccentClean().includes(search)
+        );
+        return hero ? hero : this.findHeroByPropertyName(search);
+    },
+
+    findHeroByPropertyName: function (search) {
         if (this.heroesNamesMap.size === 0) {
             this.assembleHeroesNames();
         }
         let heroProperty = null;
         for (let [heroProp, heroNames] of this.heroesNamesMap.entries()) {
-            if (heroNames.split(",").find(it => it.unaccentClean() === search || it.unaccentClean().startsWith(search))) {
+            if (heroNames.split(",").find(it => it.unaccentClean() === search || it.unaccentClean().includes(search))) {
                 heroProperty = heroProp;
                 break;
             }
         }
-
-        if (heroProperty) {
-            return heroesBase.find(hero => hero.propertyName === heroProperty);
-        }
-        return null;
+        return heroProperty ? heroesBase.find(hero => hero.propertyName === heroProperty) : null;
     },
 
     findHeroInfos: function (idParam) {
@@ -137,11 +141,11 @@ exports.HeroService = {
     },
 
     getRoleName: function (roleParam) {
-        return StringService.isEn() ? roleParam.name : roleParam.localizedName;
+        return roleParam.name;
     },
 
     getHeroName: function (heroParam) {
-        return StringService.isEn() ? heroParam.name : heroParam.localizedName;
+        return heroParam.name;
     },
 
     getHeroBuilds: function () {
@@ -188,10 +192,9 @@ exports.HeroService = {
         return {
             featureName: StringService.get('stronger.maps'),
             strongerMaps: this.hero.infos.strongerMaps.map(strongerMap => {
-                const mapName = StringService.isEn() ? strongerMap.name : strongerMap.localizedName;
                 return {
                     name: "** **",
-                    value: mapName,
+                    value: strongerMap.name,
                     inline: true
                 }
             })
@@ -214,16 +217,9 @@ exports.HeroService = {
     },
 
     getHeroTips: function () {
-        let tips
-        if (StringService.language === 'pt-br') {
-            tips = this.hero.infos.localizedTips ? this.hero.infos.localizedTips : ' ';
-        } else {
-            tips = this.hero.infos.tips;
-        }
-
         return {
             featureName: StringService.get('tips'),
-            description: tips
+            description: this.hero.infos.tips
         }
     },
 
@@ -442,7 +438,7 @@ exports.HeroService = {
     },
 
     assembleFreeWeekHeroesReturnMessage: function () {
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'};
         return {
             data: {
                 featureName: StringService.get('free.heroes'),
@@ -464,17 +460,14 @@ exports.HeroService = {
 
     assembleSuggestHeroesReturnMessage: function (roleName) {
         let role = null;
-        let actualName = null;
         if (roleName != null && roleName !== '') {
             role = this.findRoleByName(roleName)
             if (role == null) {
                 return StringService.get('role.not.found', roleName);
-            } else {
-                actualName = StringService.isEn() ? role.name : role.localizedName;
             }
         }
 
-        const str = role !== null ? StringService.get('on.role', actualName) : ''
+        const str = role !== null ? StringService.get('on.role', role.name) : ''
 
         return {
             data: {

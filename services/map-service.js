@@ -17,7 +17,7 @@ exports.Maps = {
                         heroes: bestHeroes.sort(HeroService.sortByTierPosition)
                     });
                 }
-                return StringService.get('no.best.heroes.for.map', this.getMapName(map));
+                return StringService.get('no.best.heroes.for.map', map.name);
             }
             return StringService.get('map.not.found');
         } else {
@@ -36,7 +36,7 @@ exports.Maps = {
     },
 
     getMapName: function (map) {
-        return StringService.isEn() ? map.name : map.localizedName;
+        return map.name;
     },
 
     assembleMapReturnMessage: function (args) {
@@ -47,7 +47,7 @@ exports.Maps = {
 
             args.heroes.forEach(obj => map.get(obj.role).push(obj));
 
-            featureName = StringService.get('stronger.map.heroes', this.getMapName(args.map));
+            featureName = StringService.get('stronger.map.heroes', args.map.name);
             array = Array.from(map).map(([key, value]) => {
                 return {
                     name: HeroService.getRoleName(HeroService.findRoleById(key)),

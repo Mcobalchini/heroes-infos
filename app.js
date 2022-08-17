@@ -1,6 +1,8 @@
 require('dotenv').config({path: './variables.env'});
-const {Client, Intents, MessageEmbed, MessageAttachment} = require('discord.js');
-const bot = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]});
+const {Client, EmbedBuilder, AttachmentBuilder, IntentsBitField} = require('discord.js');
+const myIntents = new IntentsBitField();
+myIntents.add(IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages);
+const bot = new Client({ intents: myIntents });
 
 exports.App = {
     setBotStatus: setBotStatus,
@@ -9,7 +11,7 @@ exports.App = {
     writeFile: writeFile,
 };
 const {StringService} = require('./services/string-service.js');
-const {Commands} = require('./services/commands');
+const {CommandService} = require('./services/command-service.js');
 const {Network} = require('./services/network-service.js');
 const {FileService} = require("./services/file-service");
 StringService.setup();
@@ -91,11 +93,11 @@ function createResponse(reply) {
 
 function fillAttachments(embeds) {
     const files = new Map();
-    files.set('footer.png', new MessageAttachment('images/footer.png', 'attachment://footer.png'));
+    files.set('footer.png', new AttachmentBuilder('images/footer.png', 'attachment://footer.png'));
     embeds.forEach(it => {
-        addToMap(files, it.image?.url);
-        addToMap(files, it.thumbnail?.url);
-        addToMap(files, it.author?.iconURL);
+        addToMap(files, it.data.image?.url);
+        addToMap(files, it.data.thumbnail?.url);
+        addToMap(files, it.data.author?.iconURL);
     });
     return Array.from(files.values());
 }
@@ -108,7 +110,7 @@ function addToMap(fileMap, property) {
     if (property != null) {
         const fileName = removeAttachmenPrefix(property);
         if (!fileName.includes('http') && fileName.length > 0 && !fileMap.has(fileName))
-            fileMap.set(fileName, new MessageAttachment(`images/${fileName}`, fileName));
+            fileMap.set(fileName, new AttachmentBuilder(`images/${fileName}`, fileName));
     }
 }
 
@@ -124,7 +126,7 @@ function assembleEmbedObject(embeds) {
 
 async function handleResponse(args, receivedCommand, msg) {
     try {
-        let reply = await Commands.handleCommand(args, receivedCommand, msg);
+        let reply = await CommandService.handleCommand(args, receivedCommand, msg);
         let replyObject = assembleEmbedObject(createResponse(reply));
 
         if (msg.isCommand) {
@@ -172,10 +174,10 @@ function createEmbed(replyObject, authorName, authorUrl, authorIcon, thumbnail) 
         iconURL: authorIcon
     }
 
-    let featureDesc = replyObject.featureDescription ? replyObject.featureDescription : '';
+    let featureDesc = replyObject.featureDescription ? replyObject.featureDescription : '_ _';
     let image = replyObject.image ? replyObject.image.replace('images/', 'attachment://') : 'attachment://footer.png';
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
         .setColor('#0099ff')
         .setTitle(replyObject.featureName)
         .setAuthor(author)
@@ -265,19 +267,17 @@ bot.on('interactionCreate', async interaction => {
 });
 
 bot.once('ready', function () {
-    StringService.setLanguage(StringService.EN_US);
     bot.updatedAt = StringService.get('not.updated.yet');
     setBotStatus('Heroes of the Storm', 'PLAYING');
     periodicUpdateCheck(true);
     log(`Application ready!`);
-    Commands.isUpdateSlashCommandsNeeded().then(needed => {
+    CommandService.isUpdateSlashCommandsNeeded().then(needed => {
         if (needed) {
-            Commands.assembleSlashCommands();
+            CommandService.updateSlashCommands();
         } else {
             log(`Slash commands update not needed`);
         }
     });
-
 });
 
 bot.on('guildCreate', guild => {

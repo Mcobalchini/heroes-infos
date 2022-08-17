@@ -1,242 +1,242 @@
 [
-    {
-        "update.process.started": "The update process has started..."
-    },
-    {
-        "hold.still.updating.data": "Hold still, i'm updating heroes data"
-    },
-    {
-        "command.not.exists": "The command {0} does not exists!\nType /help to know more about commands"
-    },
-    {
-        "available.commands.are": "The available commands are:"
-    },
-    {
-        "all.commands.supported.both.languages": "\nAll the commands above supports both english and portuguese languages"
-    },
-    {
-        "all.data.gathered.from": "All the data shown here is gathered from"
-    },
-    {
-        "if.want.to.know.more.about.specific.command": "If you want to know more about an specific command, type /help [command_name]"
-    },
-    {
-        "version": "Version {0}"
-    },
-    {
-        "hero.not.found": "The hero _{0}_ was not found"
-    },
-    {
-        "is.a": "{0} is a {1}"
-    },
-    {
-        "from.universe": "from {0} universe"
-    },
-    {
-        "currently.on.tier": "currently on {0} tier position"
-    },
-    {
-        "countered.by": "{0} is countered by "
-    },
-    {
-        "synergizes.with": "{0} synergizes with"
-    },
-    {
-        "usually.stronger.on.maps": "{0} is usually stronger on these maps"
-    },
-    {
-        "tips.for": "Here are some pro tips for {0}"
-    },
-    {
-        "could.not.update.data.try.again": "I couldn't update the heroes data due to an error, try again later"
-    },
-    {
-        "try.to.update.again": "\nI'll try to update data again anyway"
-    },
-    {
-        "hold.still.updating": "Hold still, I'm updating heroes data"
-    },
-    {
-        "exception.occurred": "An exception occurred! {0}"
-    },
-    {
-        "process.update.finished.time": "The update process has finished in {0} seconds"
-    },
-    {
-        "example": "Exemple"
-    },
-    {
-        "command": "Command"
-    },
-    {
-        "some.name": "Some name"
-    },
-    {
-        "command.example": "{0}{1} [argument]"
-    },
-    {
-        "no.free.heroes": "There are no free heroes yet ¯\\_(ツ)_/¯"
-    },
-    {
-        "free.heroes": "These are the currently free rotation heroes"
-    },
-    {
-        "suggested.heroes": "Suggested heroes {0}"
-    },
-    {
-        "on.role": "on role {0}"
-    },
-    {
-        "role.not.found": "The role {0} was not found"
-    },
-    {
-        "suggested.bans": "Suggested bans"
-    },
-    {
-        "available.builds": "Available build(s) for {0}"
-    },
-    {
-        "builds": "Builds"
-    },
-    {
-        "synergies": "Synergies"
-    },
-    {
-        "counters": "Counters"
-    },
-    {
-        "stronger.maps": "Stronger Maps"
-    },
-    {
-        "tier.position": "Tier Position"
-    },
-    {
-        "universe": "Universe"
-    },
-    {
-        "role": "Role"
-    },
-    {
-        "tips": "Tips"
-    },
-    {
-        "score": "Score"
-    },
-    {
-        "hero.score": "Score {0}"
-    },
-    {
-        "current.team": "Your current composition is {0}\nhere are some comp suggestions for you to try"
-    },
-    {
-        "suggested.team": "Team composition suggestion"
-    },
-    {
-        "stronger.map.heroes": "These are the heroes that are usually stronger on {0}"
-    },
-    {
-        "available.maps": "These are the available maps"
-    },
-    {
-        "map.not.found": "The specified map was not found\nType \"\\map <name of the map>\" to get a full list with all the available maps"
-    },
-    {
-        "no.best.heroes.for.map": "There are no best heroes for the map {0}"
-    },
-    {
-        "help": "Help"
-    },
-    {
-        "overview": "Overview"
-    },
-    {
-        "news": "News"
-    },
-    {
-        "hero": "Hero"
-    },
-    {
-        "map": "Map"
-    },
-    {
-        "not.enough.hero.infos": "There was not enough info found for the hero {0}"
-    },
-    {
-        "hero.name.or.part.of.name": "Hero name or part of its name"
-    },
-    {
-        "map.name.or.part.of.name": "Map name or part of its name"
-    },
-    {
-        "argument": "Argument"
-    },
-    {
-        "some.infos.about.me": "Some infos about me"
-    },
-    {
-        "uptime.string": "{0} day(s), {1} hour(s), {2} minute(s) and {3} second(s)"
-    },
-    {
-        "bot.general.information": "Bot general information"
-    },
-    {
-        "last.time.database.updated": "Last time my database was updated"
-    },
-    {
-        "online.for": "I'm online for"
-    },
-    {
-        "im.on": "I'm on"
-    },
-    {
-        "number.of.servers": "{0} servers"
-    },
-    {
-        "my.invitation.link.is": "My invitation link is"
-    },
-    {
-        "not.updated.yet": "Not updated yet"
-    },
-    {
-        "mention.me": "Hello there, to find out what I can do, type `/help`"
-    },
-    {
-        "data.from": "Data from {0}"
-    },
-    {
-        "bot.error": "An exception has ocurred!"
-    },
-    {
-        "left.server": "I left a server :cry:"
-    },
-    {
-        "joined.new.server": "I joined a new server! :partying_face:"
-    },
-    {
-        "server.name": "Server name"
-    },
-    {
-        "server.id": "Server ID"
-    },
-    {
-        "server.member.count": "Member count"
-    },
-    {
-        "note": "Note"
-    },
-    {
-        "rotation.dates": "From {0} to {1}"
-    },
-    {
-        "rotation": "Rotation"
-    },
-    {
-        "updates.rotation": "Updates rotation"
-    },
-    {
-        "everything": "Everything"
-    },
-    {
-        "updates.everything": "Updates everything"
-    }
+  {
+    "update.process.started": "The update process has started..."
+  },
+  {
+    "hold.still.updating.data": "Hold still, i'm updating heroes data"
+  },
+  {
+    "command.not.exists": "The command {0} does not exists!\nType /help to know more about commands"
+  },
+  {
+    "available.commands.are": "The available commands are:"
+  },
+  {
+    "all.commands.supported.both.languages": "\nAll the commands above supports both english and portuguese languages"
+  },
+  {
+    "all.data.gathered.from": "All the data shown here is gathered from"
+  },
+  {
+    "if.want.to.know.more.about.specific.command": "If you want to know more about an specific command, type /help [command_name]"
+  },
+  {
+    "version": "Version {0}"
+  },
+  {
+    "hero.not.found": "The hero _{0}_ was not found"
+  },
+  {
+    "is.a": "{0} is a {1}"
+  },
+  {
+    "from.universe": "from {0} universe"
+  },
+  {
+    "currently.on.tier": "currently on {0} tier position"
+  },
+  {
+    "countered.by": "{0} is countered by "
+  },
+  {
+    "synergizes.with": "{0} synergizes with"
+  },
+  {
+    "usually.stronger.on.maps": "{0} is usually stronger on these maps"
+  },
+  {
+    "tips.for": "Here are some pro tips for {0}"
+  },
+  {
+    "could.not.update.data.try.again": "I couldn't update the heroes data due to an error, try again later"
+  },
+  {
+    "try.to.update.again": "\nI'll try to update data again anyway"
+  },
+  {
+    "hold.still.updating": "Hold still, I'm updating heroes data"
+  },
+  {
+    "exception.occurred": "An exception occurred! {0}"
+  },
+  {
+    "process.update.finished.time": "The update process has finished in {0} seconds"
+  },
+  {
+    "example": "Exemple"
+  },
+  {
+    "command": "Command"
+  },
+  {
+    "some.name": "Some name"
+  },
+  {
+    "command.example": "{0}{1} [argument]"
+  },
+  {
+    "no.free.heroes": "There are no free heroes yet ¯\\_(ツ)_/¯"
+  },
+  {
+    "free.heroes": "These are the currently free rotation heroes"
+  },
+  {
+    "suggested.heroes": "Suggested heroes {0}"
+  },
+  {
+    "on.role": "on role {0}"
+  },
+  {
+    "role.not.found": "The role {0} was not found"
+  },
+  {
+    "suggested.bans": "Suggested bans"
+  },
+  {
+    "available.builds": "Available build(s) for {0}"
+  },
+  {
+    "builds": "Builds"
+  },
+  {
+    "synergies": "Synergies"
+  },
+  {
+    "counters": "Counters"
+  },
+  {
+    "stronger.maps": "Stronger Maps"
+  },
+  {
+    "tier.position": "Tier Position"
+  },
+  {
+    "universe": "Universe"
+  },
+  {
+    "role": "Role"
+  },
+  {
+    "tips": "Tips"
+  },
+  {
+    "score": "Score"
+  },
+  {
+    "hero.score": "Score {0}"
+  },
+  {
+    "current.team": "Your current composition is {0}\nhere are some comp suggestions for you to try"
+  },
+  {
+    "suggested.team": "Team composition suggestion"
+  },
+  {
+    "stronger.map.heroes": "These are the heroes that are usually stronger on {0}"
+  },
+  {
+    "available.maps": "These are the available maps"
+  },
+  {
+    "map.not.found": "The specified map was not found\nType \"\\map <name of the map>\" to get a full list with all the available maps"
+  },
+  {
+    "no.best.heroes.for.map": "There are no best heroes for the map {0}"
+  },
+  {
+    "help": "Help"
+  },
+  {
+    "overview": "Overview"
+  },
+  {
+    "news": "News"
+  },
+  {
+    "hero": "Hero"
+  },
+  {
+    "map": "Map"
+  },
+  {
+    "not.enough.hero.infos": "There was not enough info found for the hero {0}"
+  },
+  {
+    "hero.name.or.part.of.name": "Hero name or part of its name"
+  },
+  {
+    "map.name.or.part.of.name": "Map name or part of its name"
+  },
+  {
+    "argument": "Argument"
+  },
+  {
+    "some.infos.about.me": "Some infos about me"
+  },
+  {
+    "uptime.string": "{0} day(s), {1} hour(s), {2} minute(s) and {3} second(s)"
+  },
+  {
+    "bot.general.information": "Bot general information"
+  },
+  {
+    "last.time.database.updated": "Last time my database was updated"
+  },
+  {
+    "online.for": "I'm online for"
+  },
+  {
+    "im.on": "I'm on"
+  },
+  {
+    "number.of.servers": "{0} servers"
+  },
+  {
+    "my.invitation.link.is": "My invitation link is"
+  },
+  {
+    "not.updated.yet": "Not updated yet"
+  },
+  {
+    "mention.me": "Hello there, to find out what I can do, type `/help`"
+  },
+  {
+    "data.from": "Data from {0}"
+  },
+  {
+    "bot.error": "An exception has ocurred!"
+  },
+  {
+    "left.server": "I left a server :cry:"
+  },
+  {
+    "joined.new.server": "I joined a new server! :partying_face:"
+  },
+  {
+    "server.name": "Server name"
+  },
+  {
+    "server.id": "Server ID"
+  },
+  {
+    "server.member.count": "Member count"
+  },
+  {
+    "note": "Note"
+  },
+  {
+    "rotation.dates": "From {0} to {1}"
+  },
+  {
+    "rotation": "Rotation"
+  },
+  {
+    "updates.rotation": "Updates rotation"
+  },
+  {
+    "everything": "Everything"
+  },
+  {
+    "updates.everything": "Updates everything"
+  }
 ]

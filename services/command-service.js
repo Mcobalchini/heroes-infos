@@ -8,7 +8,7 @@ const {App} = require('../app.js');
 const {FileService} = require("./file-service");
 const commands = FileService.openJsonSync('./data/constant/commands.json').commands;
 
-exports.Commands = {
+exports.CommandService = {
 
     findCommand: function (commandName) {
         let clearName = commandName.unaccentClean();
@@ -28,9 +28,15 @@ exports.Commands = {
         return process.env.UPDATE_COMMANDS === 'true' || (commands.length !== apiCommandsSize);
     },
 
+    updateSlashCommands: async function () {
+        if (process.env.RENEW_COMMANDS === 'true') {
+            await App.bot.application.commands.set([]);
+        }
+        await this.assembleSlashCommands();
+    },
+
     assembleSlashCommands: async function () {
         App.log(`Started refreshing application (/) commands.`);
-        StringService.setLanguage(StringService.EN_US);
 
         try {
             for (let it of commands) {
@@ -39,7 +45,7 @@ exports.Commands = {
 
                 let commandSlashBuilder = new SlashCommandBuilder()
                     .setName(name.toLowerCase())
-                    .setDefaultPermission(it.defaultPermission)
+                    .setDMPermission(true)
                     .setDescription(description.substring(0, 100));
 
                 if (it.acceptParams) {
@@ -126,7 +132,7 @@ exports.Commands = {
             reply = StringService.get('command.not.exists', receivedCommand);
         }
 
-        if (command && command.source){
+        if (command && command.source) {
             reply.footer = {
                 source: command.source,
                 sourceImage: command.sourceImage
@@ -217,7 +223,7 @@ exports.Commands = {
         const seconds = Math.floor(totalSeconds % 60);
         const uptime = StringService.get('uptime.string', days, hours, minutes, seconds);
         const servers = App.bot.guilds._cache;
-        App.log(`Servers. ${servers.map(it => it.name )}`);
+        App.log(`Servers. ${servers.map(it => it.name)}`);
         let list = [
             {
                 name: StringService.get('im.on'),

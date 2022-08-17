@@ -1,7 +1,5 @@
-const translate = require('@vitalets/google-translate-api');
 require('dotenv').config({path: './variables.env'});
 const HeroService = require('./hero-service.js').HeroService;
-const StringService = require('./string-service.js').StringService;
 const Maps = require('./map-service.js').Maps;
 const puppeteer = require('puppeteer');
 const PromisePool = require('es6-promise-pool');
@@ -107,14 +105,8 @@ exports.Network = {
     gatherNews: async function () {
         await this.setBrowser();
         const page = await this.createPage();
-        let url = `https://news.blizzard.com/pt-br/heroes-of-the-storm`;
-        let divClass = ".ArticleListItem article";
-
-        if (StringService.isEn()) {
-            url = `https://news.blizzard.com/en-us/heroes-of-the-storm`;
-            divClass = ".Card-content";
-        }
-
+        let url = `https://news.blizzard.com/en-us/heroes-of-the-storm`;
+        let divClass = ".Card-content";
         let result
         try {
             await page.goto(url, {waitUntil: 'domcontentloaded'});
@@ -229,8 +221,8 @@ exports.Network = {
 
                 return {
                     builds: builds,
-                    counters: { countersText, heroes: counters },
-                    synergies: { synergiesText, heroes: synergies },
+                    counters: {countersText, heroes: counters},
+                    synergies: {synergiesText, heroes: synergies},
                     strongerMaps: strongerMaps,
                     tips: tips
                 };
@@ -290,31 +282,7 @@ exports.Network = {
         }
     },
 
-    translateTips: async function (heroesInfos) {
-        App.log(`Started translate process`);
-        let heroesAux = JSON.parse(JSON.stringify(heroesInfos));
-        let heroesCrawl = JSON.parse(JSON.stringify(heroesAux));
-        let heroesMap = new Map();
-
-        const translatePromiseProducer = () => {
-            const heroCrawlInfo = heroesCrawl.pop();
-            return heroCrawlInfo ? translate(heroCrawlInfo.infos.tips.substring(0, 5000), {to: 'pt'}).then(res => {
-                heroesMap.set(heroCrawlInfo.id, res.text);
-            }) : null;
-        };
-
-        const translateThread = new PromisePool(translatePromiseProducer, 20);
-        translateThread.start().then(() => {
-            for (let [heroKey, heroData] of heroesMap) {
-                let index = heroesAux.findIndex(it => it.id === heroKey);
-                heroesAux[index].infos.localizedTips = heroData
-            }
-        });
-        HeroService.setHeroesInfos(heroesAux);
-        App.writeFile('data/heroes-infos.json', heroesAux);
-    },
-
-    performConnection: async function(options, remainingTrials) {
+    performConnection: async function (options, remainingTrials) {
         const url = options.url;
         const fun = options.function;
         const blockStuff = options.blockStuff ?? true;
@@ -351,7 +319,6 @@ exports.Network = {
         App.log(`Started updating data process`);
         this.isUpdatingData = true;
 
-        //write to file
         await this.gatherHeroesPrint();
         await this.gatherHeroesRotation();
         if (args === "rotation") {
@@ -400,10 +367,8 @@ exports.Network = {
 
                 heroesInfos = HeroService.updateHeroesInfos(heroesMap, popularityWinRate, heroesInfos);
 
-                this.translateTips(heroesInfos).then(() => {
-                    App.log(`Finished translate process`);
-                    this.endUpdate();
-                });
+                App.writeFile('data/heroes-infos.json', heroesInfos);
+                this.endUpdate();
             });
         } catch (e) {
 
