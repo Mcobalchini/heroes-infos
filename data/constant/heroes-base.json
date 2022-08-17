@@ -61,7 +61,7 @@
     "id": "78",
     "role": 1,
     "universe": "starcraft",
-    "propertyName": "hero.sgt hammer"
+    "propertyName": "hero.sgthammer"
   },
   {
     "name": "Raynor",
@@ -125,7 +125,7 @@
     "id": "42",
     "role": 1,
     "universe": "diablo",
-    "propertyName": "hero.li ming"
+    "propertyName": "hero.liming"
   },
   {
     "name": "Kel'Thuzad",
@@ -301,7 +301,7 @@
     "id": "48",
     "role": 2,
     "universe": "starcraft",
-    "propertyName": "hero.lt morales"
+    "propertyName": "hero.ltmorales"
   },
   {
     "name": "Li Li",
@@ -309,7 +309,7 @@
     "id": "66",
     "role": 2,
     "universe": "warcraft",
-    "propertyName": "hero.li li"
+    "propertyName": "hero.lili"
   },
   {
     "name": "Kharazim",
@@ -389,7 +389,7 @@
     "id": "52",
     "role": 3,
     "universe": "diablo",
-    "propertyName": "hero.the butcher"
+    "propertyName": "hero.thebutcher"
   },
   {
     "name": "Samuro",
@@ -565,7 +565,7 @@
     "id": "56",
     "role": 5,
     "universe": "nexus",
-    "propertyName": "hero.the lost vikings"
+    "propertyName": "hero.thelostvikings"
   },
   {
     "name": "Medivh",
