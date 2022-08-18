@@ -1,22 +1,21 @@
 {
   "name": "heroes-infos",
-  "version": "2.7.1",
-  "description": "bot for hots infos",
+  "version": "2.8.0",
+  "description": "hots infos bot",
   "main": "app.js",
   "scripts": {
     "start": "node ."
   },
   "author": "Matheus Cobalchini",
   "dependencies": {
-    "puppeteer": "15.4.0",
+    "puppeteer": "^16.1.1",
     "fs": "0.0.1-security",
-    "discord.js": "13.8.1",
-    "@discordjs/rest": "^0.5.0",
-    "@discordjs/builders": "^0.15.0",
-    "discord-api-types": "^0.36.1",
-    "dotenv": "16.0.1",
-    "es6-promise-pool": "2.5.0",
-    "@vitalets/google-translate-api": "^8.0.0"
+    "discord.js": "^14.2.0",
+    "@discordjs/rest": "^1.0.1",
+    "@discordjs/builders": "^1.1.0",
+    "discord-api-types": "^0.37.2",
+    "dotenv": "^16.0.1",
+    "es6-promise-pool": "2.5.0"
   },
   "engines": {
     "node": "16.9.0"

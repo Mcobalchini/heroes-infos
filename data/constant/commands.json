@@ -2,9 +2,7 @@
   "commands": [
     {
       "name": "Counters",
-      "localizedName": "Fraquezas",
       "hint": "Display who counters the specified hero!",
-      "localizedHint": "Mostra quais heróis atingem os pontos fracos do herói especificado",
       "acceptParams": true,
       "requiredParam": true,
       "defaultPermission": true,
@@ -14,9 +12,7 @@
     },
     {
       "name": "Synergies",
-      "localizedName": "Sinergias",
       "hint": "Display who synergizes with the specified hero!",
-      "localizedHint": "Mostra quem tem sinergia com o herói especificado",
       "acceptParams": true,
       "requiredParam": true,
       "defaultPermission": true,
@@ -26,9 +22,7 @@
     },
     {
       "name": "Builds",
-      "localizedName": "Construções",
       "hint": "Display the known builds for the specified hero!",
-      "localizedHint": "Mostra as construções de skills conhecidas para o herói especificado",
       "acceptParams": true,
       "requiredParam": true,
       "defaultPermission": true,
@@ -36,9 +30,7 @@
     },
     {
       "name": "Overview",
-      "localizedName": "Geral",
       "hint": "Display a simple overview for the specified hero!",
-      "localizedHint": "Mostra uma visão geral simples do herói especificado",
       "acceptParams": true,
       "requiredParam": true,
       "defaultPermission": true,
@@ -46,9 +38,7 @@
     },
     {
       "name": "Tips",
-      "localizedName": "Dicas",
       "hint": "Display useful tips for the hero",
-      "localizedHint": "Mostra dicas úteis para o herói especificado",
       "acceptParams": true,
       "requiredParam": true,
       "defaultPermission": true,
@@ -58,9 +48,7 @@
     },
     {
       "name": "Infos",
-      "localizedName": "Informações",
       "hint": "Display information about the specified hero, like its universe, tier position, score, builds, counters, synergies and tips",
-      "localizedHint": "Mostra informações sobre o herói especificado, como seu universo de origem, posição no ranking, pontuação, construções, fraquezas, sinergias e dicas",
       "acceptParams": true,
       "requiredParam": true,
       "defaultPermission": true,
@@ -68,9 +56,7 @@
     },
     {
       "name": "Suggest",
-      "localizedName": "Sugerir",
       "hint": "Find the top 10 heroes by filters sorted by their score based on QUICKMATCH",
-      "localizedHint": "Encontra os 10 melhores heróis por filtros recebidos, ordenando-os pela sua pontuação baseada em Jogos Rápidos",
       "acceptParams": true,
       "requiredParam": false,
       "defaultPermission": true,
@@ -78,9 +64,7 @@
     },
     {
       "name": "Team",
-      "localizedName": "Equipe",
       "hint": "Suggest a team based on top comp tier",
-      "localizedHint": "Sugere uma equipe baseada nas melhores composições",
       "acceptParams": true,
       "requiredParam": true,
       "defaultPermission": true,
@@ -88,9 +72,7 @@
     },
     {
       "name": "Banlist",
-      "localizedName": "Banimentos",
       "hint": "Display suggested heroes to ban on ranked",
-      "localizedHint": "Mostra quais heróis banir no jogo ranqueado",
       "acceptParams": false,
       "defaultPermission": true,
       "category": "HEROES",
@@ -99,9 +81,7 @@
     },
     {
       "name": "FreeWeek",
-      "localizedName": "HeroisGratis",
       "hint": "Display which heroes are currently free rotation",
-      "localizedHint": "Mostra quais heróis estão disponíveis na rotação gratuíta",
       "acceptParams": false,
       "defaultPermission": true,
       "category": "HEROES",
@@ -110,9 +90,7 @@
     },
     {
       "name": "Map",
-      "localizedName": "Mapa",
       "hint": "Display all available maps or the heroes that are usually stronger on a specified map, depending on the received parameters",
-      "localizedHint": "Mostra todos os mapas disponíveis, ou os heróis que geralmente são mais fortes em algum mapa especificado, dependendo dos parâmetros recebidos",
       "acceptParams": true,
       "requiredParam": false,
       "defaultPermission": true,
@@ -122,9 +100,7 @@
     },
     {
       "name": "News",
-      "localizedName": "Notícias",
       "hint": "Display the latest news of the game",
-      "localizedHint": "Mostra as últimas notícias do jogo",
       "acceptParams": false,
       "requiredParam": false,
       "defaultPermission": true,
@@ -134,9 +110,7 @@
     },
     {
       "name": "Help",
-      "localizedName": "Ajuda",
       "hint": "Display useful hints for all commands",
-      "localizedHint": "Mostra dicas úteis para todos os comandos",
       "acceptParams": true,
       "requiredParam": false,
       "defaultPermission": true,
@@ -144,9 +118,7 @@
     },
     {
       "name": "Update",
-      "localizedName": "Atualizar",
       "hint": "Update all bot database",
-      "localizedHint": "Atualiza todo o banco de dados do bot",
       "acceptParams": true,
       "requiredParam": false,
       "paramOptions": [
@@ -164,9 +136,7 @@
     },
     {
       "name": "BotInfo",
-      "localizedName": "InformaçõesBot",
       "hint": "Fetch bot infos",
-      "localizedHint": "Busca informações do bot",
       "acceptParams": false,
       "defaultPermission": false,
       "category": "GENERAL"

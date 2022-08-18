@@ -1,7 +1,8 @@
 require('dotenv').config({path: './variables.env'});
-const fs = require("fs");
-const {Client, Intents, MessageEmbed, MessageAttachment} = require('discord.js');
-const bot = new Client({intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]});
+const {Client, EmbedBuilder, AttachmentBuilder, IntentsBitField} = require('discord.js');
+const myIntents = new IntentsBitField();
+myIntents.add(IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages);
+const bot = new Client({ intents: myIntents });
 
 exports.App = {
     setBotStatus: setBotStatus,
@@ -9,10 +10,11 @@ exports.App = {
     log: log,
     writeFile: writeFile,
 };
-const {StringUtils} = require('./services/strings.js');
-const {Commands} = require('./services/commands');
+const {StringService} = require('./services/string-service.js');
+const {CommandService} = require('./services/command-service.js');
 const {Network} = require('./services/network-service.js');
-StringUtils.setup();
+const {FileService} = require("./services/file-service");
+StringService.setup();
 
 function setBotStatus(name, type) {
     bot.user.setActivity(name, {
@@ -40,7 +42,7 @@ function log(text, error) {
 function sendError(errorMessage){
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.LOGS_CHANNEL_ID);
     const reply = {
-        featureName: StringUtils.get('bot.error'),
+        featureName: StringService.get('bot.error'),
         data: errorMessage.message,
     }
     const embed = createEmbed(reply, null, null, null, 'attachment://fire.png');
@@ -53,7 +55,7 @@ function fillFooter(attachment, embeds, footerObj) {
     embeds.forEach(it => {
         if (footerObj) {
             let footer = {
-                text: StringUtils.get('data.from', footerObj.source),
+                text: StringService.get('data.from', footerObj.source),
                 iconURL: footerObj.sourceImage
             }
             it.setFooter(footer)
@@ -80,8 +82,8 @@ function createResponse(reply) {
 
     if (Network.isUpdatingData) {
         let updatingWarningEmbed = createEmbed({
-            featureName: StringUtils.get('note'),
-            message: StringUtils.get('hold.still.updating.data')
+            featureName: StringService.get('note'),
+            message: StringService.get('hold.still.updating.data')
         }, null, null,null, 'attachment://download.png');
 
         embeds.push(updatingWarningEmbed);
@@ -91,11 +93,11 @@ function createResponse(reply) {
 
 function fillAttachments(embeds) {
     const files = new Map();
-    files.set('footer.png', new MessageAttachment('images/footer.png', 'attachment://footer.png'));
+    files.set('footer.png', new AttachmentBuilder('images/footer.png', 'attachment://footer.png'));
     embeds.forEach(it => {
-        addToMap(files, it.image?.url);
-        addToMap(files, it.thumbnail?.url);
-        addToMap(files, it.author?.iconURL);
+        addToMap(files, it.data.image?.url);
+        addToMap(files, it.data.thumbnail?.url);
+        addToMap(files, it.data.author?.iconURL);
     });
     return Array.from(files.values());
 }
@@ -108,7 +110,7 @@ function addToMap(fileMap, property) {
     if (property != null) {
         const fileName = removeAttachmenPrefix(property);
         if (!fileName.includes('http') && fileName.length > 0 && !fileMap.has(fileName))
-            fileMap.set(fileName, new MessageAttachment(`images/${fileName}`, fileName));
+            fileMap.set(fileName, new AttachmentBuilder(`images/${fileName}`, fileName));
     }
 }
 
@@ -124,7 +126,7 @@ function assembleEmbedObject(embeds) {
 
 async function handleResponse(args, receivedCommand, msg) {
     try {
-        let reply = await Commands.handleCommand(args, receivedCommand, msg);
+        let reply = await CommandService.handleCommand(args, receivedCommand, msg);
         let replyObject = assembleEmbedObject(createResponse(reply));
 
         if (msg.isCommand) {
@@ -141,7 +143,7 @@ async function handleResponse(args, receivedCommand, msg) {
 
 }
 
-function periodicUpdateCheck(interval) {
+function periodicUpdateCheck() {
     if (Network.isUpdateNeeded()) {
         setBotStatus('Updating', 'WATCHING')
         Network.updateData().then(() => setBotStatus('Heroes of the Storm', 'PLAYING'));
@@ -172,10 +174,10 @@ function createEmbed(replyObject, authorName, authorUrl, authorIcon, thumbnail) 
         iconURL: authorIcon
     }
 
-    let featureDesc = replyObject.featureDescription ? replyObject.featureDescription : '';
+    let featureDesc = replyObject.featureDescription ? replyObject.featureDescription : '_ _';
     let image = replyObject.image ? replyObject.image.replace('images/', 'attachment://') : 'attachment://footer.png';
 
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
         .setColor('#0099ff')
         .setTitle(replyObject.featureName)
         .setAuthor(author)
@@ -226,17 +228,17 @@ function isNotReservedKey(key) {
 function assembleGuildData(guild) {
     return [
         {
-            name: StringUtils.get('server.name'),
+            name: StringService.get('server.name'),
             value: guild?.name ?? `_ _`,
             inline: false
         },
         {
-            name: StringUtils.get('server.id'),
+            name: StringService.get('server.id'),
             value: guild?.id?.toString() ?? '0',
             inline: true
         },
         {
-            name: StringUtils.get('server.member.count'),
+            name: StringService.get('server.member.count'),
             value: guild?.memberCount?.toString() ?? '0',
             inline: true
         }
@@ -244,7 +246,7 @@ function assembleGuildData(guild) {
 }
 
 function writeFile (path, obj) {
-    fs.writeFile(path, JSON.stringify(obj), (e) => {
+    FileService.writeFile(path, JSON.stringify(obj), (e) => {
         if (e != null) {
             log(`error while writing file ${path}`, e);
         }
@@ -265,28 +267,24 @@ bot.on('interactionCreate', async interaction => {
 });
 
 bot.once('ready', function () {
-    StringUtils.setLanguage(StringUtils.EN_US);
-    bot.updatedAt = StringUtils.get('not.updated.yet');
+    bot.updatedAt = StringService.get('not.updated.yet');
     setBotStatus('Heroes of the Storm', 'PLAYING');
     periodicUpdateCheck(true);
     log(`Application ready!`);
-    Commands.isUpdateSlashCommandsNeeded().then(needed => {
+    CommandService.isUpdateSlashCommandsNeeded().then(needed => {
         if (needed) {
-            Commands.assembleSlashCommands().then(() => {
-                Commands.assembleSlashCommands(true)
-            });
+            CommandService.updateSlashCommands();
         } else {
             log(`Slash commands update not needed`);
         }
     });
-
 });
 
 bot.on('guildCreate', guild => {
     log(`Owner id ${guild.ownerId}`);
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.JOIN_SERVER_CHANNEL_ID);
     const embed = createEmbed( {
-            featureName: StringUtils.get('joined.new.server'),
+            featureName: StringService.get('joined.new.server'),
             guildData: assembleGuildData(guild)
         }, null, null, null, guild.iconURL());
     channel?.send(assembleEmbedObject(embed));
@@ -294,11 +292,13 @@ bot.on('guildCreate', guild => {
 
 bot.on('guildDelete', guild => {
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.LEAVE_SERVER_CHANNEL_ID);
-    const embed = createEmbed( {
-            featureName: StringUtils.get('left.server'),
+    if (guild?.name) {
+        const embed = createEmbed({
+            featureName: StringService.get('left.server'),
             guildData: assembleGuildData(guild)
         }, null, null, null, guild.iconURL());
-    channel?.send(assembleEmbedObject(embed));
+        channel?.send(assembleEmbedObject(embed));
+    }
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN);

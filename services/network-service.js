@@ -1,8 +1,6 @@
-const translate = require('@vitalets/google-translate-api');
 require('dotenv').config({path: './variables.env'});
-const Heroes = require('./heroes.js').Heroes;
-const StringUtils = require('./strings.js').StringUtils;
-const Maps = require('./maps.js').Maps;
+const HeroService = require('./hero-service.js').HeroService;
+const MapService = require('./map-service.js').MapService;
 const puppeteer = require('puppeteer');
 const PromisePool = require('es6-promise-pool');
 const {Routes} = require('discord-api-types/v9');
@@ -36,7 +34,7 @@ exports.Network = {
         const result = await this.performConnection(options);
 
         if (result)
-            Heroes.updateRotation(result);
+            HeroService.updateRotation(result);
     },
 
     gatherBanTierListInfo: async function () {
@@ -55,7 +53,7 @@ exports.Network = {
         const result = await this.performConnection(options);
 
         if (result)
-            Heroes.updateBanList(result);
+            HeroService.updateBanList(result);
     },
 
     gatherCompositionsInfo: async function () {
@@ -80,7 +78,7 @@ exports.Network = {
         const result = await this.performConnection(options);
 
         if (result)
-            Heroes.updateCompositions(result);
+            HeroService.updateCompositions(result);
     },
 
     gatherPopularityAndWinRateInfo: async function () {
@@ -107,14 +105,8 @@ exports.Network = {
     gatherNews: async function () {
         await this.setBrowser();
         const page = await this.createPage();
-        let url = `https://news.blizzard.com/pt-br/heroes-of-the-storm`;
-        let divClass = ".ArticleListItem article";
-
-        if (StringUtils.isEn()) {
-            url = `https://news.blizzard.com/en-us/heroes-of-the-storm`;
-            divClass = ".Card-content";
-        }
-
+        let url = `https://news.blizzard.com/en-us/heroes-of-the-storm`;
+        let divClass = ".Card-content";
         let result
         try {
             await page.goto(url, {waitUntil: 'domcontentloaded'});
@@ -229,8 +221,8 @@ exports.Network = {
 
                 return {
                     builds: builds,
-                    counters: { countersText, heroes: counters },
-                    synergies: { synergiesText, heroes: synergies },
+                    counters: {countersText, heroes: counters},
+                    synergies: {synergiesText, heroes: synergies},
                     strongerMaps: strongerMaps,
                     tips: tips
                 };
@@ -272,7 +264,7 @@ exports.Network = {
 
         if (icyData != null && profileData != null) {
             icyData.strongerMaps = icyData.strongerMaps.map(it => {
-                const strongerMap = Maps.findMap(it);
+                const strongerMap = MapService.findMap(it);
                 return {
                     name: strongerMap.name,
                     localizedName: strongerMap.localizedName
@@ -290,31 +282,7 @@ exports.Network = {
         }
     },
 
-    translateTips: async function (heroesInfos) {
-        App.log(`Started translate process`);
-        let heroesAux = JSON.parse(JSON.stringify(heroesInfos));
-        let heroesCrawl = JSON.parse(JSON.stringify(heroesAux));
-        let heroesMap = new Map();
-
-        const translatePromiseProducer = () => {
-            const heroCrawlInfo = heroesCrawl.pop();
-            return heroCrawlInfo ? translate(heroCrawlInfo.infos.tips.substring(0, 5000), {to: 'pt'}).then(res => {
-                heroesMap.set(heroCrawlInfo.id, res.text);
-            }) : null;
-        };
-
-        const translateThread = new PromisePool(translatePromiseProducer, 20);
-        translateThread.start().then(() => {
-            for (let [heroKey, heroData] of heroesMap) {
-                let index = heroesAux.findIndex(it => it.id === heroKey);
-                heroesAux[index].infos.localizedTips = heroData
-            }
-        });
-        Heroes.setHeroesInfos(heroesAux);
-        App.writeFile('data/heroes-infos.json', heroesAux);
-    },
-
-    performConnection: async function(options, remainingTrials) {
+    performConnection: async function (options, remainingTrials) {
         const url = options.url;
         const fun = options.function;
         const blockStuff = options.blockStuff ?? true;
@@ -351,7 +319,6 @@ exports.Network = {
         App.log(`Started updating data process`);
         this.isUpdatingData = true;
 
-        //write to file
         await this.gatherHeroesPrint();
         await this.gatherHeroesRotation();
         if (args === "rotation") {
@@ -366,7 +333,7 @@ exports.Network = {
 
         let heroesMap = new Map();
         let heroesIdAndUrls = [];
-        let heroesInfos = Heroes.findAllHeroes();
+        let heroesInfos = HeroService.findAllHeroes();
 
         for (let hero of heroesInfos) {
             let normalizedName = hero.name.replace('/ /g', '+').replace('/\'/g', '%27');
@@ -398,12 +365,10 @@ exports.Network = {
                 let finishedTime = new Date();
                 App.log(`Finished gathering process in ${(finishedTime.getTime() - startTime.getTime()) / 1000} seconds`);
 
-                heroesInfos = Heroes.updateHeroesInfos(heroesMap, popularityWinRate, heroesInfos);
+                heroesInfos = HeroService.updateHeroesInfos(heroesMap, popularityWinRate, heroesInfos);
 
-                this.translateTips(heroesInfos).then(() => {
-                    App.log(`Finished translate process`);
-                    this.endUpdate();
-                });
+                App.writeFile('data/heroes-infos.json', heroesInfos);
+                this.endUpdate();
             });
         } catch (e) {
 
@@ -439,7 +404,7 @@ exports.Network = {
     },
 
     isUpdateNeeded: function () {
-        return !Heroes.findHero('1', true)?.infos?.builds?.length > 0
+        return !HeroService.findHero('1', true)?.infos?.builds?.length > 0
     },
 
     setBrowser: async function () {

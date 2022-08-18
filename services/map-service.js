@@ -1,25 +1,25 @@
-const fs = require('fs');
-let Heroes = require('./heroes.js').Heroes;
-const maps = JSON.parse(fs.readFileSync('./data/constant/maps.json'), {encoding: 'utf8', flag: 'r'});
-const StringUtils = require('./strings.js').StringUtils;
+const {FileService} = require("./file-service");
+let HeroService = require('./hero-service.js').HeroService;
+const maps = FileService.openJsonSync('./data/constant/maps.json');
+const StringService = require('./string-service.js').StringService;
 
-exports.Maps = {
+exports.MapService = {
 
     init: function (mapName) {
         if (mapName != null && mapName.trim().length > 0) {
             let map = this.findMap(mapName);
             if (map != null) {
-                let bestHeroes = Heroes.findAllHeroes(true)
+                let bestHeroes = HeroService.findAllHeroes(true)
                     .filter(hero => hero.infos.strongerMaps.map(it => it.name).includes(map.name))
                 if (bestHeroes.length > 0) {
                     return this.assembleMapReturnMessage({
                         map: map,
-                        heroes: bestHeroes.sort(Heroes.sortByTierPosition)
+                        heroes: bestHeroes.sort(HeroService.sortByTierPosition)
                     });
                 }
-                return StringUtils.get('no.best.heroes.for.map', this.getMapName(map));
+                return StringService.get('no.best.heroes.for.map', map.name);
             }
-            return StringUtils.get('map.not.found');
+            return StringService.get('map.not.found');
         } else {
             return this.assembleMapReturnMessage({map: maps.map(it => it), heroes: []})
         }
@@ -31,12 +31,12 @@ exports.Maps = {
             mapLowerCase.length > 2 &&
             ((map.name.unaccentClean() === mapLowerCase ||
                     map.localizedName.unaccentClean() === mapLowerCase) ||
-                (map.name.unaccentClean().startsWith(mapLowerCase) ||
-                    map.localizedName.unaccentClean().startsWith(mapLowerCase))));
+                (map.name.unaccentClean().includes(mapLowerCase) ||
+                    map.localizedName.unaccentClean().includes(mapLowerCase))));
     },
 
     getMapName: function (map) {
-        return StringUtils.isEn() ? map.name : map.localizedName;
+        return map.name;
     },
 
     assembleMapReturnMessage: function (args) {
@@ -47,16 +47,16 @@ exports.Maps = {
 
             args.heroes.forEach(obj => map.get(obj.role).push(obj));
 
-            featureName = StringUtils.get('stronger.map.heroes', this.getMapName(args.map));
+            featureName = StringService.get('stronger.map.heroes', args.map.name);
             array = Array.from(map).map(([key, value]) => {
                 return {
-                    name: Heroes.getRoleName(Heroes.findRoleById(key)),
-                    value: value.map(it => `${Heroes.getHeroName(it)}\n`).slice(0, 3).join(''),
+                    name: HeroService.getRoleName(HeroService.findRoleById(key)),
+                    value: value.map(it => `${HeroService.getHeroName(it)}\n`).slice(0, 3).join(''),
                     inline: true
                 }
             });
         } else {
-            featureName = StringUtils.get('available.maps');
+            featureName = StringService.get('available.maps');
             array = args.map.map(map => {
                 const name = this.getMapName(map);
                 return {
