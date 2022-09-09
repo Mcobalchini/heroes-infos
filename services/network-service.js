@@ -372,7 +372,7 @@ exports.Network = {
             });
         } catch (e) {
 
-            if (e.stack.includes('Navigation timeout of 30000 ms exceeded')
+            if (e.stack.includes('Navigation timeout of 60000 ms exceeded')
                 || e.stack.includes('net::ERR_ABORTED')
                 || e.stack.includes('net::ERR_NETWORK_CHANGED')) {
                 App.log("Updating again")
