@@ -1,8 +1,14 @@
 require('dotenv').config({path: './variables.env'});
-const {Client, EmbedBuilder, AttachmentBuilder, IntentsBitField} = require('discord.js');
+const {
+    Client,
+    EmbedBuilder,
+    AttachmentBuilder,
+    IntentsBitField,
+    ActivityType
+} = require('discord.js');
 const myIntents = new IntentsBitField();
 myIntents.add(IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages);
-const bot = new Client({ intents: myIntents });
+const bot = new Client({intents: myIntents});
 
 exports.App = {
     setBotStatus: setBotStatus,
@@ -17,9 +23,10 @@ const {FileService} = require("./services/file-service");
 StringService.setup();
 
 function setBotStatus(name, type) {
-    bot.user.setActivity(name, {
-        type: type,
-        url: 'https://heroesofthestorm.com/'
+    const enumType = type === 'WATCHING' ? ActivityType.Watching : ActivityType.Playing;
+    bot.user.setPresence({
+        activities: [{name: name, type: enumType}],
+        status: 'https://heroesofthestorm.com/'
     });
 }
 
@@ -39,7 +46,7 @@ function log(text, error) {
     }
 }
 
-function sendError(errorMessage){
+function sendError(errorMessage) {
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.LOGS_CHANNEL_ID);
     const reply = {
         featureName: StringService.get('bot.error'),
@@ -84,7 +91,7 @@ function createResponse(reply) {
         let updatingWarningEmbed = createEmbed({
             featureName: StringService.get('note'),
             message: StringService.get('hold.still.updating.data')
-        }, null, null,null, 'attachment://download.png');
+        }, null, null, null, 'attachment://download.png');
 
         embeds.push(updatingWarningEmbed);
     }
@@ -245,7 +252,7 @@ function assembleGuildData(guild) {
     ]
 }
 
-function writeFile (path, obj) {
+function writeFile(path, obj) {
     FileService.writeFile(path, JSON.stringify(obj), (e) => {
         if (e != null) {
             log(`error while writing file ${path}`, e);
@@ -262,7 +269,7 @@ bot.on('interactionCreate', async interaction => {
             interaction
         );
     } catch (e) {
-       this.log(`Error while handling response`, e);
+        this.log(`Error while handling response`, e);
     }
 });
 
@@ -283,10 +290,10 @@ bot.once('ready', function () {
 bot.on('guildCreate', guild => {
     log(`Owner id ${guild.ownerId}`);
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.JOIN_SERVER_CHANNEL_ID);
-    const embed = createEmbed( {
-            featureName: StringService.get('joined.new.server'),
-            guildData: assembleGuildData(guild)
-        }, null, null, null, guild.iconURL());
+    const embed = createEmbed({
+        featureName: StringService.get('joined.new.server'),
+        guildData: assembleGuildData(guild)
+    }, null, null, null, guild.iconURL());
     channel?.send(assembleEmbedObject(embed));
 });
 
