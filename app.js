@@ -13,14 +13,13 @@ const bot = new Client({intents: myIntents});
 exports.App = {
     setBotStatus: setBotStatus,
     bot: bot,
-    log: log,
-    writeFile: writeFile,
+    log: log
 };
 const {StringService} = require('./services/string-service.js');
+StringService.setup();
+
 const {CommandService} = require('./services/command-service.js');
 const {Network} = require('./services/network-service.js');
-const {FileService} = require("./services/file-service");
-StringService.setup();
 
 function setBotStatus(name, type) {
     const enumType = type === 'WATCHING' ? ActivityType.Watching : ActivityType.Playing;
@@ -131,23 +130,18 @@ function assembleEmbedObject(embeds) {
     };
 }
 
-async function handleResponse(args, receivedCommand, msg) {
+async function handleResponse(interaction) {
     try {
-        let reply = await CommandService.handleCommand(args, receivedCommand, msg);
-        let replyObject = assembleEmbedObject(createResponse(reply));
-
-        if (msg.isCommand) {
-            replyObject.ephemeral = true;
-            msg.editReply(replyObject).catch(e => {
-                log(`Error while responding`, e)
-            })
-        } else {
-            msg.reply(replyObject);
-        }
+        const reply = await CommandService.handleCommand(interaction);
+        const embeds = createResponse(reply);
+        const replyObject = assembleEmbedObject(embeds);
+        replyObject.ephemeral = true;
+        interaction.editReply(replyObject).catch(e => {
+            log(`Error while responding`, e)
+        });
     } catch (e) {
-        log(`Error while responding`, e)
+        log(`Error while responding`, e);
     }
-
 }
 
 function periodicUpdateCheck() {
@@ -252,22 +246,11 @@ function assembleGuildData(guild) {
     ]
 }
 
-function writeFile(path, obj) {
-    FileService.writeFile(path, JSON.stringify(obj), (e) => {
-        if (e != null) {
-            log(`error while writing file ${path}`, e);
-        }
-    });
-}
-
 bot.on('interactionCreate', async interaction => {
     if (!interaction.isCommand()) return;
     try {
         await interaction.deferReply();
-        await handleResponse(interaction.options?.data?.map(it => it.value).join(' '),
-            interaction.commandName.toString(),
-            interaction
-        );
+        await handleResponse(interaction);
     } catch (e) {
         this.log(`Error while handling response`, e);
     }

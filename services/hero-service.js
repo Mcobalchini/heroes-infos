@@ -354,7 +354,7 @@ exports.HeroService = {
 
     setFreeHeroes: function (heroesParam) {
         this.freeHeroes = heroesParam;
-        App.writeFile('data/freeweek.json', heroesParam);
+        FileService.writeJsonFile('data/freeweek.json', heroesParam);
     },
 
     updateRotation: function (result) {
@@ -408,13 +408,13 @@ exports.HeroService = {
         }).reverse();
 
         this.setCompositions(sortedComposition);
-        App.writeFile('data/compositions.json', sortedComposition);
+        FileService.writeJsonFile('data/compositions.json', sortedComposition);
         App.log(`Updated compositions list`);
     },
 
     setBanHeroes: function (heroesParam) {
         this.mustBanHeroes = heroesParam;
-        App.writeFile('data/banlist.json', heroesParam);
+        FileService.writeJsonFile('data/banlist.json', heroesParam);
     },
 
     setCompositions: function (compositionsParam) {

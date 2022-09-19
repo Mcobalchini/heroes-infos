@@ -6,10 +6,10 @@ const PromisePool = require('es6-promise-pool');
 const {Routes} = require('discord-api-types/v9');
 const {REST} = require('@discordjs/rest');
 const {App} = require('../app.js');
+const {FileService} = require("./file-service");
 const rest = new REST({version: '9'}).setToken(process.env.HEROES_INFOS_TOKEN);
 
 exports.Network = {
-    failedJobs: [],
     isUpdatingData: false,
     replyTo: null,
     browser: null,
@@ -121,7 +121,6 @@ exports.Network = {
             await this.browser.close();
         } catch (ex) {
             App.log('Error while gathering news', ex);
-            this.failedJobs.push(url)
         }
         if (result != null) {
             return result;
@@ -170,7 +169,6 @@ exports.Network = {
 
         } catch (ex) {
             App.log(`Error while gathering rotation image`, ex);
-            this.failedJobs.push(url)
         } finally {
             await page.close();
         }
@@ -190,18 +188,48 @@ exports.Network = {
 
     gatherHeroStats: async function (icyUrl, heroId, profileUrl, heroesMap, cookie) {
         const page = await this.createPage();
-        let icyData;
-        let profileData;
-
         await page.setExtraHTTPHeaders({
             'Cookie': cookie,
         });
 
+        const icyData = await this.gatherIcyData(page, icyUrl);
+        const profileData = await this.gatherProfileData(page, profileUrl);
+
+        if (icyData != null && profileData != null) {
+            icyData.strongerMaps = icyData.strongerMaps.map(it => {
+                const strongerMap = MapService.findMap(it);
+                return {
+                    name: strongerMap.name,
+                    localizedName: strongerMap.localizedName
+                }
+            });
+
+            let returnObject = {
+                icyData: icyData,
+                profileData: profileData
+            }
+
+            heroesMap.set(heroId, returnObject);
+            try {
+                await page.close();
+            } catch (ex) {
+                App.log(`Error while closing page`, ex);
+            }
+        } else {
+            if (icyData == null && profileData == null) {
+                await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
+            } else if (profileData == null) {
+                await this.gatherProfileData(page, profileUrl);
+            }
+        }
+    },
+
+    gatherIcyData: async function (page, icyUrl) {
         try {
 
             await page.goto(icyUrl, {waitUntil: 'domcontentloaded'});
 
-            icyData = await page.evaluate((icyUrl) => {
+            return await page.evaluate((icyUrl) => {
                 const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.innerText);
                 const skills = Array.from(document.querySelectorAll('.talent_build_copy_button > input')).map(skillsElements => skillsElements.value);
                 const counters = Array.from(document.querySelectorAll('.hero_portrait_bad')).map(nameElements => nameElements.title);
@@ -231,12 +259,13 @@ exports.Network = {
         } catch (ex) {
             App.log(`Error while fetching icyData ${icyUrl}`, ex);
         }
+    },
 
+    gatherProfileData: async function (page, profileUrl) {
         try {
-
             await page.goto(profileUrl, {waitUntil: 'domcontentloaded', timeout: 60000});
 
-            profileData = await page.evaluate((profileUrl) => {
+            return await page.evaluate((profileUrl) => {
                 const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `(${it.innerText}% win rate)`)
                 const skills = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .build-code')).map(it => it.innerText)
                 const builds = [];
@@ -253,32 +282,6 @@ exports.Network = {
             }, profileUrl);
         } catch (ex) {
             App.log(`Error while fetching profileData ${profileUrl}`, ex);
-        } finally {
-            try {
-                await page.close();
-            } catch (ex) {
-                App.log(`Error while closing page`, ex);
-            }
-
-        }
-
-        if (icyData != null && profileData != null) {
-            icyData.strongerMaps = icyData.strongerMaps.map(it => {
-                const strongerMap = MapService.findMap(it);
-                return {
-                    name: strongerMap.name,
-                    localizedName: strongerMap.localizedName
-                }
-            });
-
-            let returnObject = {
-                icyData: icyData,
-                profileData: profileData
-            }
-
-            heroesMap.set(heroId, returnObject);
-        } else {
-            await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
         }
     },
 
@@ -296,7 +299,6 @@ exports.Network = {
             result = await page.evaluate(fun);
         } catch (ex) {
             App.log(`Error while fetching ${options.url}`, ex);
-            this.failedJobs.push(url)
         } finally {
             await page.close();
         }
@@ -367,7 +369,7 @@ exports.Network = {
 
                 heroesInfos = HeroService.updateHeroesInfos(heroesMap, popularityWinRate, heroesInfos);
 
-                App.writeFile('data/heroes-infos.json', heroesInfos);
+                FileService.writeJsonFile('data/heroes-infos.json', heroesInfos);
                 this.endUpdate();
             });
         } catch (e) {
@@ -415,22 +417,57 @@ exports.Network = {
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
+                '--autoplay-policy=user-gesture-required',
+                '--disable-background-networking',
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-breakpad',
+                '--disable-client-side-phishing-detection',
+                '--disable-component-update',
+                '--disable-default-apps',
+                '--disable-dev-shm-usage',
+                '--disable-domain-reliability',
+                '--disable-extensions',
+                '--disable-features=AudioServiceOutOfProcess',
+                '--disable-hang-monitor',
+                '--disable-ipc-flooding-protection',
+                '--disable-notifications',
+                '--disable-offer-store-unmasked-wallet-cards',
+                '--disable-popup-blocking',
+                '--disable-print-preview',
+                '--disable-prompt-on-repost',
+                '--disable-renderer-backgrounding',
+                '--disable-setuid-sandbox',
+                '--disable-speech-api',
+                '--disable-sync',
+                '--hide-scrollbars',
+                '--ignore-gpu-blacklist',
+                '--metrics-recording-only',
+                '--mute-audio',
+                '--no-default-browser-check',
+                '--no-first-run',
+                '--no-pings',
+                '--no-zygote',
+                '--password-store=basic',
+                '--use-gl=swiftshader',
+                '--use-mock-keychain',
             ],
         })
     },
 
     createPage: async function (blockStuff = true) {
-
         const page = await this.browser.newPage();
         await page.setRequestInterception(true);
 
         page.on('request', (request) => {
-            if (blockStuff && ['image', 'stylesheet', 'font', 'script'].indexOf(request.resourceType()) !== -1) {
+            if (blockStuff && ['image', 'stylesheet', 'font', 'script', 'xhr'].indexOf(request.resourceType()) !== -1) {
                 request.abort();
             } else {
                 request.continue();
             }
+            // console.log('>>', request.method(), request.url(), request.resourceType());
         });
+        // page.on('response', response => console.log('<<', response.status(), response.url()))
 
         return page;
     },

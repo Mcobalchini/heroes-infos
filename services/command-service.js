@@ -103,10 +103,13 @@ exports.CommandService = {
         }
     },
 
-    handleCommand: async function (args, receivedCommand, msg) {
+    handleCommand: async function (interaction) {
+        const args = interaction.options?.data?.map(it => it.value).join(' ');
+        const receivedCommand = interaction.commandName.toString();
+        App.log(`Command (${receivedCommand}) was called by ${interaction.member?.guild?.name}`);
         let reply;
         let command = this.findCommand(receivedCommand);
-        if (command != null && this.isCommandAllowed(msg, command)) {
+        if (command != null && this.isCommandAllowed(interaction, command)) {
             if (command.category === 'HEROES') {
                 reply = HeroService.init(command, args);
             } else if (command.name === 'BotInfo') {
@@ -114,7 +117,7 @@ exports.CommandService = {
             } else if (command.name === 'Map') {
                 reply = MapService.init(args);
             } else if (command.name === 'Help') {
-                reply = this.assembleHelpReturnMessage(msg, args);
+                reply = this.assembleHelpReturnMessage(interaction, args);
             } else if (command.name === 'News') {
                 reply = await this.assembleNewsReturnMessage();
             } else if (command.name === 'Update') {
