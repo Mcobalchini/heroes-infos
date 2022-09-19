@@ -6,8 +6,9 @@
 ![Github open pull requests](https://img.shields.io/github/issues-pr/mcobalchini/heroes-infos?color=%233d98cf&style=for-the-badge)
 
 ## Running
-For this bot to work you'll need **nodejs**, to install the bot, follow this steps:
+For this bot to work you'll need **nodejs**, to install the bot, follow these steps:
 
+Install [NodeJS](https://nodejs.org/en/download/)
 ```
 npm install
 ```
@@ -17,12 +18,13 @@ You have to create a file named `variables.env` and insert the following.
 ``` 
 HEROES_INFOS_TOKEN = "TOKEN_HERE"
 CLIENT_ID = CLIENT_ID_HERE
-JOIN_SERVER_CHANNEL_ID = JOIN_ID_HERE
-LEAVE_SERVER_CHANNEL_ID = LEAVE_ID_HERE
+#(Optional) JOIN_SERVER_CHANNEL_ID = JOIN_ID_HERE
+#(Optional) LEAVE_SERVER_CHANNEL_ID = LEAVE_ID_HERE
+#(Optional) THREAD_WORKERS = integer, number of workers for update data threads
+#(Optional) UPDATE_COMMANDS = boolean, flag to identify whether if update is needed or not 
 ```
 
-if you have a support server for this bot
-the `JOIN_SERVER_CHANNEL_ID` and `LEAVE_SERVER_CHANNEL_ID`
+If you have a support server for this bot, the `JOIN_SERVER_CHANNEL_ID` and `LEAVE_SERVER_CHANNEL_ID`
 variables refers to the channels that are going to be notified whenever a server adds your bot.
 
 ## License
