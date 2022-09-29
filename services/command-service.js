@@ -6,6 +6,7 @@ const {Network} = require('./network-service.js');
 const {SlashCommandBuilder} = require('@discordjs/builders');
 const {App} = require('../app.js');
 const {FileService} = require("./file-service");
+const {Command} = require("../model/Command");
 const commands = FileService.openJsonSync('./data/constant/commands.json').commands;
 
 exports.CommandService = {
@@ -110,6 +111,7 @@ exports.CommandService = {
         let reply;
         let command = this.findCommand(receivedCommand);
         if (command != null && this.isCommandAllowed(interaction, command)) {
+            command.execute();
             if (command.category === 'HEROES') {
                 reply = HeroService.init(command, args);
             } else if (command.name === 'BotInfo') {

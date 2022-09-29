@@ -20,6 +20,8 @@ StringService.setup();
 
 const {CommandService} = require('./services/command-service.js');
 const {Network} = require('./services/network-service.js');
+const {CommandHandler} = require('./services/command-handler.js');
+bot.commands = CommandHandler.assembleCommands();
 
 function setBotStatus(name, type) {
     const enumType = type === 'WATCHING' ? ActivityType.Watching : ActivityType.Playing;
@@ -209,7 +211,7 @@ function createEmbeds(replyObject, authorName, authorUrl, authorIcon) {
     Object.keys(replyObject).forEach(function (key, _) {
         const attribute = replyObject[key];
         if (isObject(replyObject, key)) {
-            embeds.push(createEmbed(attribute, authorName, authorUrl, authorIcon))
+            embeds.push(createEmbed(attribute, authorName, authorUrl, authorIcon));
         } else if (isNotReservedKey(key)) {
             embeds.push(createEmbed(replyObject, authorName, authorUrl, authorIcon));
         }
