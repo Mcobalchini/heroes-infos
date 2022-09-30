@@ -1,8 +1,9 @@
 const {StringService} = require('../services/string-service');
 const {App} = require('../app');
 const config = require("../config.json");
+const {CommandService} = require("../services/command-service");
 
-exports.run = (commandAsked) => {
+exports.run = (commandAsked, msg) => {
     let reply = '';
     let list = [];
     let commandInfos = '';
@@ -10,7 +11,7 @@ exports.run = (commandAsked) => {
 
     if (commandAsked != null && commandAsked !== 'null' && commandAsked !== '') {
         let command = commands.get(commandAsked);
-        if (command) {
+        if (command && CommandService.isCommandAllowed(command, msg)) {
             reply += command.help.hint;
             if (command.help.acceptParams) {
                 list = [{
@@ -25,7 +26,7 @@ exports.run = (commandAsked) => {
     } else {
 
         reply = StringService.get('available.commands.are');
-        list = Array.from(commands.values()).map(it => {
+        list = Array.from(commands.values()).filter(it => CommandService.isCommandAllowed(msg, it)).map(it => {
             return {
                 name: it.help.name,
                 value: `|| ||`,

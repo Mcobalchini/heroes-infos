@@ -92,7 +92,7 @@ exports.CommandService = {
         App.log(`Command (${receivedCommand}) with params ${args} was called by ${interaction.member?.guild?.name}`);
         let reply;
         if (this.isCommandAllowed(interaction, command)) {
-            reply = await command.run(args);
+            reply = await command.run(args, interaction);
         } else {
             reply = StringService.get('command.not.exists', receivedCommand);
         }
@@ -116,7 +116,7 @@ exports.CommandService = {
     },
 
     isCommandAllowed(msg, command) {
-        if (command.defaultPermission) {
+        if (command.help.defaultPermission) {
             return true
         } else {
             if (msg.author != null || msg.user != null) {
