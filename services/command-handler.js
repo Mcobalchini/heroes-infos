@@ -2,7 +2,7 @@ const {Collection} = require("discord.js");
 const {FileService} = require("./file-service");
 
 exports.assembleCommands = () => {
-    const commands = FileService.openFile("./commands").filter(file => file.endsWith(".js"));
+    const commands = FileService.openDir("./commands").filter(file => file.endsWith(".js"));
     const commandsMap = new Collection();
     for (const file of commands) {
         const commandName = file.split(".")[0];

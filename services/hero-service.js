@@ -161,16 +161,16 @@ exports.HeroService = {
         };
     },
 
-    getHeroRole: function () {
-        return this.getRoleName(this.findRoleById(this.hero.role));
+    getHeroRole: function (hero) {
+        return this.getRoleName(this.findRoleById(hero.role));
     },
 
-    getHeroUniverse: function () {
-        return this.hero.universe;
+    getHeroUniverse: function (hero) {
+        return hero.universe;
     },
 
-    getHeroTierPosition: function () {
-        return this.hero.infos.tierPosition;
+    getHeroTierPosition: function (hero) {
+        return hero.infos.tierPosition;
     },
 
     getHeroCounters: function () {
@@ -224,22 +224,23 @@ exports.HeroService = {
     },
 
     getHeroOverview: function () {
+        const hero = this.hero;
         return {
             featureName: StringService.get('overview'),
             overview: [
                 {
                     name: StringService.get('role'),
-                    value: this.getHeroRole(),
+                    value: this.getHeroRole(hero),
                     inline: false
                 },
                 {
                     name: StringService.get('universe'),
-                    value: this.getHeroUniverse(),
+                    value: this.getHeroUniverse(hero),
                     inline: true
                 },
                 {
                     name: StringService.get('score'),
-                    value: this.getHeroTierPosition().toString(),
+                    value: this.getHeroTierPosition(hero).toString(),
                     inline: true
                 }
             ]
