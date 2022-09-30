@@ -1,15 +1,15 @@
-const {StringService} = require('../services/string-service');
-const {HeroService} = require("../services/hero-service");
+const {StringService} = require('../../services/string-service');
+const {HeroService} = require("../../services/hero-service");
 
 exports.run = async () => {
     return {
         data: {
             featureName: StringService.get('suggested.bans'),
             mustBanHeroes: HeroService.mustBanHeroes.map(ban => {
-                const hero = this.findHero(ban.name, false, false);
+                const hero = HeroService.findHero(ban.name);
                 return {
-                    name: this.getHeroName(hero),
-                    value: this.getRoleName(this.findRoleById(hero.role)),
+                    name: hero.name,
+                    value: HeroService.getHeroRole(hero),
                     inline: false
                 }
             })

@@ -20,8 +20,7 @@ StringService.setup();
 
 const {CommandService} = require('./services/command-service.js');
 const {Network} = require('./services/network-service.js');
-const {CommandHandler} = require('./services/command-handler.js');
-bot.commands = CommandHandler.assembleCommands();
+bot.commands = CommandService.assembleCommands();
 
 function setBotStatus(name, type) {
     const enumType = type === 'WATCHING' ? ActivityType.Watching : ActivityType.Playing;
@@ -82,7 +81,7 @@ function createResponse(reply) {
         }
 
         if (reply.data != null) {
-            embeds.push(...createEmbeds(reply.data, reply.heroName, reply.heroLink, attachment));
+            embeds.push(...createEmbeds(reply.data, reply.authorName, reply.authorUrl, attachment));
             embeds[0].setThumbnail(attachment);
             fillFooter(attachment, embeds, reply.footer);
         }

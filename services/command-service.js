@@ -1,32 +1,37 @@
 const config = require('../config.json');
 const {StringService} = require('./string-service.js');
-const {HeroService} = require('./hero-service.js');
-const {MapService} = require('./map-service.js');
 const {Network} = require('./network-service.js');
 const {SlashCommandBuilder} = require('@discordjs/builders');
 const {App} = require('../app.js');
 const {FileService} = require("./file-service");
-const {Command} = require("../model/Command");
-const commands = FileService.openJsonSync('./data/constant/commands.json').commands;
+const {Collection} = require("discord.js");
+const COMMAND_FOLDER = "./commands"
 
 exports.CommandService = {
 
-    findCommand: function (commandName) {
-        let clearName = commandName.unaccentClean();
-        return commands.find(command => (command.name.unaccentClean() === clearName));
-    },
+    assembleCommands: function () {
+        const commands = FileService.openDir(COMMAND_FOLDER).map(it => {
+            if (it.endsWith(".js")) {
+                return it
+            } else {
+                const dir = FileService.openDir(`${COMMAND_FOLDER}/${it}`)
+                return dir.filter(filter => filter.endsWith(".js")).map(cmd => `${it}/${cmd}`)
+            }
+        }).flat()
 
-    getCommandHint: function (command) {
-        return command.hint;
-    },
-
-    getCommandName: function (command) {
-        return command.name;
+        const commandsMap = new Collection();
+        for (const file of commands) {
+            const commandName = file.split(".")[0];
+            const command = require(`.${COMMAND_FOLDER}/${file}`);
+            console.log(`Attempting to load command ${commandName}`);
+            commandsMap.set(command.help.name.toLowerCase(), command);
+        }
+        return commandsMap
     },
 
     isUpdateSlashCommandsNeeded: async function () {
         const apiCommandsSize = await Network.getApiCommandsSize();
-        return process.env.UPDATE_COMMANDS === 'true' || (commands.length !== apiCommandsSize);
+        return process.env.UPDATE_COMMANDS === 'true' || (App.bot.commands.size !== apiCommandsSize);
     },
 
     updateSlashCommands: async function () {
@@ -40,9 +45,10 @@ exports.CommandService = {
         App.log(`Started refreshing application (/) commands.`);
 
         try {
-            for (let it of commands) {
-                let name = it.name;
-                let description = it.hint;
+            for (let cmd of App.bot.commands.values()) {
+                const it = cmd.help;
+                const name = it.name;
+                const description = it.hint;
 
                 let commandSlashBuilder = new SlashCommandBuilder()
                     .setName(name.toLowerCase())
@@ -64,37 +70,12 @@ exports.CommandService = {
                                 .addChoices(...options)
                         );
                     } else {
-                        let argumentName = StringService.getWithoutNewLine('argument').toLowerCase();
-                        let descriptionArgument = StringService.getWithoutNewLine('some.name');
-                        let requiredParameter = false;
-
-                        if (it.category === 'HEROES') {
-                            argumentName = StringService.getWithoutNewLine('hero').toLowerCase();
-                            descriptionArgument = StringService.getWithoutNewLine('hero.name.or.part.of.name');
-
-                            if (it.name === 'Suggest') {
-                                argumentName = StringService.getWithoutNewLine('role').toLowerCase();
-                                descriptionArgument = StringService.getWithoutNewLine('role');
-                            }
-                        } else if (it.category === 'MAP') {
-                            argumentName = StringService.getWithoutNewLine('map').toLowerCase();
-                            descriptionArgument = StringService.getWithoutNewLine('map.name.or.part.of.name');
-                        } else if (it.name === 'Help') {
-                            argumentName = StringService.getWithoutNewLine('command').toLowerCase();
-                            descriptionArgument = StringService.getWithoutNewLine('command');
-                        }
-
-                        if (it.requiredParam) {
-                            requiredParameter = true;
-                        }
-
                         commandSlashBuilder.addStringOption(option =>
-                            option.setName(argumentName)
-                                .setDescription(descriptionArgument)
-                                .setRequired(requiredParameter));
+                            option.setName(it.argumentName.toLowerCase())
+                                .setDescription(it.argumentDescription.toLowerCase())
+                                .setRequired(it.requiredParam));
                     }
                 }
-
                 await Network.postSlashCommandsToAPI(commandSlashBuilder);
             }
 
@@ -105,42 +86,20 @@ exports.CommandService = {
     },
 
     handleCommand: async function (interaction) {
-        const args = interaction.options?.data?.map(it => it.value).join(' ');
         const receivedCommand = interaction.commandName.toString();
-        App.log(`Command (${receivedCommand}) was called by ${interaction.member?.guild?.name}`);
+        const command = App.bot.commands.get(receivedCommand);
+        const args = interaction.options?.data?.map(it => it.value).join(' ');
+        App.log(`Command (${receivedCommand}) with params ${args} was called by ${interaction.member?.guild?.name}`);
         let reply;
-        let command = this.findCommand(receivedCommand);
-        if (command != null && this.isCommandAllowed(interaction, command)) {
-            command.execute();
-            if (command.category === 'HEROES') {
-                reply = HeroService.init(command, args);
-            } else if (command.name === 'BotInfo') {
-                reply = this.assembleBotInfosReturnMessage();
-            } else if (command.name === 'Map') {
-                reply = MapService.init(args);
-            } else if (command.name === 'Help') {
-                reply = this.assembleHelpReturnMessage(interaction, args);
-            } else if (command.name === 'News') {
-                reply = await this.assembleNewsReturnMessage();
-            } else if (command.name === 'Update') {
-                if (Network.isUpdatingData) {
-                    reply = StringService.get('hold.still.updating');
-                } else {
-                    App.setBotStatus('Updating', 'WATCHING');
-                    Network.updateData(args);
-                    reply = StringService.get('update.process.started');
-                }
-            } else {
-                reply = StringService.get('command.not.exists', receivedCommand);
-            }
+        if (this.isCommandAllowed(interaction, command)) {
+            reply = await command.run(args);
         } else {
             reply = StringService.get('command.not.exists', receivedCommand);
         }
-
-        if (command && command.source) {
+        if (command && command.help?.source) {
             reply.footer = {
-                source: command.source,
-                sourceImage: command.sourceImage
+                source: command.help?.source,
+                sourceImage: command.help?.sourceImage
             }
         }
 
@@ -154,132 +113,6 @@ exports.CommandService = {
                 }
             };
         }
-    },
-
-    assembleHelpReturnMessage: function (msg, commandAsked) {
-        let reply = '';
-        let list = [];
-        let commandInfos = '';
-
-        if (commandAsked != null && commandAsked !== 'null' && commandAsked !== '') {
-            let command = this.findCommand(commandAsked);
-            if (command != null && this.isCommandAllowed(msg, command)) {
-                reply += `${this.getCommandHint(command)}`;
-                if (command.acceptParams) {
-                    list = [{
-                        name: StringService.get('example'),
-                        value: StringService.get('command.example', '/', this.getCommandName(command).toLowerCase()),
-                        inline: true
-                    }]
-                }
-            } else {
-                reply = StringService.get('command.not.exists', commandAsked);
-            }
-        } else {
-
-            reply = StringService.get('available.commands.are');
-            list = commands.filter(command => this.isCommandAllowed(msg, command)).map(it => {
-                const name = this.getCommandName(it);
-                return {
-                    name: name,
-                    value: `|| ||`,
-                    inline: true
-                };
-            })
-
-            commandInfos = StringService.get('all.commands.supported.both.languages');
-            commandInfos += StringService.get('all.data.gathered.from');
-            commandInfos += 'https://www.icy-veins.com/heroes/\n';
-            commandInfos += 'https://www.heroesprofile.com\n';
-            commandInfos += 'https://nexuscompendium.com\n';
-            commandInfos += 'https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2\n';
-            commandInfos += StringService.get('if.want.to.know.more.about.specific.command');
-            commandInfos += StringService.get('version', config.version);
-        }
-
-        const responseData = {
-            featureName: StringService.get('help'),
-            featureDescription: reply,
-            list: list
-        };
-
-        if (commandInfos?.length) {
-            responseData.commandInfos = {
-                featureName: StringService.get('help'),
-                featureDescription: commandInfos,
-            };
-        }
-
-        return {
-            data: responseData,
-            authorImage: 'images/hots.png'
-        }
-    },
-
-    assembleBotInfosReturnMessage: function () {
-        let reply = StringService.get('some.infos.about.me');
-
-        let totalSeconds = (App.bot.uptime / 1000);
-        const days = Math.floor(totalSeconds / 86400);
-        totalSeconds %= 86400;
-        const hours = Math.floor(totalSeconds / 3600);
-        totalSeconds %= 3600;
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = Math.floor(totalSeconds % 60);
-        const uptime = StringService.get('uptime.string', days, hours, minutes, seconds);
-        const servers = App.bot.guilds._cache;
-        App.log(`Servers. ${servers.map(it => it.name)}`);
-        let list = [
-            {
-                name: StringService.get('im.on'),
-                value: StringService.get('number.of.servers', servers.size.toString()),
-                inline: true
-            },
-            {
-                name: StringService.get('online.for'),
-                value: uptime,
-                inline: false
-            },
-            {
-                name: StringService.get('last.time.database.updated'),
-                value: App.bot.updatedAt,
-                inline: false
-            },
-            {
-                name: StringService.get('my.invitation.link.is'),
-                value: `https://discord.com/api/oauth2/authorize?client_id=${process.env.CLIENT_ID}&permissions=277025508352&scope=applications.commands%20bot`,
-                inline: false
-            }
-        ]
-
-
-        return {
-            data: {
-                featureName: StringService.get('bot.general.information'),
-                featureDescription: reply,
-                list: list,
-            },
-            authorImage: 'images/hots.png'
-        }
-    },
-
-    assembleNewsReturnMessage() {
-        return Network.gatherNews().then(
-            returnedNews => {
-                return {
-                    data: {
-                        featureName: StringService.get('news'),
-                        news: returnedNews.map(it => {
-                            return {
-                                name: it.header,
-                                value: it.link,
-                                inline: false
-                            };
-                        })
-                    }
-                }
-            }
-        )
     },
 
     isCommandAllowed(msg, command) {
