@@ -13,6 +13,7 @@ exports.Network = {
     isUpdatingData: false,
     replyTo: null,
     browser: null,
+    hosts: null,
 
     gatherHeroesRotation: async function () {
         App.log(`Gathering heroes rotation`);
@@ -84,7 +85,7 @@ exports.Network = {
     gatherPopularityAndWinRateInfo: async function () {
         App.log(`Gathering influence`);
 
-        const fun = function () {
+        const fun = () => {
             return Array.from(document.querySelectorAll('#hero-stat-data tr')).filter(f => f.firstElementChild).map((it) => {
                 return {
                     name: it.firstElementChild?.children[0]?.children[1].innerText,
@@ -317,6 +318,14 @@ exports.Network = {
     },
 
     updateData: async function (args) {
+        const hostFile = FileService.openFile('./data/constant/blocked-hosts.txt').split('\n');
+        this.hosts = hostFile.map(it => {
+            const frag = it.split(' ');
+            if (frag.length > 1 && frag[0] === '0.0.0.0') {
+                return frag[1];
+            }
+        }).filter(it => it);
+
         await this.setBrowser();
         App.log(`Started updating data process`);
         this.isUpdatingData = true;
@@ -456,11 +465,18 @@ exports.Network = {
     },
 
     createPage: async function (blockStuff = true) {
+
         const page = await this.browser.newPage();
         await page.setRequestInterception(true);
-
+        let date = null;
         page.on('request', (request) => {
-            if (blockStuff && ['image', 'stylesheet', 'font', 'script', 'xhr'].indexOf(request.resourceType()) !== -1) {
+            let domain = null;
+            let frags = request.url().split('/');
+            if (frags.length > 2) {
+                domain = frags[2];
+            }
+            if (this.hosts.includes(domain) ||
+                blockStuff && ['image', 'stylesheet', 'font', 'script', 'xhr'].indexOf(request.resourceType()) !== -1) {
                 request.abort();
             } else {
                 request.continue();
