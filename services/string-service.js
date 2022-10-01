@@ -1,4 +1,4 @@
-const {FileService} = require("./file-service");
+const {FileService} = require('./file-service');
 const strings = FileService.openJsonSync('./data/constant/strings.json');
 
 exports.StringService = {

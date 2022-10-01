@@ -27,10 +27,6 @@ exports.HeroService = {
     compositions: compositions,
     heroesNamesMap: new Map(),
 
-    init: function (command, heroName) {
-        return this.assembleReturnMessage(command, heroName);
-    },
-
     assembleHeroesNames: function () {
         const heroesNames = [];
         const folder = FileService.openDir(heroesPropertiesDir);
@@ -74,13 +70,13 @@ exports.HeroService = {
 
         return list.sort(this.sortByTierPosition).reverse().map(it => {
             return {
-                name: this.getHeroName(it),
+                name: it.name,
                 score: StringService.get('hero.score', it.infos.tierPosition)
             }
         }).splice(0, 12)
     },
 
-    findHero: function (searchTerm, searchInfos, evaluateThis) {
+    findHero: function (searchTerm, searchInfos) {
         const search = searchTerm.unaccentClean();
 
         let hero = this.findHeroByName(search);
@@ -93,9 +89,7 @@ exports.HeroService = {
 
         if (hero != null && searchInfos)
             hero = this.findHeroInfos(hero.id);
-        if (evaluateThis) {
-            this.hero = hero;
-        }
+
         return hero
     },
 
@@ -140,123 +134,21 @@ exports.HeroService = {
         }
     },
 
-    getRoleName: function (roleParam) {
-        return roleParam.name;
+    getHeroRole: function (hero) {
+        return this.findRoleById(hero.role).name;
     },
 
-    getHeroName: function (heroParam) {
-        return heroParam.name;
-    },
-
-    getHeroBuilds: function () {
-        return {
-            featureName: StringService.get('builds'),
-            builds: this.hero.infos.builds.map(build => {
-                return {
-                    name: build.skills,
-                    value: build.name,
-                    inline: false
-                }
-            })
-        };
-    },
-
-    getHeroRole: function () {
-        return this.getRoleName(this.findRoleById(this.hero.role));
-    },
-
-    getHeroUniverse: function () {
-        return this.hero.universe;
-    },
-
-    getHeroTierPosition: function () {
-        return this.hero.infos.tierPosition;
-    },
-
-    getHeroCounters: function () {
-        return {
-            featureName: StringService.get('counters'),
-            featureDescription: this.hero.infos.counters.countersText,
-            counter: this.hero.infos.counters.heroes.map(counter => {
-                const hero = this.findHero(counter, true, false);
-                return {
-                    name: this.getHeroName(hero),
-                    value: this.getRoleName(this.findRoleById(hero.role)),
-                    inline: true
-                }
-            })
-        };
-    },
-
-    getHeroStrongerMaps: function () {
-        return {
-            featureName: StringService.get('stronger.maps'),
-            strongerMaps: this.hero.infos.strongerMaps.map(strongerMap => {
-                return {
-                    name: "** **",
-                    value: strongerMap.name,
-                    inline: true
-                }
-            })
-        };
-    },
-
-    getHeroSynergies: function () {
-        return {
-            featureName: StringService.get('synergies'),
-            featureDescription: this.hero.infos.synergies.synergiesText,
-            synergies: this.hero.infos.synergies.heroes.map(synergy => {
-                const hero = this.findHero(synergy, true, false);
-                return {
-                    name: this.getHeroName(hero),
-                    value: this.getRoleName(this.findRoleById(hero.role)),
-                    inline: true
-                }
-            })
-        };
-    },
-
-    getHeroTips: function () {
-        return {
-            featureName: StringService.get('tips'),
-            description: this.hero.infos.tips
-        }
-    },
-
-    getHeroOverview: function () {
-        return {
-            featureName: StringService.get('overview'),
-            overview: [
-                {
-                    name: StringService.get('role'),
-                    value: this.getHeroRole(),
-                    inline: false
-                },
-                {
-                    name: StringService.get('universe'),
-                    value: this.getHeroUniverse(),
-                    inline: true
-                },
-                {
-                    name: StringService.get('score'),
-                    value: this.getHeroTierPosition().toString(),
-                    inline: true
-                }
-            ]
-        }
-    },
-
-    getHeroInfos: function () {
-        return {
-            featureName: ' ',
-            overview: this.getHeroOverview(),
-            heroBuilds: this.getHeroBuilds(),
-            heroSynergies: this.getHeroSynergies(),
-            heroCounters: this.getHeroCounters(),
-            heroStrongerMaps: this.getHeroStrongerMaps(),
-            heroTips: this.getHeroTips()
-        };
-    },
+    // getHeroInfos: function () {
+    //     return {
+    //         featureName: ' ',
+    //         overview: this.getHeroOverview(),
+    //         heroBuilds: this.getHeroBuilds(),
+    //         heroSynergies: this.getHeroSynergies(),
+    //         heroCounters: this.getHeroCounters(),
+    //         heroStrongerMaps: this.getHeroStrongerMaps(),
+    //         heroTips: this.getHeroTips()
+    //     };
+    // },
 
     setHeroesInfos: function (heroesParam) {
         this.heroesInfos = heroesParam;
@@ -274,7 +166,7 @@ exports.HeroService = {
 
             heroesInfos[index].infos = {};
             heroesInfos[index].id = heroKey;
-            heroesInfos[index].name = this.findHero(heroKey, false, true).name;
+            heroesInfos[index].name = this.findHero(heroKey).name;
             heroesInfos[index].infos.builds = this.assembleHeroBuilds(profileData,
                 heroesInfos[index],
                 icyData
@@ -341,7 +233,6 @@ exports.HeroService = {
         return icyData.builds.concat(profileData?.builds?.slice(0, 4)).slice(0, 5);
     },
 
-
     setHeroesTierPosition: function (heroesParam) {
         App.log(`setting heroes tier position`);
         heroesParam.sort(function (a, b) {
@@ -361,7 +252,7 @@ exports.HeroService = {
         let freeHeroes = [];
 
         for (let heroName of result.heroes) {
-            let freeHero = this.findHero(heroName, false, true);
+            let freeHero = this.findHero(heroName);
             let heroRole = this.findRoleById(freeHero.role);
             freeHeroes.push({
                 name: freeHero.name,
@@ -380,7 +271,7 @@ exports.HeroService = {
     updateBanList: function (result) {
         let banList = [];
         result.forEach(it => {
-            let banHero = this.findHero(it, false, true);
+            let banHero = this.findHero(it);
             let heroRole = this.findRoleById(banHero.role);
             banList.push({
                 name: banHero.name,
@@ -419,237 +310,5 @@ exports.HeroService = {
 
     setCompositions: function (compositionsParam) {
         this.compositions = compositionsParam;
-    },
-
-    assembleBanListReturnMessage: function () {
-        return {
-            data: {
-                featureName: StringService.get('suggested.bans'),
-                mustBanHeroes: this.mustBanHeroes.map(ban => {
-                    const hero = this.findHero(ban.name, false, false);
-                    return {
-                        name: this.getHeroName(hero),
-                        value: this.getRoleName(this.findRoleById(hero.role)),
-                        inline: false
-                    }
-                })
-            }
-        }
-    },
-
-    assembleFreeWeekHeroesReturnMessage: function () {
-        const options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'};
-        return {
-            data: {
-                featureName: StringService.get('free.heroes'),
-                featureDescription: StringService.get('rotation.dates',
-                    new Date(`${this.freeHeroes?.startDate} `).toLocaleDateString(StringService.EN_US, options),
-                    new Date(`${this.freeHeroes?.endDate} `).toLocaleDateString(StringService.EN_US, options)),
-                freeHeroes: (this.freeHeroes?.heroes?.length <= 0 ? StringService.get('no.free.heroes') : this.freeHeroes?.heroes?.map(freeHero => {
-                    const hero = this.findHero(freeHero.name, false, false);
-                    return {
-                        name: this.getHeroName(hero),
-                        value: this.getRoleName(this.findRoleById(hero.role)),
-                        inline: true
-                    }
-                })),
-                image: 'images/freeweek.png'
-            }
-        }
-    },
-
-    assembleSuggestHeroesReturnMessage: function (roleName) {
-        let role = null;
-        if (roleName != null && roleName !== '') {
-            role = this.findRoleByName(roleName)
-            if (role == null) {
-                return StringService.get('role.not.found', roleName);
-            }
-        }
-
-        const str = role !== null ? StringService.get('on.role', role.name) : ''
-
-        return {
-            data: {
-                featureName: StringService.get('suggested.heroes', str),
-                suggestions: this.findHeroesByScore(parseInt(role?.id)).map(it => {
-                    return {
-                        name: it.name,
-                        value: it.score,
-                        inline: true
-                    };
-                })
-            }
-        }
-    },
-
-    assembleTeamReturnMessage: function (heroes) {
-        let heroesSorted = JSON.parse(JSON.stringify(this.heroesInfos.sort(this.sortByTierPosition)))
-            .filter(it => it.name !== "Gall" && it.name !== "Cho");
-
-        let currentCompRoles = [];
-        let heroesArray = heroes.split(' ');
-        let currentCompHeroes = new Map();
-        let remainingHeroes = 5;
-        let suggested = [];
-
-        for (let it of heroesArray) {
-            let hero = this.findHero(it, true, false);
-            if (hero != null) {
-                if (currentCompHeroes.size >= 5) {
-                    break;
-                }
-                currentCompHeroes.set(hero.id, hero);
-            }
-        }
-
-        if (currentCompHeroes.size > 0) {
-            remainingHeroes -= currentCompHeroes.size;
-            const missingRolesMap = new Map()
-
-            for (let currentCompHero of currentCompHeroes.values()) {
-                heroesSorted = heroesSorted.filter(item => item.id !== currentCompHero.id);
-                currentCompRoles.push(this.findRoleById(currentCompHero.role).name);
-            }
-            currentCompRoles = currentCompRoles.sort();
-
-            for (let currentCompHero of currentCompHeroes.values()) {
-                let synergies = currentCompHero.infos.synergies.heroes.map(it => this.findHero(it, false, true));
-                synergies.forEach((synergy) => {
-                    let hero = heroesSorted.find(it => it.id === synergy.id)
-                    if (hero != null)
-                        hero.infos.tierPosition = hero.infos.tierPosition * 2;
-                });
-            }
-
-            //sorted filtered heroes
-            heroesSorted = heroesSorted.sort(this.sortByTierPosition).reverse();
-
-            let metaCompsRoles = this.compositions.map(it => it.roles.sort());
-
-            for (let role of currentCompRoles) {
-                let index = currentCompRoles.indexOf(role);
-                if (index !== -1) {
-                    if (currentCompRoles[index + 1] === role) {
-                        //is a duplicate
-                        metaCompsRoles = metaCompsRoles.filter(it => it.toString().includes(role + ',' + role));
-                    }
-                }
-                metaCompsRoles = metaCompsRoles.filter(it => it.includes(role));
-            }
-
-            metaCompsRoles = metaCompsRoles.splice(0, 3);
-            if (metaCompsRoles.length > 0) {
-
-                for (let comp of metaCompsRoles) {
-                    let missingRoles = JSON.parse(JSON.stringify(comp));
-
-                    for (let currentRole of currentCompRoles) {
-                        let index = missingRoles.indexOf(currentRole);
-                        if (index !== -1)
-                            missingRoles.splice(missingRoles.indexOf(currentRole), 1);
-                    }
-
-                    missingRolesMap.set(comp, missingRoles);
-                }
-            }
-
-            //filter missing role heroes only
-            for (let [key, value] of missingRolesMap.entries()) {
-                for (let missingRole of value) {
-                    let role = this.findRoleByName(missingRole);
-                    let hero = heroesSorted.filter(heroToShift => heroToShift.role == role.id).shift();
-                    heroesSorted = heroesSorted.filter(heroFiltered => heroFiltered.id != hero.id);
-
-                    suggested.push(hero);
-                }
-                missingRolesMap.set(key, suggested);
-                suggested = [];
-            }
-
-            if (Array.from(missingRolesMap.values())[0]?.length) {
-                const currentHeroes = Array.from(currentCompHeroes).map(([_, hero]) => {
-                    return {
-                        name: this.getHeroName(hero),
-                        role: this.findRoleById(hero.role).name,
-                    }
-                });
-
-                return {
-                    data: {
-                        featureName: StringService.get('suggested.team'),
-                        featureDescription: StringService.get('current.team', currentHeroes.map(it => `*${it.name}*`)?.join(', ')),
-                        suggestedHeroes: Array.from(missingRolesMap).map(([rolesArray, heroes]) => {
-                            const missingHeroes = heroes.map(it => {
-                                return `${this.getHeroName(it)} - **${this.getRoleName(this.findRoleById(it.role))}**\n`
-                            });
-                            currentHeroes.forEach(it => {
-                                missingHeroes.splice(rolesArray.indexOf(it.role),
-                                    0,
-                                    `~~${it.name} - ${this.getRoleName(this.findRoleByName(it.role))}~~\n`)
-                            });
-                            return {
-                                name: `${rolesArray.map(it => this.getRoleName(this.findRoleByName(it))).join(', ')}`,
-                                value: missingHeroes.join(''),
-                                inline: false,
-                            }
-                        })
-                    }
-                };
-            } else {
-                return {
-                    data: {
-                        featureName: StringService.get('suggested.team'),
-                        featureDescription: `${StringService.get('current.team', Array.from(currentCompHeroes).map(([_, value]) => `${this.getHeroName(value)}`).join(', '))}`,
-                        suggestedHeroes: Array.from(heroesSorted.splice(0, remainingHeroes)).map(it => {
-                            return {
-                                name: this.getHeroName(it),
-                                value: this.getRoleName(this.findRoleById(it.role)),
-                                inline: false,
-                            }
-                        })
-                    }
-                };
-            }
-        }
-        return 'No team'
-    },
-
-    assembleReturnMessage: function (commandObj, argument) {
-        let reply;
-
-        if (commandObj.name === 'Banlist') {
-            reply = this.assembleBanListReturnMessage();
-        } else if (commandObj.name === 'FreeWeek') {
-            reply = this.assembleFreeWeekHeroesReturnMessage();
-        } else if (commandObj.name === 'Suggest') {
-            reply = this.assembleSuggestHeroesReturnMessage(argument);
-        } else if (commandObj.name === 'Team') {
-            reply = this.assembleTeamReturnMessage(argument);
-        } else {
-            if (argument.length > 0) {
-                this.findHero(argument, true, true);
-                if (this.hero != null) {
-                    if (this.hero.infos != null && (this.hero.infos.counters.heroes.length > 0 &&
-                        this.hero.infos.synergies.heroes.length > 0 &&
-                        this.hero.infos.builds.length > 0)) {
-                        let returnedValues = eval(`this.getHero${commandObj.name}()`);
-                        return {
-                            authorImage: `images/${this.hero.name.unaccentClean().replaceAll(' ', '-')}.png`,
-                            heroName: this.getHeroName(this.hero),
-                            heroLink: `https://www.icy-veins.com/heroes/${this.hero.accessLink}-build-guide`,
-                            data: returnedValues
-                        };
-                    } else {
-                        reply = StringService.get('not.enough.hero.infos', argument);
-                    }
-                } else {
-                    reply = StringService.get('hero.not.found', argument);
-                }
-            } else {
-                reply = StringService.get('hero.not.found', argument);
-            }
-        }
-        return reply;
-    },
+    }
 };
