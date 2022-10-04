@@ -61,7 +61,7 @@ exports.Network = {
         App.log(`Gathering compositions`);
 
         const fun = function () {
-            return Array.from(document.querySelector('.rgMasterTable tbody').children).map((it) => {
+            return Array.from(document.querySelector('.aspGrid tbody').children).map((it) => {
                 return {
                     games: it.children[0].innerText,
                     winRate: parseFloat(it.children[1].innerText.replace(',', '.')),
@@ -468,7 +468,6 @@ exports.Network = {
 
         const page = await this.browser.newPage();
         await page.setRequestInterception(true);
-        let date = null;
         page.on('request', (request) => {
             let domain = null;
             let frags = request.url().split('/');
