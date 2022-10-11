@@ -61,7 +61,7 @@ exports.Network = {
         App.log(`Gathering compositions`);
 
         const fun = function () {
-            return Array.from(document.querySelector('.aspGrid tbody').children).map((it) => {
+            return Array.from(document.querySelector('.cdk-table tbody')?.children)?.map((it) => {
                 return {
                     games: it.children[0].innerText,
                     winRate: parseFloat(it.children[1].innerText.replace(',', '.')),
@@ -71,8 +71,9 @@ exports.Network = {
         };
 
         const options = {
-            url: 'https://www.hotslogs.com/Sitewide/TeamCompositions?Grouping=1',
-            waitUntil: 'domcontentloaded',
+            url: 'https://www.hotslogs.com/ang/Sitewide/TeamCompositions',
+            waitUntil: 'networkidle2',
+            blockStuff: false,
             function: fun
         }
 
@@ -296,7 +297,7 @@ exports.Network = {
         await page.exposeFunction("fun", fun);
         let result;
         try {
-            await page.goto(url, {waitUntil: options.waitUntil});
+            await page.goto(url, {waitUntil: options.waitUntil, timeout: 30000});
             result = await page.evaluate(fun);
         } catch (ex) {
             App.log(`Error while fetching ${options.url}`, ex);
@@ -422,7 +423,7 @@ exports.Network = {
         this.browser?.close()?.catch();
         this.browser = await puppeteer.launch({
             headless: true,
-            // devtools: true,
+            devtools: false,
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',

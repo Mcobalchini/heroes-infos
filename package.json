@@ -1,6 +1,6 @@
 {
   "name": "heroes-infos",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "hots infos bot",
   "main": "app.js",
   "scripts": {
