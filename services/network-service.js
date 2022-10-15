@@ -164,7 +164,7 @@ exports.Network = {
 
         try {
             await page.goto(url, {waitUntil: 'networkidle0'});
-            result = await page.$('.primary-table > table:nth-child(6)');
+            result = await page.$('.primary-table > table:nth-child(9)');
             await result.screenshot({
                 path: 'images/freeweek.png'
             });
