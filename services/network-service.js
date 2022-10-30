@@ -71,7 +71,7 @@ exports.Network = {
         };
 
         const options = {
-            url: 'https://www.hotslogs.com/ang/Sitewide/TeamCompositions',
+            url: 'https://www.hotslogs.com/sitewide/teamcompositions',
             waitUntil: 'networkidle2',
             blockStuff: false,
             function: fun
