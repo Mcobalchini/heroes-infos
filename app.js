@@ -35,19 +35,28 @@ function log(text, error) {
         const date = new Date().toLocaleString("pt-BR");
         if (error) {
             process.stdout.write(`[${date}] - ${text} - [ERROR]: ${error} \n`);
-            if (process.env.LOGS_CHANNEL_ID) {
+            if (process.env.ERRORS_CHANNEL_ID) {
                 sendError(error)
             }
         } else {
-            process.stdout.write(`[${date}] - ${text}\n`);
+            const log = `[${date}] - ${text}\n`;
+            process.stdout.write(log);
+            if (process.env.LOGS_CHANNEL_ID) {
+                sendLog(log)
+            }
         }
     } catch (e) {
         process.stdout.write(`error while sending error ${e.message}\n`);
     }
 }
 
-function sendError(errorMessage) {
+function sendLog(logMessage) {
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.LOGS_CHANNEL_ID);
+    channel?.send(logMessage);
+}
+
+function sendError(errorMessage) {
+    const channel = bot.channels?.cache?.find(channel => channel.id === process.env.ERRORS_CHANNEL_ID);
     const reply = {
         featureName: StringService.get('bot.error'),
         data: errorMessage.message,
