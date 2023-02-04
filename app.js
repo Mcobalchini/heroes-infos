@@ -262,7 +262,7 @@ bot.on('interactionCreate', async interaction => {
         await interaction.deferReply();
         await handleResponse(interaction);
     } catch (e) {
-        this.log(`Error while handling response`, e);
+        log(`Error while handling response`, e);
     }
 });
 

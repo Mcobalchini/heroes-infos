@@ -11,7 +11,7 @@ exports.run = (commandAsked, msg) => {
 
     if (commandAsked != null && commandAsked !== 'null' && commandAsked !== '') {
         let command = commands.get(commandAsked);
-        if (command && CommandService.isCommandAllowed(command, msg)) {
+        if (command && CommandService.isCommandAllowed(msg, command)) {
             reply += command.help.hint;
             if (command.help.acceptParams) {
                 list = [{
