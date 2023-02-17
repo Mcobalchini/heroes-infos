@@ -248,6 +248,10 @@ exports.HeroService = {
         FileService.writeJsonFile('data/freeweek.json', heroesParam);
     },
 
+    getRotationData: function () {
+        return this.freeHeroes;
+    },
+
     updateRotation: function (result) {
         let freeHeroes = [];
 

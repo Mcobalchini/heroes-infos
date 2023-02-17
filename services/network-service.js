@@ -419,6 +419,10 @@ exports.Network = {
         return !HeroService.findHero('1', true)?.infos?.builds?.length > 0
     },
 
+    isRotationUpdateNeeded: function () {
+        return new Date(HeroService.getRotationData().endDate) < new Date();
+    },
+
     setBrowser: async function () {
         this.browser?.close()?.catch();
         this.browser = await puppeteer.launch({
