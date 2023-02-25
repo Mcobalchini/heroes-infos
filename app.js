@@ -1,5 +1,6 @@
 require('dotenv').config({path: './variables.env'});
-const HALF_DAY = 21600000;
+const HOUR = 1000 * 60 * 60;
+const PERIOD = HOUR * 4;
 const {
     Client,
     EmbedBuilder,
@@ -156,13 +157,14 @@ async function handleResponse(interaction) {
 }
 
 function periodicUpdateCheck(interval) {
+    log('checking if update needed');
     if (Network.isUpdateNeeded() || Network.isRotationUpdateNeeded()) {
         const updateType = Network.isRotationUpdateNeeded() ? 'rotation' : '';
         setBotStatus(`Updating ${updateType}`, 'WATCHING')
         Network.updateData(updateType).then(() => setBotStatus('Heroes of the Storm', 'PLAYING'));
     }
     if (interval)
-        setInterval(periodicUpdateCheck, HALF_DAY, false);
+        setInterval(periodicUpdateCheck, PERIOD, false);
 }
 
 function addItemIntoListIfNeeded(array) {

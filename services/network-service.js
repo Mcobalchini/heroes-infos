@@ -420,7 +420,9 @@ exports.Network = {
     },
 
     isRotationUpdateNeeded: function () {
-        return new Date(HeroService.getRotationData().endDate) < new Date();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0)
+        return new Date(`${HeroService.getRotationData().endDate} `) < today;
     },
 
     setBrowser: async function () {

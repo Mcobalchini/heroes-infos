@@ -238,5 +238,11 @@
   },
   {
     "updates.everything": "Updates everything"
+  },
+  {
+    "no.team.check.heroes": "Couldn't suggest any team, check if you're providing valid heroes"
+  },
+  {
+    "accept.arguments": "This command accepts arguments, beeing them"
   }
 ]

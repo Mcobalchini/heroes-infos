@@ -14,11 +14,18 @@ exports.run = (commandAsked, msg) => {
         if (command && CommandService.isCommandAllowed(msg, command)) {
             reply += command.help.hint;
             if (command.help.acceptParams) {
-                list = [{
-                    name: StringService.get('example'),
-                    value: StringService.get('command.example', '/', command.help.name.toLowerCase()),
-                    inline: true
-                }]
+                list = [
+                    {
+                        name: StringService.get('accept.arguments'),
+                        value: command.help.argumentDescription,
+                        inline: false
+                    },
+                    {
+                        name: StringService.get('example'),
+                        value: StringService.get('command.example', '/', command.help.name.toLowerCase()),
+                        inline: true
+                    }
+                ]
             }
         } else {
             reply = StringService.get('command.not.exists', commandAsked);

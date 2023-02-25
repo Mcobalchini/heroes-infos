@@ -2,7 +2,7 @@ const {StringService} = require('../../services/string-service');
 const {HeroService} = require('../../services/hero-service');
 
 exports.run = async (heroes) => {
-
+    heroes = heroes.replaceAll(',',' ').replaceAll(';',' ')
     let heroesSorted = JSON.parse(JSON.stringify(HeroService.heroesInfos.sort(HeroService.sortByTierPosition)))
         .filter(it => it.name !== 'Gall' && it.name !== 'Cho');
 
@@ -13,12 +13,14 @@ exports.run = async (heroes) => {
     let suggested = [];
 
     for (let it of heroesArray) {
-        let hero = HeroService.findHero(it, true);
-        if (hero != null) {
-            if (currentCompHeroes.size >= 5) {
-                break;
+        if (it) {
+            let hero = HeroService.findHero(it, true);
+            if (hero != null) {
+                if (currentCompHeroes.size >= 5) {
+                    break;
+                }
+                currentCompHeroes.set(hero.id, hero);
             }
-            currentCompHeroes.set(hero.id, hero);
         }
     }
 
@@ -36,8 +38,15 @@ exports.run = async (heroes) => {
             let synergies = currentCompHero.infos.synergies.heroes.map(it => HeroService.findHero(it));
             synergies.forEach((synergy) => {
                 let hero = heroesSorted.find(it => it.id === synergy.id)
-                if (hero != null)
+                if (hero != null) {
+                    if (hero.infos.tierPosition < 0) {
+                        hero.infos.tierPosition *= -1;
+                        hero.infos.tierPosition += 1000;
+                    } else {
+                        hero.infos.tierPosition += 2000;
+                    }
                     hero.infos.tierPosition = hero.infos.tierPosition * 2;
+                }
             });
         }
 
@@ -131,7 +140,7 @@ exports.run = async (heroes) => {
             };
         }
     }
-    return 'No team'
+    return StringService.get('no.team.check.heroes')
 }
 
 exports.help = {
