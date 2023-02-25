@@ -27,6 +27,7 @@ exports.help = {
             description: 'updates.everything'
         }
     ],
+    argumentDescription: 'What to update',
     defaultPermission: false,
     category: 'GENERAL'
 }
