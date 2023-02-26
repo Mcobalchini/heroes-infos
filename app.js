@@ -38,13 +38,13 @@ function log(text, error) {
         if (error) {
             process.stdout.write(`[${date}] - ${text} - [ERROR]: ${error} \n`);
             if (process.env.ERRORS_CHANNEL_ID) {
-                sendError(error)
+                sendError(error);
             }
         } else {
             const log = `[${date}] - ${text}\n`;
             process.stdout.write(log);
             if (process.env.LOGS_CHANNEL_ID) {
-                sendLog(log)
+                sendLog(log);
             }
         }
     } catch (e) {
@@ -134,7 +134,7 @@ function addToMap(fileMap, property) {
 
 function assembleEmbedObject(embeds) {
     if (!Array.isArray(embeds)) {
-        embeds = [embeds]
+        embeds = [embeds];
     }
     return {
         embeds,
@@ -149,7 +149,7 @@ async function handleResponse(interaction) {
         const replyObject = assembleEmbedObject(embeds);
         replyObject.ephemeral = true;
         interaction.editReply(replyObject).catch(e => {
-            log(`Error while responding`, e)
+            log(`Error while responding`, e);
         });
     } catch (e) {
         log(`Error while responding`, e);
@@ -160,7 +160,7 @@ function periodicUpdateCheck(interval) {
     log('checking if update needed');
     if (Network.isUpdateNeeded() || Network.isRotationUpdateNeeded()) {
         const updateType = Network.isRotationUpdateNeeded() ? 'rotation' : '';
-        setBotStatus(`Updating ${updateType}`, 'WATCHING')
+        setBotStatus(`Updating ${updateType}`, 'WATCHING');
         Network.updateData(updateType).then(() => setBotStatus('Heroes of the Storm', 'PLAYING'));
     }
     if (interval)
@@ -202,24 +202,24 @@ function createEmbed(replyObject, authorName, authorUrl, authorIcon, thumbnail) 
         .setThumbnail(thumbnail)
         .setTimestamp();
 
-    const attribute = Object.keys(replyObject).find(it => isNotReservedKey(it))
+    const attribute = Object.keys(replyObject).find(it => isNotReservedKey(it));
 
     if (Array.isArray(replyObject[attribute])) {
         let array = addItemIntoListIfNeeded(replyObject[attribute]);
         embed.addFields(array);
         embed.setDescription(featureDesc);
     } else {
-        let desc = replyObject[attribute]
-        embed.setDescription(desc ? desc : featureDesc)
+        let desc = replyObject[attribute];
+        embed.setDescription(desc ? desc : featureDesc);
     }
 
     return embed;
 }
 
 function createEmbeds(replyObject, authorName, authorUrl, authorIcon) {
-    authorName = authorName ? authorName : 'Heroes Infos Bot'
-    authorUrl = authorUrl ? authorUrl : 'https://www.icy-veins.com/heroes/'
-    authorIcon = authorIcon ? authorIcon : 'attachment://hots.png'
+    authorName = authorName ? authorName : 'Heroes Infos Bot';
+    authorUrl = authorUrl ? authorUrl : 'https://www.icy-veins.com/heroes/';
+    authorIcon = authorIcon ? authorIcon : 'attachment://hots.png';
     let embeds = [];
 
     Object.keys(replyObject).forEach(function (key, _) {

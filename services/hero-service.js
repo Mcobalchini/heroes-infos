@@ -185,7 +185,7 @@ exports.HeroService = {
         const heroes = this.setHeroesTierPosition(heroesInfos);
         this.setHeroesInfos(heroes);
         this.setHeroesCommonSynergies();
-        return this.heroesInfos;
+        FileService.writeJsonFile('data/heroes-infos.json', this.heroesInfos);
     },
 
     setHeroesCommonSynergies: function () {

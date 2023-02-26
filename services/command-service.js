@@ -79,7 +79,7 @@ exports.CommandService = {
                 await Network.postSlashCommandsToAPI(commandSlashBuilder);
             }
 
-            App.log(`Successfully reloaded application (/) commands.`);
+            App.log(`Successfully reloaded application / commands.`);
         } catch (error) {
             App.log(`Error while reloading / commands`, error);
         }
@@ -89,9 +89,9 @@ exports.CommandService = {
         const receivedCommand = interaction.commandName.toString();
         const command = App.bot.commands.get(receivedCommand);
         const args = interaction.options?.data?.map(it => it.value).join(' ');
-        App.log(`Command (${receivedCommand}) with params ${args} was called by ${interaction.member?.guild?.name}`);
         let reply;
         if (this.isCommandAllowed(interaction, command)) {
+            App.log(`Command (${receivedCommand}) with params ${args} was called by ${interaction.member?.guild?.name}`);
             reply = await command.run(args, interaction);
         } else {
             reply = StringService.get('command.not.exists', receivedCommand);

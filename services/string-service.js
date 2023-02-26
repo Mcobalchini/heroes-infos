@@ -39,12 +39,12 @@ exports.StringService = {
             }
             return string + '\n';
         } else {
-            return ''
+            return '';
         }
     },
 
     getWithoutNewLine(property) {
-        return this.get(property).replace('\n', '')
+        return this.get(property).replace('\n', '');
     },
 
     setup: function () {

@@ -10,7 +10,7 @@ exports.run = async (roleName) => {
         }
     }
 
-    const str = role !== null ? StringService.get('on.role', role.name) : ''
+    const str = role !== null ? StringService.get('on.role', role.name) : '';
 
     return {
         data: {

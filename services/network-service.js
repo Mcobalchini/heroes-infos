@@ -109,7 +109,7 @@ exports.Network = {
         const page = await this.createPage();
         let url = `https://news.blizzard.com/en-us/heroes-of-the-storm`;
         let divClass = ".Card-content";
-        let result
+        let result;
         try {
             await page.goto(url, {waitUntil: 'domcontentloaded'});
             result = await page.evaluate((divClass) => {
@@ -137,7 +137,7 @@ exports.Network = {
         const page = await this.createPage();
         const url = 'https://www.heroesprofile.com/Global/Talents/';
         try {
-            await page.goto(url, {waitUntil: 'domcontentloaded'})
+            await page.goto(url, {waitUntil: 'domcontentloaded'});
             App.log(`Created heroes profile session`);
             const cookies = await page.cookies();
             return `${cookies[0].name}=${cookies[0].value};`
@@ -159,7 +159,7 @@ exports.Network = {
         remainingTrials = remainingTrials ?? 3;
         const page = await this.createPage(false);
 
-        let result
+        let result;
         const url = `https://nexuscompendium.com/currently`;
 
         try {
@@ -268,8 +268,8 @@ exports.Network = {
             await page.goto(profileUrl, {waitUntil: 'domcontentloaded', timeout: 60000});
 
             return await page.evaluate((profileUrl) => {
-                const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `(${it.innerText}% win rate)`)
-                const skills = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .build-code')).map(it => it.innerText)
+                const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `(${it.innerText}% win rate)`);
+                const skills = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .build-code')).map(it => it.innerText);
                 const builds = [];
                 for (let i in names) {
                     builds.push({
@@ -335,7 +335,7 @@ exports.Network = {
         await this.gatherHeroesRotation();
         if (args === "rotation") {
             this.endUpdate();
-            return
+            return;
         }
         await this.gatherBanTierListInfo();
         await this.gatherCompositionsInfo();
@@ -377,9 +377,8 @@ exports.Network = {
                 let finishedTime = new Date();
                 App.log(`Finished gathering process in ${(finishedTime.getTime() - startTime.getTime()) / 1000} seconds`);
 
-                heroesInfos = HeroService.updateHeroesInfos(heroesMap, popularityWinRate, heroesInfos);
+                HeroService.updateHeroesInfos(heroesMap, popularityWinRate, heroesInfos);
 
-                FileService.writeJsonFile('data/heroes-infos.json', heroesInfos);
                 this.endUpdate();
             });
         } catch (e) {
@@ -387,7 +386,7 @@ exports.Network = {
             if (e.stack.includes('Navigation timeout of 60000 ms exceeded')
                 || e.stack.includes('net::ERR_ABORTED')
                 || e.stack.includes('net::ERR_NETWORK_CHANGED')) {
-                App.log("Updating again")
+                App.log("Updating again");
                 await this.updateData();
             }
 
@@ -411,17 +410,17 @@ exports.Network = {
 
     getApiCommandsSize: async function () {
         if (!App.bot.application?.owner) await App.bot.application?.fetch();
-        const botCommands = await App.bot.application?.commands.fetch()
-        return botCommands.size
+        const botCommands = await App.bot.application?.commands.fetch();
+        return botCommands.size;
     },
 
     isUpdateNeeded: function () {
-        return !HeroService.findHero('1', true)?.infos?.builds?.length > 0
+        return !HeroService.findHero('1', true)?.infos?.builds?.length > 0;
     },
 
     isRotationUpdateNeeded: function () {
         const today = new Date();
-        today.setHours(0, 0, 0, 0)
+        today.setHours(0, 0, 0, 0);
         return new Date(`${HeroService.getRotationData().endDate} `) < today;
     },
 

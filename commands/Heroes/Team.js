@@ -26,7 +26,7 @@ exports.run = async (heroes) => {
 
     if (currentCompHeroes.size > 0) {
         remainingHeroes -= currentCompHeroes.size;
-        const missingRolesMap = new Map()
+        const missingRolesMap = new Map();
 
         for (let currentCompHero of currentCompHeroes.values()) {
             heroesSorted = heroesSorted.filter(item => item.id !== currentCompHero.id);
@@ -59,7 +59,7 @@ exports.run = async (heroes) => {
             let index = currentCompRoles.indexOf(role);
             if (index !== -1) {
                 if (currentCompRoles[index + 1] === role) {
-                    //is a duplicate
+                    //it's a duplicate
                     metaCompsRoles = metaCompsRoles.filter(it => it.toString().includes(role + ',' + role));
                 }
             }
@@ -140,7 +140,7 @@ exports.run = async (heroes) => {
             };
         }
     }
-    return StringService.get('no.team.check.heroes')
+    return StringService.get('no.team.check.heroes');
 }
 
 exports.help = {
