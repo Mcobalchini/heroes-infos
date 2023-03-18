@@ -334,7 +334,7 @@ exports.Network = {
         await this.gatherHeroesPrint();
         await this.gatherHeroesRotation();
         if (args === "rotation") {
-            this.endUpdate();
+            await this.endUpdate();
             return;
         }
         await this.gatherBanTierListInfo();
@@ -371,15 +371,13 @@ exports.Network = {
 
         try {
             App.log(`Started gathering heroes data`);
-            thread.start().then(() => {
-                this.browser.close().catch();
-
+            thread.start().then(async () => {
                 let finishedTime = new Date();
                 App.log(`Finished gathering process in ${(finishedTime.getTime() - startTime.getTime()) / 1000} seconds`);
 
                 HeroService.updateHeroesInfos(heroesMap, popularityWinRate, heroesInfos);
 
-                this.endUpdate();
+                await this.endUpdate();
             });
         } catch (e) {
 
@@ -395,7 +393,8 @@ exports.Network = {
         }
     },
 
-    endUpdate: function () {
+    endUpdate: async function () {
+        await this.browser.close().catch();
         App.log(`Finished update process`);
         this.isUpdatingData = false;
         App.bot.updatedAt = new Date().toLocaleString("pt-BR");
