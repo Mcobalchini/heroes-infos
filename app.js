@@ -3,8 +3,6 @@ const HOUR = 1000 * 60 * 60;
 const PERIOD = HOUR * 4;
 const {
     Client,
-    EmbedBuilder,
-    AttachmentBuilder,
     IntentsBitField,
     ActivityType
 } = require('discord.js');
@@ -22,6 +20,8 @@ StringService.setup();
 
 const {CommandService} = require('./services/command-service.js');
 const {Network} = require('./services/network-service.js');
+const {EmbedService} = require('./services/embed-service');
+const {App} = require("./app");
 bot.commands = CommandService.assembleCommands();
 
 function setBotStatus(name, type) {
@@ -63,22 +63,9 @@ function sendError(errorMessage) {
         featureName: StringService.get('bot.error'),
         data: errorMessage.message,
     }
-    const embed = createEmbed(reply, null, null, null, 'attachment://fire.png');
+    const embed = EmbedService.createEmbed(reply, null, null, null, 'attachment://fire.png');
     embed.setColor('#FE4F60');
-    channel?.send(assembleEmbedObject(embed));
-}
-
-function fillFooter(attachment, embeds, footerObj) {
-
-    embeds.forEach(it => {
-        if (footerObj) {
-            let footer = {
-                text: StringService.get('data.from', footerObj.source),
-                iconURL: footerObj.sourceImage
-            }
-            it.setFooter(footer)
-        }
-    });
+    channel?.send(EmbedService.assembleEmbedObject(embed));
 }
 
 function createResponse(reply) {
@@ -92,14 +79,14 @@ function createResponse(reply) {
         }
 
         if (reply.data != null) {
-            embeds.push(...createEmbeds(reply.data, reply.authorName, reply.authorUrl, attachment));
+            embeds.push(...EmbedService.createEmbeds(reply.data, reply.authorName, reply.authorUrl, attachment));
             embeds[0].setThumbnail(attachment);
-            fillFooter(attachment, embeds, reply.footer);
+            EmbedService.fillFooter(attachment, embeds, reply.footer);
         }
     }
 
     if (Network.isUpdatingData) {
-        let updatingWarningEmbed = createEmbed({
+        let updatingWarningEmbed = EmbedService.createEmbed({
             featureName: StringService.get('note'),
             message: StringService.get('hold.still.updating.data')
         }, null, null, null, 'attachment://download.png');
@@ -109,44 +96,11 @@ function createResponse(reply) {
     return embeds;
 }
 
-function fillAttachments(embeds) {
-    const files = new Map();
-    files.set('footer.png', new AttachmentBuilder('images/footer.png', 'attachment://footer.png'));
-    embeds.forEach(it => {
-        addToMap(files, it.data.image?.url);
-        addToMap(files, it.data.thumbnail?.url);
-        addToMap(files, it.data.author?.iconURL);
-    });
-    return Array.from(files.values());
-}
-
-function removeAttachmenPrefix(text) {
-    return text.replace('attachment://', '');
-}
-
-function addToMap(fileMap, property) {
-    if (property != null) {
-        const fileName = removeAttachmenPrefix(property);
-        if (!fileName.includes('http') && fileName.length > 0 && !fileMap.has(fileName))
-            fileMap.set(fileName, new AttachmentBuilder(`images/${fileName}`, fileName));
-    }
-}
-
-function assembleEmbedObject(embeds) {
-    if (!Array.isArray(embeds)) {
-        embeds = [embeds];
-    }
-    return {
-        embeds,
-        files: fillAttachments(embeds)
-    };
-}
-
 async function handleResponse(interaction) {
     try {
         const reply = await CommandService.handleCommand(interaction);
         const embeds = createResponse(reply);
-        const replyObject = assembleEmbedObject(embeds);
+        const replyObject = EmbedService.assembleEmbedObject(embeds);
         replyObject.ephemeral = true;
         interaction.editReply(replyObject).catch(e => {
             log(`Error while responding`, e);
@@ -165,81 +119,6 @@ function periodicUpdateCheck(interval) {
     }
     if (interval)
         setInterval(periodicUpdateCheck, PERIOD, false);
-}
-
-function addItemIntoListIfNeeded(array) {
-    if (array.length % 3 !== 0 && array.every(it => it.inline)) {
-        array.push(
-            {
-                name: `_ _`,
-                value: `|| ||`,
-                inline: true
-            }
-        )
-    }
-    return array;
-}
-
-function createEmbed(replyObject, authorName, authorUrl, authorIcon, thumbnail) {
-    authorName = authorName ? authorName : 'Heroes Infos Bot'
-    authorUrl = authorUrl ? authorUrl : 'https://www.icy-veins.com/heroes/'
-    authorIcon = authorIcon ? authorIcon : 'attachment://hots.png'
-
-    const author = {
-        name: authorName,
-        url: authorUrl,
-        iconURL: authorIcon
-    }
-
-    let featureDesc = replyObject.featureDescription ? replyObject.featureDescription : '_ _';
-    let image = replyObject.image ? replyObject.image.replace('images/', 'attachment://') : 'attachment://footer.png';
-
-    const embed = new EmbedBuilder()
-        .setColor('#0099ff')
-        .setTitle(replyObject.featureName)
-        .setAuthor(author)
-        .setImage(image)
-        .setThumbnail(thumbnail)
-        .setTimestamp();
-
-    const attribute = Object.keys(replyObject).find(it => isNotReservedKey(it));
-
-    if (Array.isArray(replyObject[attribute])) {
-        let array = addItemIntoListIfNeeded(replyObject[attribute]);
-        embed.addFields(array);
-        embed.setDescription(featureDesc);
-    } else {
-        let desc = replyObject[attribute];
-        embed.setDescription(desc ? desc : featureDesc);
-    }
-
-    return embed;
-}
-
-function createEmbeds(replyObject, authorName, authorUrl, authorIcon) {
-    authorName = authorName ? authorName : 'Heroes Infos Bot';
-    authorUrl = authorUrl ? authorUrl : 'https://www.icy-veins.com/heroes/';
-    authorIcon = authorIcon ? authorIcon : 'attachment://hots.png';
-    let embeds = [];
-
-    Object.keys(replyObject).forEach(function (key, _) {
-        const attribute = replyObject[key];
-        if (isObject(replyObject, key)) {
-            embeds.push(createEmbed(attribute, authorName, authorUrl, authorIcon));
-        } else if (isNotReservedKey(key)) {
-            embeds.push(createEmbed(replyObject, authorName, authorUrl, authorIcon));
-        }
-    });
-    return embeds;
-}
-
-function isObject(object, key) {
-    return object[key].toString() === '[object Object]'
-        && !Array.isArray(object[key]) && key !== 'footer';
-}
-
-function isNotReservedKey(key) {
-    return key !== 'featureName' && key !== 'featureDescription' && key !== 'footer' && key !== 'image';
 }
 
 function assembleGuildData(guild) {
@@ -289,22 +168,24 @@ bot.once('ready', function () {
 bot.on('guildCreate', guild => {
     log(`Owner id ${guild.ownerId}`);
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.JOIN_SERVER_CHANNEL_ID);
-    const embed = createEmbed({
+    const embed = EmbedService.createEmbed({
         featureName: StringService.get('joined.new.server'),
         guildData: assembleGuildData(guild)
     }, null, null, null, guild.iconURL());
-    channel?.send(assembleEmbedObject(embed));
+    channel?.send(EmbedService.assembleEmbedObject(embed));
 });
 
 bot.on('guildDelete', guild => {
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.LEAVE_SERVER_CHANNEL_ID);
     if (guild?.name) {
-        const embed = createEmbed({
+        const embed = EmbedService.createEmbed({
             featureName: StringService.get('left.server'),
             guildData: assembleGuildData(guild)
         }, null, null, null, guild.iconURL());
-        channel?.send(assembleEmbedObject(embed));
+        channel?.send(EmbedService.assembleEmbedObject(embed));
     }
 });
 
-bot.login(process.env.HEROES_INFOS_TOKEN);
+bot.login(process.env.HEROES_INFOS_TOKEN).then(() =>
+    App.log("Successfully logged in")
+);
