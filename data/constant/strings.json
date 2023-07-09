@@ -189,7 +189,13 @@
     "im.on": "I'm on"
   },
   {
+    "used.by": "Used by"
+  },
+  {
     "number.of.servers": "{0} servers"
+  },
+  {
+    "number.of.users": "{0} users"
   },
   {
     "my.invitation.link.is": "My invitation link is"

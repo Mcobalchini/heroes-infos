@@ -21,6 +21,11 @@ exports.run = () => {
             inline: true
         },
         {
+            name: StringService.get('used.by'),
+            value: StringService.get('number.of.users', App.bot.users.cache.filter(user => !user.bot).size),
+            inline: true
+        },
+        {
             name: StringService.get('online.for'),
             value: uptime,
             inline: false

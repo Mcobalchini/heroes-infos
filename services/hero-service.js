@@ -236,9 +236,9 @@ exports.HeroService = {
     setHeroesTierPosition: function (heroesParam) {
         App.log(`setting heroes tier position`);
         heroesParam.sort(function (a, b) {
-            return a.influence - b.influence;
+            return (a.influence ?? 0) - (b.influence ?? 0);
         }).forEach(it => {
-            it.infos.tierPosition = it.infos.influence;
+            it.infos.tierPosition = (it.infos?.influence ?? 0);
         });
         return heroesParam;
     },
