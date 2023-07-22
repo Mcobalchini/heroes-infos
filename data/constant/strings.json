@@ -93,6 +93,9 @@
     "suggested.bans": "Suggested bans"
   },
   {
+    "banheroes.description": "These are the top 20 banned heroes, sorted by number of games they are usually banned"
+  },
+  {
     "available.builds": "Available build(s) for {0}"
   },
   {

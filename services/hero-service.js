@@ -180,7 +180,7 @@ exports.HeroService = {
             let obj = popularityWinRate?.find(it => {
                 return it.name.cleanVal() === heroesInfos[index].name.cleanVal()
             });
-            heroesInfos[index].infos.influence = parseInt(obj.influence) ?? -1000;
+            heroesInfos[index].infos.influence = parseInt(obj.influence) ?? - 1000;
         }
         const heroes = this.setHeroesTierPosition(heroesInfos);
         this.setHeroesInfos(heroes);

@@ -5,6 +5,7 @@ exports.run = async () => {
     return {
         data: {
             featureName: StringService.get('suggested.bans'),
+            featureDescription: StringService.get('banheroes.description'),
             mustBanHeroes: HeroService.mustBanHeroes.map(ban => {
                 const hero = HeroService.findHero(ban.name);
                 return {

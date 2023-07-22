@@ -7,6 +7,7 @@ const {Routes} = require('discord-api-types/v9');
 const {REST} = require('@discordjs/rest');
 const {App} = require('../app.js');
 const {FileService} = require("./file-service");
+const {JSDOM} = require("jsdom");
 const rest = new REST({version: '9'}).setToken(process.env.HEROES_INFOS_TOKEN);
 
 exports.Network = {
@@ -40,21 +41,57 @@ exports.Network = {
 
     gatherBanTierListInfo: async function () {
         App.log(`Gathering ban list`);
-        const fun = function () {
-            return [...new Set(Array.from(document.querySelectorAll('.htl_ban_true'))
-                .map(nameElements => nameElements.nextElementSibling.innerText))];
-        };
+        const drafterCookieValue = await this.createHeroesProfileDrafterSession();
+        let data;
+        const details = {
+            'data[0][name]': 'timeframe',
+            'data[0][value]': 'Minor',
+            'data[1][name]': 'minor_timeframe',
+            'data[1][value]': drafterCookieValue?.version,
+            'currentPickNumber': '0',
+            'mockdraft': 'false',
+        }
+        try {
+            let formBody = [];
+            for (let property in details) {
+                const encodedKey = encodeURIComponent(property);
+                const encodedValue = encodeURIComponent(details[property]);
+                formBody.push(encodedKey + "=" + encodedValue);
+            }
+            formBody = formBody.join("&");
 
-        const options = {
-            url: 'https://www.icy-veins.com/heroes/heroes-of-the-storm-general-tier-list',
-            waitUntil: 'domcontentloaded',
-            function: fun
+            const requestOptions = {
+                method: 'POST',
+                headers:
+                    {
+                        'Cookie': drafterCookieValue.cookie,
+                        'X-Csrf-Token': drafterCookieValue.csrfToken,
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                    }
+                ,
+                body: formBody,
+            };
+
+            const fetchedData = await fetch("https://drafter.heroesprofile.com/getDraftBanData", requestOptions)
+            const html = await fetchedData.text();
+            const dom = new JSDOM(html);
+            data = Array.from(dom.window.document.querySelectorAll('.rounded-picture.hero-picture')).map(it => {
+                const value = it.attributes['data-content'].value;
+                const regex = /Games Banned: ([\d,]+)/;
+                const match = regex.exec(value);
+                const bannedMatches = match ? match[1] : 0;
+                return {
+                    name: it.attributes['data-heroname'].value,
+                    bannedMatches: Number(bannedMatches.replaceAll(',', ''))
+                }
+            });
+        } catch (e) {
+            App.log('error while gathering heroes ban list', e)
+            data = [];
         }
 
-        const result = await this.performConnection(options);
-
-        if (result)
-            HeroService.updateBanList(result);
+        if (data)
+            HeroService.updateBanList(data.splice(0, 20).map(it => it.name));
     },
 
     gatherCompositionsInfo: async function () {
@@ -148,6 +185,40 @@ exports.Network = {
                 await this.createHeroesProfileSession(remainingTrials);
             } else {
                 App.log(`No more tries remaining for heroes profile session`);
+                return null;
+            }
+        } finally {
+            await page.close();
+        }
+    },
+
+    createHeroesProfileDrafterSession: async function (remainingTrials) {
+        remainingTrials = remainingTrials ?? 3;
+        App.log(`Creating heroes draft session`);
+        const page = await this.createPage();
+        const url = 'https://drafter.heroesprofile.com/Drafter';
+        try {
+            await page.goto(url, {waitUntil: 'domcontentloaded'});
+            App.log(`Created heroes profile session`);
+
+            const obj = await page.evaluate(() => {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+                const version = document.querySelector('[name="minor_timeframe"] option[selected]').value;
+                return {csrfToken, version}
+            });
+            const cookies = await page.cookies();
+            return {
+                version: obj.version,
+                csrfToken: obj.csrfToken,
+                cookie: `${cookies[0].name}=${cookies[0].value};${cookies[1].name}=${cookies[1].value}`
+            }
+        } catch (ex) {
+            App.log(`Error while creating heroes draft session`, ex);
+            if (remainingTrials > 0) {
+                remainingTrials--;
+                await this.createHeroesProfileSession(remainingTrials);
+            } else {
+                App.log(`No more tries remaining for heroes draft session`);
                 return null;
             }
         } finally {
@@ -251,8 +322,8 @@ exports.Network = {
 
                 return {
                     builds: builds,
-                    counters: {countersText, heroes: counters},
-                    synergies: {synergiesText, heroes: synergies},
+                    counters: {countersText, heroes: counters.slice(0, 24)},
+                    synergies: {synergiesText, heroes: synergies.slice(0, 24)},
                     strongerMaps: strongerMaps,
                     tips: tips
                 };
@@ -290,10 +361,18 @@ exports.Network = {
     performConnection: async function (options, remainingTrials) {
         const url = options.url;
         const fun = options.function;
+        const headers = options.headers;
         const blockStuff = options.blockStuff ?? true;
         remainingTrials = remainingTrials ?? 3;
 
         const page = await this.createPage(blockStuff);
+
+        if (headers) {
+            await page.setExtraHTTPHeaders({
+                headers,
+            });
+        }
+
         await page.exposeFunction("fun", fun);
         let result;
         try {
@@ -357,7 +436,7 @@ exports.Network = {
         }
 
         const promiseProducer = () => {
-            const heroCrawlInfo = heroesIdAndUrls.pop();
+            const heroCrawlInfo = heroesIdAndUrls.pop( );
             return heroCrawlInfo ? this.gatherHeroStats(heroCrawlInfo.icyUrl,
                 heroCrawlInfo.heroId,
                 heroCrawlInfo.profileUrl,
