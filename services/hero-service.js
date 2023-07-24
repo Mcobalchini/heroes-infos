@@ -51,7 +51,7 @@ exports.HeroService = {
     },
 
     sortByTierPosition: function (a, b) {
-        return a.infos.tierPosition - b.infos.tierPosition;
+        return a.infos?.tierPosition - b.infos?.tierPosition;
     },
 
     findAllHeroes: function (searchInfos) {
@@ -190,10 +190,10 @@ exports.HeroService = {
 
     setHeroesCommonSynergies: function () {
         this.heroesInfos.forEach(hero => {
-            const crossSynergies = this.heroesInfos.filter(it => it.infos.synergies.heroes.map(clean => clean.cleanVal()).includes(
+            const crossSynergies = this.heroesInfos?.filter(it => it.infos.synergies.heroes.map(clean => clean.cleanVal())?.includes(
                 hero.name.cleanVal()
-            )).map(synergy => synergy.name);
-            hero.infos.synergies.heroes.push(...crossSynergies);
+            ))?.map(synergy => synergy.name);
+            hero.infos?.synergies?.heroes.push(...crossSynergies);
             hero.infos.synergies.heroes = Array.from(new Set(hero.infos.synergies.heroes));
         });
     },
@@ -238,7 +238,9 @@ exports.HeroService = {
         heroesParam.sort(function (a, b) {
             return (a.influence ?? 0) - (b.influence ?? 0);
         }).forEach(it => {
-            it.infos.tierPosition = (it.infos?.influence ?? 0);
+            if (it.infos) {
+                it.infos.tierPosition = (it.infos?.influence ?? 0);
+            }
         });
         return heroesParam;
     },

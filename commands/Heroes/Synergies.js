@@ -5,6 +5,19 @@ exports.run = async (heroName) => {
     const hero = HeroService.findHero(heroName, true);
     if (!hero) return StringService.get('hero.not.found', heroName);
 
+    let synergies = hero.infos.synergies.heroes.map(synergy => {
+        const synergyHero = HeroService.findHero(synergy);
+        return {
+            name: synergyHero.name,
+            value: HeroService.getHeroRole(synergyHero),
+            inline: true
+        }
+    });
+
+    if (synergies.length > 24) {
+        synergies = synergies.slice(0, 24)
+    }
+
     return {
         authorImage: `images/${hero.name.unaccentClean().replaceAll(' ', '-')}.png`,
         authorName: hero.name,
@@ -12,14 +25,7 @@ exports.run = async (heroName) => {
         data: {
             featureName: StringService.get('synergies'),
             featureDescription: hero.infos.synergies.synergiesText,
-            synergies: hero.infos.synergies.heroes.map(synergy => {
-                const synergyHero = HeroService.findHero(synergy);
-                return {
-                    name: synergyHero.name,
-                    value: HeroService.getHeroRole(synergyHero),
-                    inline: true
-                }
-            })
+            synergies
         }
     };
 }

@@ -261,6 +261,9 @@ exports.Network = {
 
     gatherHeroStats: async function (icyUrl, heroId, profileUrl, heroesMap, cookie) {
         const page = await this.createPage();
+        page.setUserAgent(
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4182.0 Safari/537.36"
+        );
         await page.setExtraHTTPHeaders({
             'Cookie': cookie,
         });
@@ -322,8 +325,8 @@ exports.Network = {
 
                 return {
                     builds: builds,
-                    counters: {countersText, heroes: counters.slice(0, 24)},
-                    synergies: {synergiesText, heroes: synergies.slice(0, 24)},
+                    counters: {countersText, heroes: counters},
+                    synergies: {synergiesText, heroes: synergies},
                     strongerMaps: strongerMaps,
                     tips: tips
                 };
@@ -336,7 +339,7 @@ exports.Network = {
 
     gatherProfileData: async function (page, profileUrl) {
         try {
-            await page.goto(profileUrl, {waitUntil: 'domcontentloaded', timeout: 60000});
+            await page.goto(profileUrl, {waitUntil: 'domcontentloaded', timeout: 90000});
 
             return await page.evaluate((profileUrl) => {
                 const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `(${it.innerText}% win rate)`);
@@ -376,7 +379,7 @@ exports.Network = {
         await page.exposeFunction("fun", fun);
         let result;
         try {
-            await page.goto(url, {waitUntil: options.waitUntil, timeout: 30000});
+            await page.goto(url, {waitUntil: options.waitUntil, timeout: 60000});
             result = await page.evaluate(fun);
         } catch (ex) {
             App.log(`Error while fetching ${options.url}`, ex);
