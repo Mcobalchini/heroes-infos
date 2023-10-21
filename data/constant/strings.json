@@ -72,7 +72,7 @@
     "some.name": "Some name"
   },
   {
-    "command.example": "{0}{1} [argument]"
+    "command.example": "{0}{1} {2}"
   },
   {
     "no.free.heroes": "There are no free heroes yet ¯\\_(ツ)_/¯"

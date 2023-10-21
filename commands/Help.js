@@ -13,7 +13,18 @@ exports.run = (commandAsked, msg) => {
         let command = commands.get(commandAsked);
         if (command && CommandService.isCommandAllowed(msg, command)) {
             reply += command.help.hint;
+            //TODO improve this
             if (command.help.acceptParams) {
+                let example = '[argument]';
+                
+                if (command.help.paramOptions != null && command.help.paramOptions.length > 0) {
+                    example = command.help.paramOptions[0]?.name;
+                } else if (command.help.argumentName.toLowerCase() === 'hero') {
+                    example = 'illidan'
+                } else if (command.help.argumentName.toLowerCase() === 'heroes') {
+                    example = 'aba,illidan'
+                }
+
                 list = [
                     {
                         name: StringService.get('accept.arguments'),
@@ -22,7 +33,7 @@ exports.run = (commandAsked, msg) => {
                     },
                     {
                         name: StringService.get('example'),
-                        value: StringService.get('command.example', '/', command.help.name.toLowerCase()),
+                        value: StringService.get('command.example', '/', command.help.name.toLowerCase(), example),
                         inline: true
                     }
                 ]
@@ -46,7 +57,6 @@ exports.run = (commandAsked, msg) => {
         commandInfos += 'https://www.icy-veins.com/heroes/\n';
         commandInfos += 'https://www.heroesprofile.com\n';
         commandInfos += 'https://nexuscompendium.com\n';
-        commandInfos += 'https://www.hotslogs.com/Sitewide/ScoreResultStatistics?League=0,1,2\n';
         commandInfos += StringService.get('if.want.to.know.more.about.specific.command');
         commandInfos += StringService.get('version', config.version);
     }
@@ -72,7 +82,7 @@ exports.run = (commandAsked, msg) => {
 
 exports.help = {
     name: "Help",
-    hint: "Display useful hints for all commands",
+    hint: "Shows how to use all commands",
     argumentName: 'Command',
     argumentDescription: 'Command name',
     acceptParams: true,

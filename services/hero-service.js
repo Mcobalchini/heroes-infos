@@ -119,6 +119,11 @@ exports.HeroService = {
         return this.heroesInfos.find(hero => (hero.id === idParam));
     },
 
+    getRoles: function () {
+        return roles;
+    },
+
+
     findRoleById: function (roleId) {
         let role = roles.find(role => (role.id.toString().cleanVal() === roleId.toString().cleanVal()));
         if (role) {

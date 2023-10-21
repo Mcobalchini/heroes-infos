@@ -1,5 +1,5 @@
-const {StringService} = require('../../services/string-service');
-const {HeroService} = require("../../services/hero-service");
+const { StringService } = require('../../services/string-service');
+const { HeroService } = require("../../services/hero-service");
 
 exports.run = async (roleName) => {
     let role = null;
@@ -32,6 +32,12 @@ exports.help = {
     argumentName: 'Role',
     argumentDescription: 'A role name',
     acceptParams: true,
+    paramOptions: HeroService.getRoles()?.map(it => {
+        return {
+            name: it.name.toLowerCase(),
+            description: it.name
+        }
+    }),
     requiredParam: false,
     defaultPermission: true,
     category: 'HEROES'

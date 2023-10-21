@@ -147,7 +147,7 @@ exports.help = {
     name: 'Team',
     hint: 'Suggest a team based on top comp tier',
     argumentName: 'Heroes',
-    argumentDescription: 'The heroes names of your current composition, splitted by comma',
+    argumentDescription: 'The heroes names of your current composition, splitted by comma or space',
     acceptParams: true,
     requiredParam: true,
     defaultPermission: true,
