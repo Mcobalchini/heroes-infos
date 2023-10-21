@@ -97,20 +97,19 @@ exports.Network = {
     gatherCompositionsInfo: async function () {
         App.log(`Gathering compositions`);
 
-        const fun = function () {
-            return Array.from(document.querySelector('.cdk-table tbody')?.children)?.map((it) => {
+        const fun = () => {
+            return Array.from(document.querySelectorAll('#combinations-data tbody tr:not(.data-row)')).map(it => {
                 return {
-                    games: it.children[0].innerText,
-                    winRate: parseFloat(it.children[1].innerText.replace(',', '.')),
-                    roles: Array.from(it.children).filter(it => it.style.display === 'none').map(it => it.innerText)
+                    games: it.children[3]?.innerText,
+                    winRate: parseFloat(it.children[1]?.innerText?.replace(',', '.')),
+                    roles: Array.from(it.children[0].children[0].children)?.map(div => div.attributes['data-heroname']?.nodeValue)
                 }
             });
         };
 
         const options = {
-            url: 'https://www.hotslogs.com/sitewide/teamcompositions',
-            waitUntil: 'networkidle2',
-            blockStuff: false,
+            url: 'https://www.heroesprofile.com/Global/Compositions/',
+            waitUntil: 'domcontentloaded',
             function: fun
         }
 
