@@ -1,0 +1,269 @@
+[
+    {
+        "hero.zuljin": "祖爾金"
+    },
+    {
+        "hero.zagara": "札迦拉"
+    },
+    {
+        "hero.valla": "維拉"
+    },
+    {
+        "hero.tychus": "泰科斯"
+    },
+    {
+        "hero.tracer": "閃光"
+    },
+    {
+        "hero.tassadar": "塔薩達"
+    },
+    {
+        "hero.sylvanas": "希瓦娜斯"
+    },
+    {
+        "hero.sgthammer": "榔頭中士"
+    },
+    {
+        "hero.raynor": "雷諾"
+    },
+    {
+        "hero.probius": "普羅比斯"
+    },
+    {
+        "hero.orphea": "歐菲亞"
+    },
+    {
+        "hero.nova": "諾娃"
+    },
+    {
+        "hero.nazeebo": "納奇班"
+    },
+    {
+        "hero.mephisto": "墨菲斯托"
+    },
+    {
+        "hero.lunara": "露娜拉"
+    },
+    {
+        "hero.liming": "李敏"
+    },
+    {
+        "hero.kelthuzad": "科爾蘇加德"
+    },
+    {
+        "hero.kaelthas": "凱爾薩斯"
+    },
+    {
+        "hero.junkrat": "炸彈鼠"
+    },
+    {
+        "hero.jaina": "珍娜"
+    },
+    {
+        "hero.hanzo": "半藏"
+    },
+    {
+        "hero.guldan": "古爾丹"
+    },
+    {
+        "hero.greymane": "葛雷邁恩"
+    },
+    {
+        "hero.genji": "源氏"
+    },
+    {
+        "hero.gall": "加利"
+    },
+    {
+        "hero.fenix": "菲尼克斯"
+    },
+    {
+        "hero.falstad": "弗斯塔德"
+    },
+    {
+        "hero.chromie": "克羅米"
+    },
+    {
+        "hero.cassia": "卡西雅"
+    },
+    {
+        "hero.azmodan": "阿茲莫丹"
+    },
+    {
+        "hero.whitemane": "懷特邁恩"
+    },
+    {
+        "hero.uther": "烏瑟"
+    },
+    {
+        "hero.tyrande": "泰蘭妲"
+    },
+    {
+        "hero.stukov": "斯杜科夫"
+    },
+    {
+        "hero.rehgar": "雷加"
+    },
+    {
+        "hero.malfurion": "瑪法里恩"
+    },
+    {
+        "hero.lucio": "路西歐"
+    },
+    {
+        "hero.ltmorales": "莫拉萊斯中尉"
+    },
+    {
+        "hero.lili": "莉莉"
+    },
+    {
+        "hero.kharazim": "克拉辛"
+    },
+    {
+        "hero.deckard": "凱恩"
+    },
+    {
+        "hero.brightwing": "亮翼"
+    },
+    {
+        "hero.auriel": "奧莉爾"
+    },
+    {
+        "hero.anduin": "安杜因"
+    },
+    {
+        "hero.ana": "安娜"
+    },
+    {
+        "hero.alexstrasza": "雅立史卓莎"
+    },
+    {
+        "hero.zeratul": "澤拉圖"
+    },
+    {
+        "hero.valeera": "瓦麗拉"
+    },
+    {
+        "hero.thebutcher": "屠夫"
+    },
+    {
+        "hero.samuro": "薩姆羅"
+    },
+    {
+        "hero.qhira": "奇菈"
+    },
+    {
+        "hero.murky": "莫奇"
+    },
+    {
+        "hero.maiev": "瑪翼夫"
+    },
+    {
+        "hero.kerrigan": "凱莉根"
+    },
+    {
+        "hero.illidan": "伊利丹"
+    },
+    {
+        "hero.alarak": "亞拉瑞克"
+    },
+    {
+        "hero.tyrael": "泰瑞爾"
+    },
+    {
+        "hero.stitches": "縫合怪"
+    },
+    {
+        "hero.muradin": "穆拉丁"
+    },
+    {
+        "hero.mei": "小美"
+    },
+    {
+        "hero.malganis": "瑪爾加尼斯"
+    },
+    {
+        "hero.johanna": "喬安娜"
+    },
+    {
+        "hero.garrosh": "卡爾洛斯"
+    },
+    {
+        "hero.etc": "精英牛頭大佬"
+    },
+    {
+        "hero.diablo": "迪亞布羅"
+    },
+    {
+        "hero.cho": "丘"
+    },
+    {
+        "hero.blaze": "爆焰"
+    },
+    {
+        "hero.arthas": "阿薩斯"
+    },
+    {
+        "hero.anubarak": "阿努巴拉克"
+    },
+    {
+        "hero.zarya": "札莉雅"
+    },
+    {
+        "hero.thelostvikings": "失落的維京人"
+    },
+    {
+        "hero.medivh": "麥迪文"
+    },
+    {
+        "hero.abathur": "阿巴瑟"
+    },
+    {
+        "hero.yrel": "伊芮爾"
+    },
+    {
+        "hero.xul": "蘇爾"
+    },
+    {
+        "hero.varian": "瓦里安"
+    },
+    {
+        "hero.thrall": "索爾"
+    },
+    {
+        "hero.sonya": "桑雅"
+    },
+    {
+        "hero.rexxar": "雷克薩"
+    },
+    {
+        "hero.ragnaros": "拉格納羅斯"
+    },
+    {
+        "hero.malthael": "瑪瑟爾"
+    },
+    {
+        "hero.leoric": "李奧瑞克"
+    },
+    {
+        "hero.imperius": "英普瑞斯"
+    },
+    {
+        "hero.hogger": "霍格"
+    },
+    {
+        "hero.gazlowe": "加茲魯維"
+    },
+    {
+        "hero.dehaka": "德哈卡"
+    },
+    {
+        "hero.deathwing": "死亡之翼"
+    },
+    {
+        "hero.chen": "老陳"
+    },
+    {
+        "hero.artanis": "亞坦尼斯"
+    }
+]
