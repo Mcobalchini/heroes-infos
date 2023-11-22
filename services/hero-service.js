@@ -185,7 +185,13 @@ exports.HeroService = {
             let obj = popularityWinRate?.find(it => {
                 return it.name.cleanVal() === heroesInfos[index].name.cleanVal()
             });
-            heroesInfos[index].infos.influence = parseInt(obj.influence) ?? - 1000;
+
+            if (obj?.influence) {
+                heroesInfos[index].infos.influence = parseInt(obj.influence) ?? - 1000;
+            } else {
+                App.log(`No influence data gathered for ${heroesInfos[index].name}`)
+            }
+            
         }
         const heroes = this.setHeroesTierPosition(heroesInfos);
         this.setHeroesInfos(heroes);
