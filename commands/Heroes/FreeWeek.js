@@ -26,7 +26,7 @@ exports.run = async () => {
 
 exports.help = {
     name: 'FreeWeek',
-    hint: 'Display which heroes are currently free rotation',
+    hint: 'Display the heroes currently in free rotation',
     acceptParams: false,
     defaultPermission: true,
     category: 'HEROES',

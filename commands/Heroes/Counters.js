@@ -26,9 +26,9 @@ exports.run = async (heroName) => {
 
 exports.help = {
     name: 'Counters',
-    hint: 'Display who counters the specified hero!',
+    hint: 'Display heroes that counter the specified hero!',
     argumentName: 'Hero',
-    argumentDescription: 'Hero name name, or part of its name',
+    argumentDescription: 'Enter the hero\'s full name or a partial match of its name.',
     acceptParams: true,
     requiredParam: true,
     defaultPermission: true,

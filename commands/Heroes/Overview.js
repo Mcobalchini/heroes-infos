@@ -36,7 +36,7 @@ exports.help = {
     name: 'Overview',
     hint: 'Display a simple overview for the specified hero!',
     argumentName: 'Hero',
-    argumentDescription: 'Hero name name, or part of its name',
+    argumentDescription: 'Enter the hero\'s full name or a partial match of its name.',
     acceptParams: true,
     requiredParam: true,
     defaultPermission: true,

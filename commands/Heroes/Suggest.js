@@ -28,7 +28,7 @@ exports.run = async (roleName) => {
 
 exports.help = {
     name: 'Suggest',
-    hint: 'Find the top 10 heroes by filters sorted by their influence',
+    hint: 'Display the top 10 heroes sorted by their influence, based on the specified filters',
     argumentName: 'Role',
     argumentDescription: 'A role name',
     acceptParams: true,

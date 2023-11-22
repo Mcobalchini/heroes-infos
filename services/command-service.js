@@ -9,7 +9,7 @@ const COMMAND_FOLDER = "./commands"
 
 exports.CommandService = {
 
-    assembleCommands: function () {
+    assembleCommands: function (ignoreHelp) {
         const commands = FileService.openDir(COMMAND_FOLDER).map(it => {
             if (it.endsWith(".js")) {
                 return it
@@ -19,9 +19,13 @@ exports.CommandService = {
             }
         }).flat()
 
+        
         const commandsMap = new Collection();
         for (const file of commands) {
             const commandName = file.split(".")[0];
+            if (commandName === 'Help' && ignoreHelp) {                
+                continue;
+            }
             const command = require(`.${COMMAND_FOLDER}/${file}`);
             console.log(`Attempting to load command ${commandName}`);
             commandsMap.set(command.help.name.toLowerCase(), command);

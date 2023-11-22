@@ -145,9 +145,9 @@ exports.run = async (heroes) => {
 
 exports.help = {
     name: 'Team',
-    hint: 'Suggest a team based on top comp tier',
+    hint: 'Suggest a team based on the top competitive-tier composition.',
     argumentName: 'Heroes',
-    argumentDescription: 'The heroes names of your current composition, splitted by comma or space',
+    argumentDescription: 'The names of the heroes in your current composition, separated by commas or spaces.',
     acceptParams: true,
     requiredParam: true,
     defaultPermission: true,

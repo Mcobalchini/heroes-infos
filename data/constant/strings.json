@@ -1,21 +1,21 @@
 [
   {
-    "update.process.started": "The update process has started..."
+    "update.process.started": "The update process has begun..."
   },
   {
-    "hold.still.updating.data": "Hold still, I'm updating heroes data"
+    "hold.still.updating.data": "Please wait, I'm currently updating heroes data"
   },
   {
-    "command.not.exists": "The command {0} does not exists!\nType /help to know more about commands"
+    "command.not.exists": "The command {0} does not exists!\nType /help to know more about my available commands"
   },
   {
-    "available.commands.are": "The available commands are:"
+    "available.commands.are": "My available commands are:"
   },
   {
-    "all.commands.supported.both.languages": "\nAll the commands above supports only english language, but the arguments can be passed in spanish, portuguese, korean and french"
+    "all.commands.supported.both.languages": "\nAll the commands above supports only english language, but the arguments can be passed in spanish, portuguese, korean, french, deutsch, polski and taiwanese mandarin"
   },
   {
-    "all.data.gathered.from": "All the data shown here is gathered from"
+    "all.data.gathered.from": "All the data shown here by me is gathered from"
   },
   {
     "if.want.to.know.more.about.specific.command": "If you want to know more about an specific command, type /help [command_name]"
@@ -24,7 +24,7 @@
     "version": "Version {0}"
   },
   {
-    "hero.not.found": "The hero _{0}_ was not found"
+    "hero.not.found": "Oops! I Couldn't find the hero _{0}_"
   },
   {
     "is.a": "{0} is a {1}"
@@ -57,10 +57,10 @@
     "hold.still.updating": "Hold still, I'm updating heroes data"
   },
   {
-    "exception.occurred": "An exception occurred! {0}"
+    "exception.occurred": "I encountered an exception! {0}"
   },
   {
-    "process.update.finished.time": "The update process has finished in {0} seconds"
+    "process.update.finished.time": "My update process has finished in {0} seconds"
   },
   {
     "example": "Exemple"
@@ -81,19 +81,19 @@
     "free.heroes": "These are the currently free rotation heroes"
   },
   {
-    "suggested.heroes": "Suggested heroes {0}"
+    "suggested.heroes": "I recommend the following heroes {0}"
   },
   {
     "on.role": "on role {0}"
   },
   {
-    "role.not.found": "The role {0} was not found"
+    "role.not.found": "I couldn't find the role {0}"
   },
   {
-    "suggested.bans": "Suggested bans"
+    "suggested.bans": "I recommend banning the following heroes"
   },
   {
-    "banheroes.description": "These are the top 20 banned heroes, sorted by number of games they are usually banned"
+    "banheroes.description": "These heroes are often causing trouble! Here's a list of the top 20 banned heroes, based on how frequently they disrupt games. Keep an eye out for them!"
   },
   {
     "available.builds": "Available build(s) for {0}"
@@ -129,7 +129,7 @@
     "hero.score": "Score {0}"
   },
   {
-    "current.team": "Your current composition is {0}\nhere are some comp suggestions for you to try"
+    "current.team": "Nice lineup! Your current team composition is {0}. Here are some composition suggestions for you to experiment with."
   },
   {
     "suggested.team": "Team composition suggestion"
@@ -252,6 +252,6 @@
     "no.team.check.heroes": "Couldn't suggest any team, check if you're providing valid heroes"
   },
   {
-    "accept.arguments": "This command accepts arguments, being them"
+    "accept.arguments": "This command accepts arguments, which are as follows"
   }
 ]

@@ -88,6 +88,12 @@ exports.help = {
     acceptParams: true,
     requiredParam: false,
     defaultPermission: true,
+    paramOptions: Array.from(CommandService.assembleCommands(true).values()).filter(it => it.help.defaultPermission).map(it => {
+        return {
+            name: it.help.name.toLowerCase(),
+            description: it.help.name
+        };
+    }),
     category: "GENERAL"
 }
 
