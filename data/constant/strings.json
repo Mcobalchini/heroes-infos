@@ -249,7 +249,10 @@
     "updates.everything": "Updates everything"
   },
   {
-    "no.team.check.heroes": "Couldn't suggest any team, check if you're providing valid heroes"
+    "no.team.check.heroes": "I Couldn't suggest any team, check if you're providing valid heroes"
+  },
+  {
+    "more.than.four.heroes": "I'm unable to suggest a composition as the limit is set to a maximum of four heroes to this command"
   },
   {
     "accept.arguments": "This command accepts arguments, which are as follows"
