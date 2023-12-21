@@ -268,7 +268,7 @@ exports.Network = {
         });
 
         const icyData = await this.gatherIcyData(page, icyUrl);
-        const profileData = await this.gatherProfileData(page, profileUrl);
+        let profileData = await this.gatherProfileData(page, profileUrl);
 
         if (icyData != null && profileData != null) {
             icyData.strongerMaps = icyData.strongerMaps.map(it => {
@@ -280,8 +280,8 @@ exports.Network = {
             });
 
             let returnObject = {
-                icyData: icyData,
-                profileData: profileData
+                icyData,
+                profileData
             }
 
             heroesMap.set(heroId, returnObject);
@@ -294,7 +294,20 @@ exports.Network = {
             if (icyData == null && profileData == null) {
                 await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
             } else if (profileData == null) {
-                await this.gatherProfileData(page, profileUrl);
+                App.log(`Gathering heroes profile data again for ${profileUrl}`);
+                profileData = await this.gatherProfileData(page, profileUrl);
+
+                let returnObject = {
+                    icyData,
+                    profileData
+                }
+    
+                heroesMap.set(heroId, returnObject);
+                try {
+                    await page.close();
+                } catch (ex) {
+                    App.log(`Error while closing page`, ex);
+                }
             }
         }
     },
@@ -350,10 +363,14 @@ exports.Network = {
                         skills: skills[i]
                     });
                 }
-
-                return {
-                    builds: builds,
-                };
+                if (builds.length > 0) {
+                    return {
+                        builds: builds
+                    };
+                } else {
+                    return null;
+                }
+                
             }, profileUrl);
         } catch (ex) {
             App.log(`Error while fetching profileData ${profileUrl}`, ex);

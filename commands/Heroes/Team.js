@@ -9,7 +9,7 @@ exports.run = async (heroes) => {
     let currentCompRoles = [];
     let heroesArray = heroes.split(' ');
     let currentCompHeroes = new Map();
-    let remainingHeroes = 4;
+    let remainingHeroes = 5;
     let suggested = [];
 
     for (let it of heroesArray) {
@@ -151,7 +151,7 @@ exports.help = {
     name: 'Team',
     hint: 'Suggest a team based on the top competitive-tier composition.',
     argumentName: 'Heroes',
-    argumentDescription: 'The names of the heroes in your current composition, separated by commas or spaces. (maximum 4 heroes)',
+    argumentDescription: 'The names of at maximum 4 heroes in your current composition, separated by commas or spaces.',
     acceptParams: true,
     requiredParam: true,
     defaultPermission: true,
