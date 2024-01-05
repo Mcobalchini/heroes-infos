@@ -137,6 +137,11 @@ function assembleGuildData(guild) {
             name: StringService.get('server.member.count'),
             value: guild?.memberCount?.toString() ?? '0',
             inline: true
+        },        
+        {
+            name: StringService.get('server.owner.id'),
+            value: guild?.ownerId?.toString() ?? '_ _',
+            inline: true
         }
     ]
 }

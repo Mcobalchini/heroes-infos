@@ -1,14 +1,14 @@
-require('dotenv').config({path: './variables.env'});
+require('dotenv').config({ path: './variables.env' });
 const HeroService = require('./hero-service.js').HeroService;
 const MapService = require('./map-service.js').MapService;
 const puppeteer = require('puppeteer');
 const PromisePool = require('es6-promise-pool');
-const {Routes} = require('discord-api-types/v9');
-const {REST} = require('@discordjs/rest');
-const {App} = require('../app.js');
-const {FileService} = require("./file-service");
-const {JSDOM} = require("jsdom");
-const rest = new REST({version: '9'}).setToken(process.env.HEROES_INFOS_TOKEN);
+const { Routes } = require('discord-api-types/v9');
+const { REST } = require('@discordjs/rest');
+const { App } = require('../app.js');
+const { FileService } = require("./file-service");
+const { JSDOM } = require("jsdom");
+const rest = new REST({ version: '9' }).setToken(process.env.HEROES_INFOS_TOKEN);
 
 exports.Network = {
     isUpdatingData: false,
@@ -63,11 +63,11 @@ exports.Network = {
             const requestOptions = {
                 method: 'POST',
                 headers:
-                    {
-                        'Cookie': drafterCookieValue.cookie,
-                        'X-Csrf-Token': drafterCookieValue.csrfToken,
-                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                    }
+                {
+                    'Cookie': drafterCookieValue.cookie,
+                    'X-Csrf-Token': drafterCookieValue.csrfToken,
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                }
                 ,
                 body: formBody,
             };
@@ -147,7 +147,7 @@ exports.Network = {
         let divClass = ".Card-content";
         let result;
         try {
-            await page.goto(url, {waitUntil: 'domcontentloaded'});
+            await page.goto(url, { waitUntil: 'domcontentloaded' });
             result = await page.evaluate((divClass) => {
                 return Array.from(document.querySelectorAll(divClass)).slice(0, 3).map(it => {
                     return {
@@ -173,7 +173,7 @@ exports.Network = {
         const page = await this.createPage();
         const url = 'https://www.heroesprofile.com/Global/Talents/';
         try {
-            await page.goto(url, {waitUntil: 'domcontentloaded'});
+            await page.goto(url, { waitUntil: 'domcontentloaded' });
             App.log(`Created heroes profile session`);
             const cookies = await page.cookies();
             return `${cookies[0].name}=${cookies[0].value};`
@@ -197,13 +197,13 @@ exports.Network = {
         const page = await this.createPage();
         const url = 'https://drafter.heroesprofile.com/Drafter';
         try {
-            await page.goto(url, {waitUntil: 'domcontentloaded'});
+            await page.goto(url, { waitUntil: 'domcontentloaded' });
             App.log(`Created heroes profile session`);
 
             const obj = await page.evaluate(() => {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
                 const version = document.querySelector('[name="minor_timeframe"] option[selected]').value;
-                return {csrfToken, version}
+                return { csrfToken, version }
             });
             const cookies = await page.cookies();
             return {
@@ -233,7 +233,7 @@ exports.Network = {
         const url = `https://nexuscompendium.com/currently`;
 
         try {
-            await page.goto(url, {waitUntil: 'networkidle0'});
+            await page.goto(url, { waitUntil: 'networkidle0' });
             result = await page.$('.primary-table > table:nth-child(9)');
             await result.screenshot({
                 path: 'images/freeweek.png'
@@ -301,7 +301,7 @@ exports.Network = {
                     icyData,
                     profileData
                 }
-    
+
                 heroesMap.set(heroId, returnObject);
                 try {
                     await page.close();
@@ -315,7 +315,7 @@ exports.Network = {
     gatherIcyData: async function (page, icyUrl) {
         try {
 
-            await page.goto(icyUrl, {waitUntil: 'domcontentloaded'});
+            await page.goto(icyUrl, { waitUntil: 'domcontentloaded' });
 
             return await page.evaluate((icyUrl) => {
                 const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.innerText);
@@ -337,8 +337,8 @@ exports.Network = {
 
                 return {
                     builds: builds,
-                    counters: {countersText, heroes: counters},
-                    synergies: {synergiesText, heroes: synergies},
+                    counters: { countersText, heroes: counters },
+                    synergies: { synergiesText, heroes: synergies },
                     strongerMaps: strongerMaps,
                     tips: tips
                 };
@@ -351,7 +351,7 @@ exports.Network = {
 
     gatherProfileData: async function (page, profileUrl) {
         try {
-            await page.goto(profileUrl, {waitUntil: 'domcontentloaded', timeout: 90000});
+            await page.goto(profileUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
 
             return await page.evaluate((profileUrl) => {
                 const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `(${it.innerText}% win rate)`);
@@ -370,7 +370,7 @@ exports.Network = {
                 } else {
                     return null;
                 }
-                
+
             }, profileUrl);
         } catch (ex) {
             App.log(`Error while fetching profileData ${profileUrl}`, ex);
@@ -395,7 +395,7 @@ exports.Network = {
         await page.exposeFunction("fun", fun);
         let result;
         try {
-            await page.goto(url, {waitUntil: options.waitUntil, timeout: 60000});
+            await page.goto(url, { waitUntil: options.waitUntil, timeout: 60000 });
             result = await page.evaluate(fun);
         } catch (ex) {
             App.log(`Error while fetching ${options.url}`, ex);
@@ -455,7 +455,7 @@ exports.Network = {
         }
 
         const promiseProducer = () => {
-            const heroCrawlInfo = heroesIdAndUrls.pop( );
+            const heroCrawlInfo = heroesIdAndUrls.pop();
             return heroCrawlInfo ? this.gatherHeroStats(heroCrawlInfo.icyUrl,
                 heroCrawlInfo.heroId,
                 heroCrawlInfo.profileUrl,
@@ -501,7 +501,7 @@ exports.Network = {
 
     postSlashCommandsToAPI: async function (commandObj) {
         await rest.post(
-            Routes.applicationCommands(process.env.CLIENT_ID), {body: commandObj},
+            Routes.applicationCommands(process.env.CLIENT_ID), { body: commandObj },
         );
     },
 

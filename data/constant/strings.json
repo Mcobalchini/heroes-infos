@@ -162,6 +162,9 @@
     "map": "Map"
   },
   {
+    "feedback": "feedback"
+  },
+  {
     "not.enough.hero.infos": "There was not enough info found for the hero {0}"
   },
   {
@@ -183,6 +186,9 @@
     "bot.general.information": "Bot general information"
   },
   {
+    "thanks.for.feedback": "Thank you for your feedback!"
+  },
+  {
     "last.time.database.updated": "Last time my database was updated"
   },
   {
@@ -199,6 +205,9 @@
   },
   {
     "number.of.users": "{0} users"
+  },
+  {
+    "feedback.request.number.of.users": "Your feedback request was sent to {0} user(s)"
   },
   {
     "my.invitation.link.is": "My invitation link is"
@@ -229,6 +238,9 @@
   },
   {
     "server.member.count": "Member count"
+  },
+  {
+    "server.owner.id": "Owner ID"
   },
   {
     "note": "Note"

@@ -106,7 +106,7 @@ exports.CommandService = {
                 sourceImage: command.help?.sourceImage
             }
         }
-
+        
         if (reply.toString() === '[object Object]') {
             return reply;
         } else {
