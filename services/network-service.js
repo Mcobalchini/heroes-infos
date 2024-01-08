@@ -15,6 +15,112 @@ exports.Network = {
     replyTo: null,
     browser: null,
     hosts: null,
+    cookiesPool: [],
+    usedCookiesPool: [],
+    popularityWinRate: null,
+    heroCookieMap: new Map(),
+
+    updateData: async function (args) {
+        const hostFile = FileService.openFile('./data/constant/blocked-hosts.txt').split('\n');
+        this.hosts = hostFile.map(it => {
+            const frag = it.split(' ');
+            if (frag.length > 1 && frag[0] === '0.0.0.0') {
+                return frag[1];
+            }
+        }).filter(it => it);
+
+        await this.setBrowser();
+        App.log(`Started updating data process`);
+        this.isUpdatingData = true;
+        const numberOfWorkers = process.env.THREAD_WORKERS ? Number(process.env.THREAD_WORKERS) : 5;
+        this.heroCookieMap = new Map();
+        const promises = [];
+        promises.push(this.gatherHeroesPrint());
+        promises.push(this.gatherHeroesRotation());
+        
+        if (args === "rotation") {
+            const rotationPromiseProducer = () => promises.pop() ?? null; 
+            const dataThread = new PromisePool(rotationPromiseProducer, numberOfWorkers);            
+            dataThread.start().then(async () => {
+                await this.endUpdate();
+                return;
+            });
+        } else {
+            promises.push(this.gatherBanTierListInfo());
+            promises.push(this.gatherCompositionsInfo());
+            promises.push(this.gatherPopularityAndWinRateInfo());
+            this.popularityWinRate = null;
+    
+            //create pool of cookies to use
+            const numExecutions = 4;
+            for (let i = 0; i < numExecutions; i++) {
+                promises.push(this.createCookiesPool());
+            }
+    
+            const dataPromiseProducer = () => { 
+                const currPromise = promises.pop()
+                return currPromise ?? null;
+            } 
+    
+            const dataThread = new PromisePool(dataPromiseProducer, numberOfWorkers);
+            let firstCookie = null;
+            App.log(`Creating heroes profile session cookie`);
+            dataThread.start().then(async () => {
+                try {
+                    App.log(`Created heroes profile session cookie`);
+                    firstCookie = this.cookiesPool.pop();
+                } catch (e) {
+                    App.log('Error creating heroes profile cookies', e);
+                } finally {
+                    let heroesMap = new Map();
+                    let heroesIdAndUrls = [];
+                    let heroesInfos = HeroService.findAllHeroes();
+    
+                    for (let hero of heroesInfos) {
+                        let normalizedName = hero.name.replace('/ /g', '+').replace('/\'/g', '%27');
+                        heroesIdAndUrls.push({
+                            heroId: hero.id,
+                            icyUrl: `https://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`,
+                            profileUrl: `https://www.heroesprofile.com/Global/Talents/getChartDataTalentBuilds.php?hero=${normalizedName}`
+                        });
+                    }
+    
+                    const promiseProducer = () => {
+                        const heroCrawlInfo = heroesIdAndUrls.pop();
+                        return heroCrawlInfo ? this.gatherHeroStats(heroCrawlInfo.icyUrl,
+                            heroCrawlInfo.heroId,
+                            heroCrawlInfo.profileUrl,
+                            heroesMap,
+                            firstCookie).catch() : null;
+                    };
+    
+                    let startTime = new Date();
+    
+                    const thread = new PromisePool(promiseProducer, numberOfWorkers);
+    
+                    try {
+                        App.log(`Started gathering heroes data`);
+                        thread.start().then(async () => {
+                            let finishedTime = new Date();
+                            App.log(`Finished gathering process in ${(finishedTime.getTime() - startTime.getTime()) / 1000} seconds`);
+                            HeroService.updateHeroesInfos(heroesMap, this.popularityWinRate, heroesInfos);
+                            await this.endUpdate();
+                        });
+                    } catch (e) {
+                        if (e.stack.includes('Navigation timeout')
+                            || e.stack.includes('net::ERR_ABORTED')
+                            || e.stack.includes('net::ERR_NETWORK_CHANGED')) {
+                            App.log("Updating again after network error");
+                            await this.updateData();
+                        }
+    
+                        App.log('Error while updating', e);
+                        this.isUpdatingData = false;
+                    }
+                }
+            });
+        }        
+    },
 
     gatherHeroesRotation: async function () {
         App.log(`Gathering heroes rotation`);
@@ -137,7 +243,7 @@ exports.Network = {
             function: fun
         }
 
-        return await this.performConnection(options);
+        this.popularityWinRate = await this.performConnection(options);        
     },
 
     gatherNews: async function () {
@@ -167,32 +273,33 @@ exports.Network = {
         }
     },
 
-    createHeroesProfileSession: async function (remainingTrials) {
-        remainingTrials = remainingTrials ?? 3;
-        App.log(`Creating heroes profile session`);
-        const page = await this.createPage();
+    createHeroesProfileSession: async function (remainingTries) {
+        remainingTries = remainingTries ?? 3;
+
+        const browser = await this.createBrowser();
+        const page = await this.createPage(browser);
         const url = 'https://www.heroesprofile.com/Global/Talents/';
         try {
             await page.goto(url, { waitUntil: 'domcontentloaded' });
-            App.log(`Created heroes profile session`);
             const cookies = await page.cookies();
             return `${cookies[0].name}=${cookies[0].value};`
         } catch (ex) {
             App.log(`Error while creating heroes session`, ex);
-            if (remainingTrials > 0) {
-                remainingTrials--;
-                await this.createHeroesProfileSession(remainingTrials);
+            if (remainingTries > 0) {
+                remainingTries--;
+                await this.createHeroesProfileSession(remainingTries);
             } else {
                 App.log(`No more tries remaining for heroes profile session`);
                 return null;
             }
         } finally {
             await page.close();
+            await browser.close();
         }
     },
 
-    createHeroesProfileDrafterSession: async function (remainingTrials) {
-        remainingTrials = remainingTrials ?? 3;
+    createHeroesProfileDrafterSession: async function (remainingTries) {
+        remainingTries = remainingTries ?? 3;
         App.log(`Creating heroes draft session`);
         const page = await this.createPage();
         const url = 'https://drafter.heroesprofile.com/Drafter';
@@ -213,9 +320,9 @@ exports.Network = {
             }
         } catch (ex) {
             App.log(`Error while creating heroes draft session`, ex);
-            if (remainingTrials > 0) {
-                remainingTrials--;
-                await this.createHeroesProfileSession(remainingTrials);
+            if (remainingTries > 0) {
+                remainingTries--;
+                await this.createHeroesProfileDrafterSession(remainingTries);
             } else {
                 App.log(`No more tries remaining for heroes draft session`);
                 return null;
@@ -225,9 +332,9 @@ exports.Network = {
         }
     },
 
-    gatherHeroesPrint: async function (remainingTrials) {
-        remainingTrials = remainingTrials ?? 3;
-        const page = await this.createPage(false);
+    gatherHeroesPrint: async function (remainingTries) {
+        remainingTries = remainingTries ?? 3;
+        const page = await this.createPage(null, false);
 
         let result;
         const url = `https://nexuscompendium.com/currently`;
@@ -248,9 +355,9 @@ exports.Network = {
         if (result != null) {
             return result;
         } else {
-            if (remainingTrials > 0) {
-                remainingTrials--;
-                await this.gatherHeroesPrint(remainingTrials);
+            if (remainingTries > 0) {
+                remainingTries--;
+                await this.gatherHeroesPrint(remainingTries);
             } else {
                 App.log(`No more tries remaining for gathering heroes print`);
                 return null;
@@ -260,9 +367,6 @@ exports.Network = {
 
     gatherHeroStats: async function (icyUrl, heroId, profileUrl, heroesMap, cookie) {
         const page = await this.createPage();
-        page.setUserAgent(
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4182.0 Safari/537.36"
-        );
         await page.setExtraHTTPHeaders({
             'Cookie': cookie,
         });
@@ -294,8 +398,8 @@ exports.Network = {
             if (icyData == null && profileData == null) {
                 await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
             } else if (profileData == null) {
-                App.log(`Gathering heroes profile data again for ${profileUrl}`);
-                profileData = await this.gatherProfileData(page, profileUrl);
+                await this.getNewCookie(page, profileUrl);
+                profileData = await this.gatherWhenFail(profileUrl, null, page);
 
                 let returnObject = {
                     icyData,
@@ -308,6 +412,36 @@ exports.Network = {
                 } catch (ex) {
                     App.log(`Error while closing page`, ex);
                 }
+            }
+        }
+    },
+
+    async getNewCookie(page, url) {
+        const usedCookiesForHeroEntry = this.heroCookieMap.get(url);
+        const list = usedCookiesForHeroEntry ? Array.from(usedCookiesForHeroEntry.values()).flat() : [];
+        let cookie = this.cookiesPool.find(it => !list.includes(it));
+        list.push(cookie);
+        this.heroCookieMap.set(url, list);
+
+        await page.setExtraHTTPHeaders({
+            'Cookie': cookie,
+        });        
+    },
+
+    gatherWhenFail: async function (profileUrl, profileData, page, remainingTries) {
+        remainingTries = remainingTries ?? 4;
+        profileData = await this.gatherProfileData(page, profileUrl);
+
+        if (profileData != null) {
+            return profileData;
+        } else {
+            if (remainingTries > 0) {
+                remainingTries--;
+                await this.getNewCookie(page, profileUrl);
+                await this.gatherWhenFail(profileUrl, profileData, page, remainingTries);
+            } else {
+                App.log(`No more tries remaining for ${profileUrl}`);
+                return null;
             }
         }
     },
@@ -346,6 +480,9 @@ exports.Network = {
             }, icyUrl);
         } catch (ex) {
             App.log(`Error while fetching icyData ${icyUrl}`, ex);
+            if (ex.stack.includes("Navigation timeout")) {
+                this.gatherIcyData(page, icyUrl);
+            }
         }
     },
 
@@ -377,14 +514,14 @@ exports.Network = {
         }
     },
 
-    performConnection: async function (options, remainingTrials) {
+    performConnection: async function (options, remainingTries) {
         const url = options.url;
         const fun = options.function;
         const headers = options.headers;
         const blockStuff = options.blockStuff ?? true;
-        remainingTrials = remainingTrials ?? 3;
+        remainingTries = remainingTries ?? 3;
 
-        const page = await this.createPage(blockStuff);
+        const page = await this.createPage(null, blockStuff);
 
         if (headers) {
             await page.setExtraHTTPHeaders({
@@ -406,9 +543,9 @@ exports.Network = {
         if (result != null) {
             return result;
         } else {
-            if (remainingTrials > 0) {
-                remainingTrials--;
-                await this.performConnection(remainingTrials, options);
+            if (remainingTries > 0) {
+                remainingTries--;
+                await this.performConnection(remainingTries, options);
             } else {
                 App.log(`No more tries remaining for ${options.url}`);
                 return null;
@@ -416,79 +553,9 @@ exports.Network = {
         }
     },
 
-    updateData: async function (args) {
-        const hostFile = FileService.openFile('./data/constant/blocked-hosts.txt').split('\n');
-        this.hosts = hostFile.map(it => {
-            const frag = it.split(' ');
-            if (frag.length > 1 && frag[0] === '0.0.0.0') {
-                return frag[1];
-            }
-        }).filter(it => it);
-
-        await this.setBrowser();
-        App.log(`Started updating data process`);
-        this.isUpdatingData = true;
-
-        await this.gatherHeroesPrint();
-        await this.gatherHeroesRotation();
-        if (args === "rotation") {
-            await this.endUpdate();
-            return;
-        }
-        await this.gatherBanTierListInfo();
-        await this.gatherCompositionsInfo();
-
-        const popularityWinRate = await this.gatherPopularityAndWinRateInfo();
+    createCookiesPool: async function () {
         const cookieValue = await this.createHeroesProfileSession();
-
-        let heroesMap = new Map();
-        let heroesIdAndUrls = [];
-        let heroesInfos = HeroService.findAllHeroes();
-
-        for (let hero of heroesInfos) {
-            let normalizedName = hero.name.replace('/ /g', '+').replace('/\'/g', '%27');
-            heroesIdAndUrls.push({
-                heroId: hero.id,
-                icyUrl: `https://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`,
-                profileUrl: `https://www.heroesprofile.com/Global/Talents/getChartDataTalentBuilds.php?hero=${normalizedName}`
-            });
-        }
-
-        const promiseProducer = () => {
-            const heroCrawlInfo = heroesIdAndUrls.pop();
-            return heroCrawlInfo ? this.gatherHeroStats(heroCrawlInfo.icyUrl,
-                heroCrawlInfo.heroId,
-                heroCrawlInfo.profileUrl,
-                heroesMap,
-                cookieValue).catch() : null;
-        };
-
-        let startTime = new Date();
-        const workers = process.env.THREAD_WORKERS ? Number(process.env.THREAD_WORKERS) : 5;
-        const thread = new PromisePool(promiseProducer, workers);
-
-        try {
-            App.log(`Started gathering heroes data`);
-            thread.start().then(async () => {
-                let finishedTime = new Date();
-                App.log(`Finished gathering process in ${(finishedTime.getTime() - startTime.getTime()) / 1000} seconds`);
-
-                HeroService.updateHeroesInfos(heroesMap, popularityWinRate, heroesInfos);
-
-                await this.endUpdate();
-            });
-        } catch (e) {
-
-            if (e.stack.includes('Navigation timeout of 60000 ms exceeded')
-                || e.stack.includes('net::ERR_ABORTED')
-                || e.stack.includes('net::ERR_NETWORK_CHANGED')) {
-                App.log("Updating again");
-                await this.updateData();
-            }
-
-            App.log('Error while updating', e);
-            this.isUpdatingData = false;
-        }
+        this.cookiesPool.push(cookieValue);
     },
 
     endUpdate: async function () {
@@ -523,7 +590,11 @@ exports.Network = {
 
     setBrowser: async function () {
         this.browser?.close()?.catch();
-        this.browser = await puppeteer.launch({
+        this.browser = await this.createBrowser();
+    },
+
+    createBrowser: async function () {
+        return await puppeteer.launch({
             headless: true,
             devtools: false,
             args: [
@@ -564,12 +635,12 @@ exports.Network = {
                 '--use-gl=swiftshader',
                 '--use-mock-keychain',
             ],
-        })
+        });
     },
 
-    createPage: async function (blockStuff = true) {
-
-        const page = await this.browser.newPage();
+    createPage: async function (browser = null, blockStuff = true) {
+        const auxBrowser = browser ?? this.browser;
+        const page = await auxBrowser.newPage();
         await page.setRequestInterception(true);
         page.on('request', (request) => {
             let domain = null;

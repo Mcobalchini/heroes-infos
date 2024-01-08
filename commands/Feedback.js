@@ -9,14 +9,23 @@ exports.run = async (feedback, msg) => {
     if (msg.author || msg.user) {
         const id = (msg.author?.id != null ? msg.author?.id : (msg.user?.id ?? 0));
         let reply = StringService.get('command.not.exists', 'Feedback');
-
+        let count = 0;
         if (id === config.adminId) {
             owners.forEach(element => {
-                App.bot.users.fetch(element, false).then((user) => {
-                    user.send('Hey, would like to give me a feedback? If that is the case, you can call the command `/feedback` and send me one');
-                });
+                App.bot.users.fetch(element, false)
+                    .then(async (user) => {
+                        try {
+                            await user.send('Hey, would like to give me a feedback? If that is the case, you can call the command `/feedback` and send me one');
+                            count++;
+                        } catch (error) {
+                            App.log("Could not send message to: " + element, error);
+                        }                    
+                    })
+                    .catch(function (error) {
+                        App.log("Could not send message to: " + element, error);
+                    });
             });
-            reply = StringService.get('feedback.request.number.of.users', owners.length);
+            reply = StringService.get('feedback.request.number.of.users', count);
         } else {
             if (owners.includes(msg.user.id)) {
                 reply = StringService.get('thanks.for.feedback')
@@ -28,7 +37,7 @@ exports.run = async (feedback, msg) => {
                     }
                     const embed = new EmbedBuilder()
                         .setColor('#0099ff')
-                        .setTitle('Just send a feedback')
+                        .setTitle('Just sent a feedback')
                         .setAuthor(
                             {
                                 name: msg.user?.username ?? msg.author?.username ?? 'undefined',
@@ -38,7 +47,7 @@ exports.run = async (feedback, msg) => {
                         )
                         .setDescription(msg.toString().replace('/feedback feedback:', ''))
                         .setTimestamp();
-                    user.send({ embeds: [embed]} );
+                    user.send({ embeds: [embed] });
                 });
             }
         }
