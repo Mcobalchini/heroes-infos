@@ -15,10 +15,7 @@ exports.Network = {
     replyTo: null,
     browser: null,
     hosts: null,
-    cookiesPool: [],
-    usedCookiesPool: [],
     popularityWinRate: null,
-    heroCookieMap: new Map(),
 
     updateData: async function (args) {
         const hostFile = FileService.openFile('./data/constant/blocked-hosts.txt').split('\n');
@@ -33,14 +30,13 @@ exports.Network = {
         App.log(`Started updating data process`);
         this.isUpdatingData = true;
         const numberOfWorkers = process.env.THREAD_WORKERS ? Number(process.env.THREAD_WORKERS) : 5;
-        this.heroCookieMap = new Map();
         const promises = [];
         promises.push(this.gatherHeroesPrint());
         promises.push(this.gatherHeroesRotation());
-        
+
         if (args === "rotation") {
-            const rotationPromiseProducer = () => promises.pop() ?? null; 
-            const dataThread = new PromisePool(rotationPromiseProducer, numberOfWorkers);            
+            const rotationPromiseProducer = () => promises.pop() ?? null;
+            const dataThread = new PromisePool(rotationPromiseProducer, numberOfWorkers);
             dataThread.start().then(async () => {
                 await this.endUpdate();
                 return;
@@ -50,76 +46,66 @@ exports.Network = {
             promises.push(this.gatherCompositionsInfo());
             promises.push(this.gatherPopularityAndWinRateInfo());
             this.popularityWinRate = null;
-    
-            //create pool of cookies to use
-            const numExecutions = 4;
-            for (let i = 0; i < numExecutions; i++) {
-                promises.push(this.createCookiesPool());
-            }
-    
-            const dataPromiseProducer = () => { 
+
+            const cookieValue = await this.createHeroesProfileSession();
+
+            const dataPromiseProducer = () => {
                 const currPromise = promises.pop()
                 return currPromise ?? null;
-            } 
-    
+            }
+
             const dataThread = new PromisePool(dataPromiseProducer, numberOfWorkers);
-            let firstCookie = null;
+
             App.log(`Creating heroes profile session cookie`);
             dataThread.start().then(async () => {
-                try {
-                    App.log(`Created heroes profile session cookie`);
-                    firstCookie = this.cookiesPool.pop();
-                } catch (e) {
-                    App.log('Error creating heroes profile cookies', e);
-                } finally {
-                    let heroesMap = new Map();
-                    let heroesIdAndUrls = [];
-                    let heroesInfos = HeroService.findAllHeroes();
-    
-                    for (let hero of heroesInfos) {
-                        let normalizedName = hero.name.replace('/ /g', '+').replace('/\'/g', '%27');
-                        heroesIdAndUrls.push({
-                            heroId: hero.id,
-                            icyUrl: `https://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`,
-                            profileUrl: `https://www.heroesprofile.com/Global/Talents/getChartDataTalentBuilds.php?hero=${normalizedName}`
-                        });
-                    }
-    
-                    const promiseProducer = () => {
-                        const heroCrawlInfo = heroesIdAndUrls.pop();
-                        return heroCrawlInfo ? this.gatherHeroStats(heroCrawlInfo.icyUrl,
-                            heroCrawlInfo.heroId,
-                            heroCrawlInfo.profileUrl,
-                            heroesMap,
-                            firstCookie).catch() : null;
-                    };
-    
-                    let startTime = new Date();
-    
-                    const thread = new PromisePool(promiseProducer, numberOfWorkers);
-    
-                    try {
-                        App.log(`Started gathering heroes data`);
-                        thread.start().then(async () => {
-                            let finishedTime = new Date();
-                            App.log(`Finished gathering process in ${(finishedTime.getTime() - startTime.getTime()) / 1000} seconds`);
-                            HeroService.updateHeroesInfos(heroesMap, this.popularityWinRate, heroesInfos);
-                            await this.endUpdate();
-                        });
-                    } catch (e) {
-                        if (e.stack.includes('Navigation timeout')
-                            || e.stack.includes('net::ERR_ABORTED')
-                            || e.stack.includes('net::ERR_NETWORK_CHANGED')) {
-                            App.log("Updating again after network error");
-                            await this.updateData();
-                        }
-    
-                        App.log('Error while updating', e);
-                        this.isUpdatingData = false;
-                    }
+                let heroesMap = new Map();
+                let heroesIdAndUrls = [];
+                let heroesInfos = HeroService.findAllHeroes();
+
+                for (let hero of heroesInfos) {
+                    let normalizedName = hero.name.replace('/ /g', '+').replace('/\'/g', '%27');
+                    heroesIdAndUrls.push({
+                        heroId: hero.id,
+                        icyUrl: `https://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`,
+                        profileUrl: `https://www.heroesprofile.com/Global/Talents/getChartDataTalentBuilds.php?hero=${normalizedName}`
+                    });
                 }
+
+                const promiseProducer = () => {
+                    const heroCrawlInfo = heroesIdAndUrls.pop();
+                    return heroCrawlInfo ? this.gatherHeroStats(heroCrawlInfo.icyUrl,
+                        heroCrawlInfo.heroId,
+                        heroCrawlInfo.profileUrl,
+                        heroesMap,
+                        cookieValue).catch() : null;
+                };
+
+                let startTime = new Date();
+
+                const thread = new PromisePool(promiseProducer, numberOfWorkers);
+
+                try {
+                    App.log(`Started gathering heroes data`);
+                    thread.start().then(async () => {
+                        let finishedTime = new Date();
+                        App.log(`Finished gathering process in ${(finishedTime.getTime() - startTime.getTime()) / 1000} seconds`);
+                        HeroService.updateHeroesInfos(heroesMap, this.popularityWinRate, heroesInfos);
+                        await this.endUpdate();
+                    });
+                } catch (e) {
+                    if (e.stack.includes('Navigation timeout')
+                        || e.stack.includes('net::ERR_ABORTED')
+                        || e.stack.includes('net::ERR_NETWORK_CHANGED')) {
+                        App.log("Updating again after network error");
+                        await this.updateData();
+                    }
+
+                    App.log('Error while updating', e);
+                    this.isUpdatingData = false;
+                }
+
             });
-        }        
+        }
     },
 
     gatherHeroesRotation: async function () {
@@ -243,7 +229,7 @@ exports.Network = {
             function: fun
         }
 
-        this.popularityWinRate = await this.performConnection(options);        
+        this.popularityWinRate = await this.performConnection(options);
     },
 
     gatherNews: async function () {
@@ -373,7 +359,6 @@ exports.Network = {
 
         const icyData = await this.gatherIcyData(page, icyUrl);
         let profileData = await this.gatherProfileData(page, profileUrl);
-
         if (icyData != null && profileData != null) {
             icyData.strongerMaps = icyData.strongerMaps.map(it => {
                 const strongerMap = MapService.findMap(it);
@@ -398,7 +383,6 @@ exports.Network = {
             if (icyData == null && profileData == null) {
                 await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
             } else if (profileData == null) {
-                await this.getNewCookie(page, profileUrl);
                 profileData = await this.gatherWhenFail(profileUrl, null, page);
 
                 let returnObject = {
@@ -416,20 +400,8 @@ exports.Network = {
         }
     },
 
-    async getNewCookie(page, url) {
-        const usedCookiesForHeroEntry = this.heroCookieMap.get(url);
-        const list = usedCookiesForHeroEntry ? Array.from(usedCookiesForHeroEntry.values()).flat() : [];
-        let cookie = this.cookiesPool.find(it => !list.includes(it));
-        list.push(cookie);
-        this.heroCookieMap.set(url, list);
-
-        await page.setExtraHTTPHeaders({
-            'Cookie': cookie,
-        });        
-    },
-
     gatherWhenFail: async function (profileUrl, profileData, page, remainingTries) {
-        remainingTries = remainingTries ?? 4;
+        remainingTries = remainingTries ?? 3;
         profileData = await this.gatherProfileData(page, profileUrl);
 
         if (profileData != null) {
@@ -437,7 +409,6 @@ exports.Network = {
         } else {
             if (remainingTries > 0) {
                 remainingTries--;
-                await this.getNewCookie(page, profileUrl);
                 await this.gatherWhenFail(profileUrl, profileData, page, remainingTries);
             } else {
                 App.log(`No more tries remaining for ${profileUrl}`);
@@ -448,7 +419,6 @@ exports.Network = {
 
     gatherIcyData: async function (page, icyUrl) {
         try {
-
             await page.goto(icyUrl, { waitUntil: 'domcontentloaded' });
 
             return await page.evaluate((icyUrl) => {
@@ -488,7 +458,7 @@ exports.Network = {
 
     gatherProfileData: async function (page, profileUrl) {
         try {
-            await page.goto(profileUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
+            await page.goto(profileUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
 
             return await page.evaluate((profileUrl) => {
                 const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `(${it.innerText}% win rate)`);
@@ -551,11 +521,6 @@ exports.Network = {
                 return null;
             }
         }
-    },
-
-    createCookiesPool: async function () {
-        const cookieValue = await this.createHeroesProfileSession();
-        this.cookiesPool.push(cookieValue);
     },
 
     endUpdate: async function () {

@@ -241,7 +241,7 @@ exports.HeroService = {
         if (profileData)
             profileData.builds = profileData?.builds?.filter(item => !repeatedBuilds.includes(item));
 
-        return icyData.builds.concat(profileData?.builds?.slice(0, 4)).slice(0, 5);
+        return icyData.builds.concat(profileData?.builds);
     },
 
     setHeroesTierPosition: function (heroesParam) {
