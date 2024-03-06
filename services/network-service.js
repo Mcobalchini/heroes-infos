@@ -66,8 +66,10 @@ exports.Network = {
                     let normalizedName = hero.name.replace('/ /g', '+').replace('/\'/g', '%27');
                     heroesIdAndUrls.push({
                         heroId: hero.id,
+                        heroNormalizedName: normalizedName,
                         icyUrl: `https://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`,
-                        profileUrl: `https://www.heroesprofile.com/Global/Talents/getChartDataTalentBuilds.php?hero=${normalizedName}`
+                        //profileUrl: `https://www.heroesprofile.com/Global/Talents/getChartDataTalentBuilds.php?hero=${normalizedName}`
+                        profileUrl: `https://www.heroesprofile.com/api/v1/global/talents/build`
                     });
                 }
 
@@ -155,8 +157,7 @@ exports.Network = {
             const requestOptions = {
                 method: 'POST',
                 headers:
-                {
-                    'Cookie': drafterCookieValue.cookie,
+                {                    
                     'X-Csrf-Token': drafterCookieValue.csrfToken,
                     'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
                 }
@@ -290,7 +291,7 @@ exports.Network = {
         const page = await this.createPage();
         const url = 'https://drafter.heroesprofile.com/Drafter';
         try {
-            await page.goto(url, { waitUntil: 'domcontentloaded' });
+            const response = await page.goto(url, { waitUntil: 'domcontentloaded' });
             App.log(`Created heroes profile session`);
 
             const obj = await page.evaluate(() => {
@@ -298,11 +299,10 @@ exports.Network = {
                 const version = document.querySelector('[name="minor_timeframe"] option[selected]').value;
                 return { csrfToken, version }
             });
-            const cookies = await page.cookies();
+            
             return {
                 version: obj.version,
-                csrfToken: obj.csrfToken,
-                cookie: `${cookies[0].name}=${cookies[0].value};${cookies[1].name}=${cookies[1].value}`
+                csrfToken: obj.csrfToken,                
             }
         } catch (ex) {
             App.log(`Error while creating heroes draft session`, ex);
@@ -402,8 +402,9 @@ exports.Network = {
 
     gatherWhenFail: async function (profileUrl, profileData, page, remainingTries) {
         remainingTries = remainingTries ?? 3;
+        await App.delay(1500);
         profileData = await this.gatherProfileData(page, profileUrl);
-
+        
         if (profileData != null) {
             return profileData;
         } else {
@@ -461,8 +462,9 @@ exports.Network = {
             await page.goto(profileUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
 
             return await page.evaluate((profileUrl) => {
-                const names = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .win_rate_cell')).map(it => `(${it.innerText}% win rate)`);
-                const skills = Array.from(document.querySelectorAll('#popularbuilds.primary-data-table tr .build-code')).map(it => it.innerText);
+                
+                const names = Array.from(document.querySelectorAll('#table-container2 tbody tr')).map(it => `(${it.lastElementChild.innerText}% win rate)`);
+                const skills = Array.from(document.querySelectorAll('#table-container2 tbody tr')).map(it => `${it.children[1].innerText.substring(0, it.children[1].innerText.indexOf('\n'))}`);
                 const builds = [];
                 for (let i in names) {
                     builds.push({
@@ -613,7 +615,7 @@ exports.Network = {
             if (frags.length > 2) {
                 domain = frags[2];
             }
-            if (this.hosts.includes(domain) ||
+            if (this.hosts?.includes(domain) ||
                 blockStuff && ['image', 'stylesheet', 'font', 'script', 'xhr'].indexOf(request.resourceType()) !== -1) {
                 request.abort();
             } else {
@@ -621,7 +623,7 @@ exports.Network = {
             }
             // console.log('>>', request.method(), request.url(), request.resourceType());
         });
-        // page.on('response', response => console.log('<<', response.status(), response.url()))
+////////         page.on('response', response => console.log('<<', response.status(), response.url()))
 
         return page;
     },

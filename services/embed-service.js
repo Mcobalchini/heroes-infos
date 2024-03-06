@@ -19,7 +19,7 @@ exports.EmbedService = {
 
     createEmbed: function (replyObject, authorName, authorUrl, authorIcon, thumbnail) {
         authorName = authorName ? authorName : 'Heroes Infos Bot'
-        authorUrl = authorUrl ? authorUrl : 'https://www.icy-veins.com/heroes/'
+        authorUrl = authorUrl ? authorUrl : 'https://top.gg/bot/783467749258559509'
         authorIcon = authorIcon ? authorIcon : 'attachment://hots.png'
 
         const author = {
@@ -68,7 +68,7 @@ exports.EmbedService = {
 
     createEmbeds: function (replyObject, authorName, authorUrl, authorIcon) {
         authorName = authorName ? authorName : 'Heroes Infos Bot';
-        authorUrl = authorUrl ? authorUrl : 'https://www.icy-veins.com/heroes/';
+        authorUrl = authorUrl ? authorUrl : 'https://top.gg/bot/783467749258559509';
         authorIcon = authorIcon ? authorIcon : 'attachment://hots.png';
         let embeds = [];
 
