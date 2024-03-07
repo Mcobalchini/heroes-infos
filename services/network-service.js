@@ -6,8 +6,8 @@ const PromisePool = require('es6-promise-pool');
 const { Routes } = require('discord-api-types/v9');
 const { REST } = require('@discordjs/rest');
 const { App } = require('../app.js');
-const { FileService } = require("./file-service");
-const { JSDOM } = require("jsdom");
+const { FileService } = require('./file-service');
+const { JSDOM } = require('jsdom');
 const rest = new REST({ version: '9' }).setToken(process.env.HEROES_INFOS_TOKEN);
 
 exports.Network = {
@@ -34,7 +34,7 @@ exports.Network = {
         promises.push(this.gatherHeroesPrint());
         promises.push(this.gatherHeroesRotation());
 
-        if (args === "rotation") {
+        if (args === 'rotation') {
             const rotationPromiseProducer = () => promises.pop() ?? null;
             const dataThread = new PromisePool(rotationPromiseProducer, numberOfWorkers);
             dataThread.start().then(async () => {
@@ -42,12 +42,12 @@ exports.Network = {
                 return;
             });
         } else {
-            promises.push(this.gatherBanTierListInfo());
-            promises.push(this.gatherCompositionsInfo());
-            promises.push(this.gatherPopularityAndWinRateInfo());
-            this.popularityWinRate = null;
+            const cookieValue = await this.createHeroesProfileDrafterSession();
 
-            const cookieValue = await this.createHeroesProfileSession();
+            promises.push(this.gatherBanTierListInfo(cookieValue));
+            promises.push(this.gatherCompositionsInfo(cookieValue));
+            promises.push(this.gatherPopularityAndWinRateInfo(cookieValue));
+            this.popularityWinRate = null;
 
             const dataPromiseProducer = () => {
                 const currPromise = promises.pop()
@@ -75,8 +75,9 @@ exports.Network = {
 
                 const promiseProducer = () => {
                     const heroCrawlInfo = heroesIdAndUrls.pop();
-                    return heroCrawlInfo ? this.gatherHeroStats(heroCrawlInfo.icyUrl,
+                    return heroCrawlInfo ? this.gatherHeroStats(heroCrawlInfo.icyUrl,                        
                         heroCrawlInfo.heroId,
+                        heroCrawlInfo.heroNormalizedName,
                         heroCrawlInfo.profileUrl,
                         heroesMap,
                         cookieValue).catch() : null;
@@ -98,7 +99,7 @@ exports.Network = {
                     if (e.stack.includes('Navigation timeout')
                         || e.stack.includes('net::ERR_ABORTED')
                         || e.stack.includes('net::ERR_NETWORK_CHANGED')) {
-                        App.log("Updating again after network error");
+                        App.log('Updating again after network error');
                         await this.updateData();
                     }
 
@@ -133,15 +134,14 @@ exports.Network = {
             HeroService.updateRotation(result);
     },
 
-    gatherBanTierListInfo: async function () {
-        App.log(`Gathering ban list`);
-        const drafterCookieValue = await this.createHeroesProfileDrafterSession();
+    gatherBanTierListInfo: async function (cookieValue) {
+        App.log(`Gathering ban list`);        
         let data;
         const details = {
             'data[0][name]': 'timeframe',
             'data[0][value]': 'Minor',
             'data[1][name]': 'minor_timeframe',
-            'data[1][value]': drafterCookieValue?.version,
+            'data[1][value]': cookieValue?.version,
             'currentPickNumber': '0',
             'mockdraft': 'false',
         }
@@ -150,22 +150,22 @@ exports.Network = {
             for (let property in details) {
                 const encodedKey = encodeURIComponent(property);
                 const encodedValue = encodeURIComponent(details[property]);
-                formBody.push(encodedKey + "=" + encodedValue);
+                formBody.push(encodedKey + '=' + encodedValue);
             }
-            formBody = formBody.join("&");
+            formBody = formBody.join('&');
 
             const requestOptions = {
                 method: 'POST',
                 headers:
                 {                    
-                    'X-Csrf-Token': drafterCookieValue.csrfToken,
+                    'X-Csrf-Token': cookieValue.csrfToken,
                     'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
                 }
                 ,
                 body: formBody,
             };
 
-            const fetchedData = await fetch("https://drafter.heroesprofile.com/getDraftBanData", requestOptions)
+            const fetchedData = await fetch('https://drafter.heroesprofile.com/getDraftBanData', requestOptions)
             const html = await fetchedData.text();
             const dom = new JSDOM(html);
             data = Array.from(dom.window.document.querySelectorAll('.rounded-picture.hero-picture')).map(it => {
@@ -187,15 +187,61 @@ exports.Network = {
             HeroService.updateBanList(data.splice(0, 20).map(it => it.name));
     },
 
-    gatherCompositionsInfo: async function () {
+    gatherBuildProfileFromAPI: async function (profileUrl, heroName) {        
+        const drafterCookieValue = await this.createHeroesProfileDrafterSession(); 
+        const details = {
+            'hero': heroName,
+            'timeframe_type': 'minor',
+            'timeframe': [
+                drafterCookieValue?.version
+            ],
+            'statfilter': 'win_rate',
+            'game_type': [
+                'sl'
+            ],    
+            'talentbuildtype': 'Popular'
+        }
+        let data = null;
+        try {    
+            const requestOptions = {
+                method: 'POST',
+                headers:
+                {                    
+                    'X-Csrf-Token': drafterCookieValue.csrfToken,
+                    'Content-Type': 'application/json'
+                }
+                ,
+                body: JSON.stringify(details),
+            };
+
+            const fetchedData = await fetch(profileUrl, requestOptions)
+            data = await fetchedData.json();  
+
+            return {
+                builds: data.map((build) => {                     
+                    const name = `[Popular Build](${profileUrl}) (${build.win_rate}% win rate)`;
+                    buildString = `[T${build.level_one.sort}${build.level_four.sort}${build.level_seven.sort}${build.level_ten.sort}${build.level_thirteen.sort}${build.level_sixteen.sort}${build.level_twenty.sort},${heroName.replaceAll(' ','')}]`;
+                    return {
+                        name,
+                        skills: buildString
+                    }
+                })
+            }
+        } catch (e) {
+            App.log(`Error while gathering ${heroName} profile builds, with data ${data}`, e)
+            data = null;
+        }
+    },
+
+    gatherCompositionsInfo: async function (cookieValue) {
         App.log(`Gathering compositions`);
 
         const fun = () => {
-            return Array.from(document.querySelectorAll('#combinations-data tbody tr:not(.data-row)')).map(it => {
+            return Array.from(document.querySelectorAll('#table-container tbody tr:not(.data-row)')).map(it => {
                 return {
                     games: it.children[3]?.innerText,
                     winRate: parseFloat(it.children[1]?.innerText?.replace(',', '.')),
-                    roles: Array.from(it.children[0].children[0].children)?.map(div => div.attributes['data-heroname']?.nodeValue)
+                    roles: Array.from(it.children[0].children[0].children)?.map(div => div.innerText)
                 }
             });
         };
@@ -212,32 +258,56 @@ exports.Network = {
             HeroService.updateCompositions(result);
     },
 
-    gatherPopularityAndWinRateInfo: async function () {
+    gatherPopularityAndWinRateInfo: async function (cookie) {
         App.log(`Gathering influence`);
-
-        const fun = () => {
-            return Array.from(document.querySelectorAll('#hero-stat-data tr')).filter(f => f.firstElementChild).map((it) => {
-                return {
-                    name: it.firstElementChild?.children[0]?.children[1].innerText,
-                    influence: it.children[7].innerText,
-                }
-            });
-        };
-
-        const options = {
-            url: 'https://heroesprofile.com/Global/Hero/',
-            waitUntil: 'domcontentloaded',
-            function: fun
+        
+        const details = {        
+            'timeframe_type': 'minor',
+            'timeframe': [
+                cookie?.version
+            ],
+            'statfilter': 'win_rate',
+            'game_type': [
+                'sl'
+            ],            
         }
+       
+        let data = null;
+        try {    
+            const requestOptions = {
+                method: 'POST',
+                headers:
+                {                    
+                    'X-Csrf-Token': cookie.csrfToken,
+                    'Content-Type': 'application/json'
+                }
+                ,
+                body: JSON.stringify(details),
+            };
 
-        this.popularityWinRate = await this.performConnection(options);
+            const fetchedData = await fetch('https://www.heroesprofile.com/api/v1/global/hero', requestOptions)
+            heroes = await fetchedData.json();  
+
+            if (heroes?.data?.length) {
+                this.popularityWinRate = heroes.data.map((hero) => {
+                    return {
+                        name: hero.name,
+                        influence: hero.influence
+                    }
+                })
+            }
+
+        } catch (e) {
+            App.log(`Error while gathering ${heroName} profile builds, with data ${data}`, e)
+            data = null;
+        }
     },
 
     gatherNews: async function () {
         await this.setBrowser();
         const page = await this.createPage();
         let url = `https://news.blizzard.com/en-us/heroes-of-the-storm`;
-        let divClass = ".Card-content";
+        let divClass = '.Card-content';
         let result;
         try {
             await page.goto(url, { waitUntil: 'domcontentloaded' });
@@ -286,14 +356,11 @@ exports.Network = {
     },
 
     createHeroesProfileDrafterSession: async function (remainingTries) {
-        remainingTries = remainingTries ?? 3;
-        App.log(`Creating heroes draft session`);
+        remainingTries = remainingTries ?? 3;        
         const page = await this.createPage();
         const url = 'https://drafter.heroesprofile.com/Drafter';
         try {
-            const response = await page.goto(url, { waitUntil: 'domcontentloaded' });
-            App.log(`Created heroes profile session`);
-
+            const response = await page.goto(url, { waitUntil: 'domcontentloaded' });        
             const obj = await page.evaluate(() => {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
                 const version = document.querySelector('[name="minor_timeframe"] option[selected]').value;
@@ -351,14 +418,10 @@ exports.Network = {
         }
     },
 
-    gatherHeroStats: async function (icyUrl, heroId, profileUrl, heroesMap, cookie) {
+    gatherHeroStats: async function (icyUrl, heroId, heroName, profileUrl, heroesMap, cookie) {
         const page = await this.createPage();
-        await page.setExtraHTTPHeaders({
-            'Cookie': cookie,
-        });
-
         const icyData = await this.gatherIcyData(page, icyUrl);
-        let profileData = await this.gatherProfileData(page, profileUrl);
+        let profileData = await this.gatherBuildProfileFromAPI(profileUrl, heroName);
         if (icyData != null && profileData != null) {
             icyData.strongerMaps = icyData.strongerMaps.map(it => {
                 const strongerMap = MapService.findMap(it);
@@ -381,9 +444,9 @@ exports.Network = {
             }
         } else {
             if (icyData == null && profileData == null) {
-                await this.gatherHeroStats(icyUrl, heroId, profileUrl, heroesMap, cookie);
+                await this.gatherHeroStats(icyUrl, heroId, heroName, profileUrl, heroesMap, cookie);
             } else if (profileData == null) {
-                profileData = await this.gatherWhenFail(profileUrl, null, page);
+                profileData = await this.gatherWhenFail(profileUrl, null, page, heroName, 3);
 
                 let returnObject = {
                     icyData,
@@ -400,17 +463,17 @@ exports.Network = {
         }
     },
 
-    gatherWhenFail: async function (profileUrl, profileData, page, remainingTries) {
+    gatherWhenFail: async function (profileUrl, profileData, page, heroName, remainingTries) {
         remainingTries = remainingTries ?? 3;
         await App.delay(1500);
-        profileData = await this.gatherProfileData(page, profileUrl);
+        profileData = await this.gatherBuildProfileFromAPI(profileUrl, heroName);
         
         if (profileData != null) {
             return profileData;
         } else {
             if (remainingTries > 0) {
                 remainingTries--;
-                await this.gatherWhenFail(profileUrl, profileData, page, remainingTries);
+                await this.gatherWhenFail(profileUrl, profileData, page, heroName, remainingTries);
             } else {
                 App.log(`No more tries remaining for ${profileUrl}`);
                 return null;
@@ -451,14 +514,14 @@ exports.Network = {
             }, icyUrl);
         } catch (ex) {
             App.log(`Error while fetching icyData ${icyUrl}`, ex);
-            if (ex.stack.includes("Navigation timeout")) {
+            if (ex.stack.includes('Navigation timeout')) {
                 this.gatherIcyData(page, icyUrl);
             }
         }
     },
 
     gatherProfileData: async function (page, profileUrl) {
-        try {
+        try {            
             await page.goto(profileUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
 
             return await page.evaluate((profileUrl) => {
@@ -501,7 +564,7 @@ exports.Network = {
             });
         }
 
-        await page.exposeFunction("fun", fun);
+        await page.exposeFunction('fun', fun);
         let result;
         try {
             await page.goto(url, { waitUntil: options.waitUntil, timeout: 60000 });
@@ -529,7 +592,7 @@ exports.Network = {
         await this.browser.close().catch();
         App.log(`Finished update process`);
         this.isUpdatingData = false;
-        App.bot.updatedAt = new Date().toLocaleString("pt-BR");
+        App.bot.updatedAt = new Date().toLocaleString('pt-BR');
         App.setBotStatus('Heroes of the Storm', 'PLAYING');
     },
 
