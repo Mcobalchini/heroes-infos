@@ -67,8 +67,7 @@ exports.Network = {
                     heroesIdAndUrls.push({
                         heroId: hero.id,
                         heroNormalizedName: normalizedName,
-                        icyUrl: `https://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`,
-                        //profileUrl: `https://www.heroesprofile.com/Global/Talents/getChartDataTalentBuilds.php?hero=${normalizedName}`
+                        icyUrl: `https://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`,                        
                         profileUrl: `https://www.heroesprofile.com/api/v1/global/talents/build`
                     });
                 }
@@ -185,52 +184,6 @@ exports.Network = {
 
         if (data)
             HeroService.updateBanList(data.splice(0, 20).map(it => it.name));
-    },
-
-    gatherBuildProfileFromAPI: async function (profileUrl, heroName) {        
-        const drafterCookieValue = await this.createHeroesProfileDrafterSession(); 
-        const details = {
-            'hero': heroName,
-            'timeframe_type': 'minor',
-            'timeframe': [
-                drafterCookieValue?.version
-            ],
-            'statfilter': 'win_rate',
-            'game_type': [
-                'sl'
-            ],    
-            'talentbuildtype': 'Popular'
-        }
-        let data = null;
-        try {    
-            const requestOptions = {
-                method: 'POST',
-                headers:
-                {                    
-                    'X-Csrf-Token': drafterCookieValue.csrfToken,
-                    'Content-Type': 'application/json'
-                }
-                ,
-                body: JSON.stringify(details),
-            };
-
-            const fetchedData = await fetch(profileUrl, requestOptions)
-            data = await fetchedData.json();  
-
-            return {
-                builds: data.map((build) => {                     
-                    const name = `[Popular Build](https://www.heroesprofile.com/Global/Talents/${heroName}) (${build.win_rate}% win rate)`;
-                    buildString = `[T${build.level_one.sort}${build.level_four.sort}${build.level_seven.sort}${build.level_ten.sort}${build.level_thirteen.sort}${build.level_sixteen.sort}${build.level_twenty.sort},${heroName.replaceAll(' ','')}]`;
-                    return {
-                        name,
-                        skills: buildString
-                    }
-                })
-            }
-        } catch (e) {
-            App.log(`Error while gathering ${heroName} profile builds, with data ${data}`, e)
-            data = null;
-        }
     },
 
     gatherCompositionsInfo: async function (cookieValue) {
@@ -421,7 +374,7 @@ exports.Network = {
     gatherHeroStats: async function (icyUrl, heroId, heroName, profileUrl, heroesMap, cookie) {
         const page = await this.createPage();
         const icyData = await this.gatherIcyData(page, icyUrl);
-        let profileData = await this.gatherBuildProfileFromAPI(profileUrl, heroName);
+        let profileData = await this.gatherProfileBuildsFromAPI(profileUrl, heroName);
         if (icyData != null && profileData != null) {
             icyData.strongerMaps = icyData.strongerMaps.map(it => {
                 const strongerMap = MapService.findMap(it);
@@ -466,7 +419,7 @@ exports.Network = {
     gatherWhenFail: async function (profileUrl, profileData, page, heroName, remainingTries) {
         remainingTries = remainingTries ?? 3;
         await App.delay(1500);
-        profileData = await this.gatherBuildProfileFromAPI(profileUrl, heroName);
+        profileData = await this.gatherProfileBuildsFromAPI(profileUrl, heroName);
         
         if (profileData != null) {
             return profileData;
@@ -520,32 +473,49 @@ exports.Network = {
         }
     },
 
-    gatherProfileData: async function (page, profileUrl) {
-        try {            
-            await page.goto(profileUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
-
-            return await page.evaluate((profileUrl) => {
-                
-                const names = Array.from(document.querySelectorAll('#table-container2 tbody tr')).map(it => `(${it.lastElementChild.innerText}% win rate)`);
-                const skills = Array.from(document.querySelectorAll('#table-container2 tbody tr')).map(it => `${it.children[1].innerText.substring(0, it.children[1].innerText.indexOf('\n'))}`);
-                const builds = [];
-                for (let i in names) {
-                    builds.push({
-                        name: `[Popular Build](${profileUrl.replace('getChartDataTalentBuilds.php', '').replaceAll(' ', '+')}) ${names[i]}`,
-                        skills: skills[i]
-                    });
+    gatherProfileBuildsFromAPI: async function (profileUrl, heroName) {
+        const drafterCookieValue = await this.createHeroesProfileDrafterSession(); 
+        const details = {
+            'hero': heroName,
+            'timeframe_type': 'minor',
+            'timeframe': [
+                drafterCookieValue?.version
+            ],
+            'statfilter': 'win_rate',
+            'game_type': [
+                'sl'
+            ],    
+            'talentbuildtype': 'Popular'
+        }
+        let data = null;
+        try {    
+            const requestOptions = {
+                method: 'POST',
+                headers:
+                {                    
+                    'X-Csrf-Token': drafterCookieValue.csrfToken,
+                    'Content-Type': 'application/json'
                 }
-                if (builds.length > 0) {
+                ,
+                body: JSON.stringify(details),
+            };
+
+            const fetchedData = await fetch(profileUrl, requestOptions)
+            data = await fetchedData.json();  
+
+            return {
+                builds: data.map((build) => {                     
+                    const name = `[Popular Build](https://www.heroesprofile.com/Global/Talents/${heroName}) (${build.win_rate}% win rate)`;
+                    buildString = `[T${build.level_one.sort}${build.level_four.sort}${build.level_seven.sort}${build.level_ten.sort}${build.level_thirteen.sort}${build.level_sixteen.sort}${build.level_twenty.sort},${heroName.replaceAll(' ','')}]`;
                     return {
-                        builds: builds
-                    };
-                } else {
-                    return null;
-                }
-
-            }, profileUrl);
-        } catch (ex) {
-            App.log(`Error while fetching profileData ${profileUrl}`, ex);
+                        name,
+                        skills: buildString
+                    }
+                })
+            }
+        } catch (e) {
+            App.log(`Error while gathering ${heroName} profile builds, with data ${data}`, e)
+            data = null;
         }
     },
 
