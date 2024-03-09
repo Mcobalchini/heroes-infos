@@ -7,7 +7,10 @@ const { Routes } = require('discord-api-types/v9');
 const { REST } = require('@discordjs/rest');
 const { App } = require('../app.js');
 const { FileService } = require('./file-service');
-const { JSDOM } = require('jsdom');
+const { NexusCompendiumIntegrationService: NexusCompendiumIntegration } = require('../integration/nexus-compendium-integration-service.js');
+const { HeroesProfileIntegration: HeroesProfileIntegrationService } = require('../integration/heroes-profile-integration.js');
+const { IcyVeinsIntegrationService: IcyVeinsIntegrationService } = require('../integration/icy-veins-integration-service.js');
+const { BlizzardIntegrationService } = require('../integration/blizzard-integration-service.js');
 const rest = new REST({ version: '9' }).setToken(process.env.HEROES_INFOS_TOKEN);
 
 exports.Network = {
@@ -31,22 +34,21 @@ exports.Network = {
         this.isUpdatingData = true;
         const numberOfWorkers = process.env.THREAD_WORKERS ? Number(process.env.THREAD_WORKERS) : 5;
         const promises = [];
-        promises.push(this.gatherHeroesPrint());
-        promises.push(this.gatherHeroesRotation());
+        const page = await this.createPage(null, false);
+        promises.push(NexusCompendiumIntegration.gatherHeroesPrint(page));
+        promises.push(NexusCompendiumIntegration.gatherHeroesRotation());
 
         if (args === 'rotation') {
             const rotationPromiseProducer = () => promises.pop() ?? null;
             const dataThread = new PromisePool(rotationPromiseProducer, numberOfWorkers);
             dataThread.start().then(async () => {
-                await this.endUpdate();
+                await this.afterUpdate();
                 return;
             });
         } else {
-            const cookieValue = await this.createHeroesProfileDrafterSession();
-
-            promises.push(this.gatherBanTierListInfo(cookieValue));
-            promises.push(this.gatherCompositionsInfo(cookieValue));
-            promises.push(this.gatherPopularityAndWinRateInfo(cookieValue));
+            promises.push(HeroesProfileIntegrationService.gatherBanTierListInfo());
+            promises.push(HeroesProfileIntegrationService.gatherCompositionsInfo());
+            promises.push(HeroesProfileIntegrationService.gatherPopularityAndWinRateInfo());
             this.popularityWinRate = null;
 
             const dataPromiseProducer = () => {
@@ -55,8 +57,6 @@ exports.Network = {
             }
 
             const dataThread = new PromisePool(dataPromiseProducer, numberOfWorkers);
-
-            App.log(`Creating heroes profile session cookie`);
             dataThread.start().then(async () => {
                 let heroesMap = new Map();
                 let heroesIdAndUrls = [];
@@ -66,20 +66,16 @@ exports.Network = {
                     let normalizedName = hero.name.replace('/ /g', '+').replace('/\'/g', '%27');
                     heroesIdAndUrls.push({
                         heroId: hero.id,
-                        heroNormalizedName: normalizedName,
-                        icyUrl: `https://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`,                        
-                        profileUrl: `https://www.heroesprofile.com/api/v1/global/talents/build`
+                        heroNormalizedName: normalizedName
                     });
                 }
 
                 const promiseProducer = () => {
                     const heroCrawlInfo = heroesIdAndUrls.pop();
-                    return heroCrawlInfo ? this.gatherHeroStats(heroCrawlInfo.icyUrl,                        
+                    return heroCrawlInfo ? this.gatherHeroStats(
                         heroCrawlInfo.heroId,
                         heroCrawlInfo.heroNormalizedName,
-                        heroCrawlInfo.profileUrl,
-                        heroesMap,
-                        cookieValue).catch() : null;
+                        heroesMap).catch() : null;
                 };
 
                 let startTime = new Date();
@@ -92,7 +88,7 @@ exports.Network = {
                         let finishedTime = new Date();
                         App.log(`Finished gathering process in ${(finishedTime.getTime() - startTime.getTime()) / 1000} seconds`);
                         HeroService.updateHeroesInfos(heroesMap, this.popularityWinRate, heroesInfos);
-                        await this.endUpdate();
+                        await this.afterUpdate();
                     });
                 } catch (e) {
                     if (e.stack.includes('Navigation timeout')
@@ -110,412 +106,53 @@ exports.Network = {
         }
     },
 
-    gatherHeroesRotation: async function () {
-        App.log(`Gathering heroes rotation`);
-
-        const fun = function () {
-            const obj = JSON.parse(document.body.innerText).RotationHero;
-            return {
-                startDate: obj.StartDate,
-                endDate: obj.EndDate,
-                heroes: obj.Heroes.map(it => it.ID)
-            }
-        };
-
-        const options = {
-            url: 'https://nexuscompendium.com/api/currently/RotationHero',
-            waitUntil: 'domcontentloaded',
-            function: fun
-        }
-        const result = await this.performConnection(options);
-
-        if (result)
-            HeroService.updateRotation(result);
-    },
-
-    gatherBanTierListInfo: async function (cookieValue) {
-        App.log(`Gathering ban list`);        
-        let data;
-        const details = {
-            'data[0][name]': 'timeframe',
-            'data[0][value]': 'Minor',
-            'data[1][name]': 'minor_timeframe',
-            'data[1][value]': cookieValue?.version,
-            'currentPickNumber': '0',
-            'mockdraft': 'false',
-        }
-        try {
-            let formBody = [];
-            for (let property in details) {
-                const encodedKey = encodeURIComponent(property);
-                const encodedValue = encodeURIComponent(details[property]);
-                formBody.push(encodedKey + '=' + encodedValue);
-            }
-            formBody = formBody.join('&');
-
-            const requestOptions = {
-                method: 'POST',
-                headers:
-                {                    
-                    'X-Csrf-Token': cookieValue.csrfToken,
-                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                }
-                ,
-                body: formBody,
-            };
-
-            const fetchedData = await fetch('https://drafter.heroesprofile.com/getDraftBanData', requestOptions)
-            const html = await fetchedData.text();
-            const dom = new JSDOM(html);
-            data = Array.from(dom.window.document.querySelectorAll('.rounded-picture.hero-picture')).map(it => {
-                const value = it.attributes['data-content'].value;
-                const regex = /Games Banned: ([\d,]+)/;
-                const match = regex.exec(value);
-                const bannedMatches = match ? match[1] : 0;
-                return {
-                    name: it.attributes['data-heroname'].value,
-                    bannedMatches: Number(bannedMatches.replaceAll(',', ''))
-                }
-            });
-        } catch (e) {
-            App.log('error while gathering heroes ban list', e)
-            data = [];
-        }
-
-        if (data)
-            HeroService.updateBanList(data.splice(0, 20).map(it => it.name));
-    },
-
-    gatherCompositionsInfo: async function (cookieValue) {
-        App.log(`Gathering compositions`);
-
-        const fun = () => {
-            return Array.from(document.querySelectorAll('#table-container tbody tr:not(.data-row)')).map(it => {
-                return {
-                    games: it.children[3]?.innerText,
-                    winRate: parseFloat(it.children[1]?.innerText?.replace(',', '.')),
-                    roles: Array.from(it.children[0].children[0].children)?.map(div => div.innerText)
-                }
-            });
-        };
-
-        const options = {
-            url: 'https://www.heroesprofile.com/Global/Compositions/',
-            waitUntil: 'domcontentloaded',
-            function: fun
-        }
-
-        const result = await this.performConnection(options);
-
-        if (result)
-            HeroService.updateCompositions(result);
-    },
-
-    gatherPopularityAndWinRateInfo: async function (cookie) {
-        App.log(`Gathering influence`);
-        
-        const details = {        
-            'timeframe_type': 'minor',
-            'timeframe': [
-                cookie?.version
-            ],
-            'statfilter': 'win_rate',
-            'game_type': [
-                'sl'
-            ],            
-        }
-       
-        let data = null;
-        try {    
-            const requestOptions = {
-                method: 'POST',
-                headers:
-                {                    
-                    'X-Csrf-Token': cookie.csrfToken,
-                    'Content-Type': 'application/json'
-                }
-                ,
-                body: JSON.stringify(details),
-            };
-
-            const fetchedData = await fetch('https://www.heroesprofile.com/api/v1/global/hero', requestOptions)
-            heroes = await fetchedData.json();  
-
-            if (heroes?.data?.length) {
-                this.popularityWinRate = heroes.data.map((hero) => {
-                    return {
-                        name: hero.name,
-                        influence: hero.influence
-                    }
-                })
-            }
-
-        } catch (e) {
-            App.log(`Error while gathering ${heroName} profile builds, with data ${data}`, e)
-            data = null;
-        }
-    },
-
     gatherNews: async function () {
         await this.setBrowser();
         const page = await this.createPage();
-        let url = `https://news.blizzard.com/en-us/heroes-of-the-storm`;
-        let divClass = '.Card-content';
-        let result;
-        try {
-            await page.goto(url, { waitUntil: 'domcontentloaded' });
-            result = await page.evaluate((divClass) => {
-                return Array.from(document.querySelectorAll(divClass)).slice(0, 3).map(it => {
-                    return {
-                        header: it.firstChild.innerText,
-                        link: (it.firstChild.href)
-                    }
-                })
-            }, divClass);
-            await this.browser.close();
-        } catch (ex) {
-            App.log('Error while gathering news', ex);
-        }
-        if (result != null) {
-            return result;
-        } else {
-            await this.gatherNews();
-        }
+        await BlizzardIntegrationService.gatherNews();
     },
 
-    createHeroesProfileSession: async function (remainingTries) {
-        remainingTries = remainingTries ?? 3;
-
-        const browser = await this.createBrowser();
-        const page = await this.createPage(browser);
-        const url = 'https://www.heroesprofile.com/Global/Talents/';
-        try {
-            await page.goto(url, { waitUntil: 'domcontentloaded' });
-            const cookies = await page.cookies();
-            return `${cookies[0].name}=${cookies[0].value};`
-        } catch (ex) {
-            App.log(`Error while creating heroes session`, ex);
-            if (remainingTries > 0) {
-                remainingTries--;
-                await this.createHeroesProfileSession(remainingTries);
-            } else {
-                App.log(`No more tries remaining for heroes profile session`);
-                return null;
-            }
-        } finally {
-            await page.close();
-            await browser.close();
-        }
-    },
-
-    createHeroesProfileDrafterSession: async function (remainingTries) {
-        remainingTries = remainingTries ?? 3;        
+    gatherHeroStats: async function (heroId, heroName, heroesMap) {
         const page = await this.createPage();
-        const url = 'https://drafter.heroesprofile.com/Drafter';
-        try {
-            const response = await page.goto(url, { waitUntil: 'domcontentloaded' });        
-            const obj = await page.evaluate(() => {
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-                const version = document.querySelector('[name="minor_timeframe"] option[selected]').value;
-                return { csrfToken, version }
-            });
-            
-            return {
-                version: obj.version,
-                csrfToken: obj.csrfToken,                
-            }
-        } catch (ex) {
-            App.log(`Error while creating heroes draft session`, ex);
-            if (remainingTries > 0) {
-                remainingTries--;
-                await this.createHeroesProfileDrafterSession(remainingTries);
-            } else {
-                App.log(`No more tries remaining for heroes draft session`);
-                return null;
-            }
-        } finally {
-            await page.close();
-        }
-    },
+        const icyData = await IcyVeinsIntegrationService.gatherIcyData(page, heroName);
+        let profileData = await HeroesProfileIntegrationService.gatherProfileBuildsFromAPI(heroName);
 
-    gatherHeroesPrint: async function (remainingTries) {
-        remainingTries = remainingTries ?? 3;
-        const page = await this.createPage(null, false);
-
-        let result;
-        const url = `https://nexuscompendium.com/currently`;
-
-        try {
-            await page.goto(url, { waitUntil: 'networkidle0' });
-            result = await page.$('.primary-table > table:nth-child(9)');
-            await result.screenshot({
-                path: 'images/freeweek.png'
-            });
-
-        } catch (ex) {
-            App.log(`Error while gathering rotation image`, ex);
-        } finally {
-            await page.close();
-        }
-
-        if (result != null) {
-            return result;
-        } else {
-            if (remainingTries > 0) {
-                remainingTries--;
-                await this.gatherHeroesPrint(remainingTries);
-            } else {
-                App.log(`No more tries remaining for gathering heroes print`);
-                return null;
-            }
-        }
-    },
-
-    gatherHeroStats: async function (icyUrl, heroId, heroName, profileUrl, heroesMap, cookie) {
-        const page = await this.createPage();
-        const icyData = await this.gatherIcyData(page, icyUrl);
-        let profileData = await this.gatherProfileBuildsFromAPI(profileUrl, heroName);
-        if (icyData != null && profileData != null) {
-            icyData.strongerMaps = icyData.strongerMaps.map(it => {
-                const strongerMap = MapService.findMap(it);
-                return {
-                    name: strongerMap.name,
-                    localizedName: strongerMap.localizedName
-                }
-            });
-
-            let returnObject = {
-                icyData,
-                profileData
-            }
-
-            heroesMap.set(heroId, returnObject);
-            try {
-                await page.close();
-            } catch (ex) {
-                App.log(`Error while closing page`, ex);
-            }
+        if (icyData && profileData) {            
+            await this.setHeroDataAndClosePage(heroId, icyData, profileData, heroesMap);
         } else {
             if (icyData == null && profileData == null) {
-                await this.gatherHeroStats(icyUrl, heroId, heroName, profileUrl, heroesMap, cookie);
+                await this.gatherHeroStats(heroId, heroName, heroesMap);
             } else if (profileData == null) {
-                profileData = await this.gatherWhenFail(profileUrl, null, page, heroName, 3);
-
-                let returnObject = {
-                    icyData,
-                    profileData
-                }
-
-                heroesMap.set(heroId, returnObject);
-                try {
-                    await page.close();
-                } catch (ex) {
-                    App.log(`Error while closing page`, ex);
-                }
+                profileData = await this.gatherWhenFail(null, page, heroName, 3);
+                await this.setHeroDataAndClosePage(heroId, icyData, profileData, heroesMap);
             }
         }
     },
 
-    gatherWhenFail: async function (profileUrl, profileData, page, heroName, remainingTries) {
+    setHeroDataAndClosePage: async function(heroId, icyData, profileData, heroesMap) {
+        heroesMap.set(heroId, { icyData, profileData });
+        try {
+            await page.close();
+        } catch (ex) {
+            App.log(`Error while closing page ${page?.url}`, ex);
+        }
+    },
+
+    gatherWhenFail: async function (profileData, page, heroName, remainingTries) {
         remainingTries = remainingTries ?? 3;
         await App.delay(1500);
-        profileData = await this.gatherProfileBuildsFromAPI(profileUrl, heroName);
-        
+        profileData = await this.gatherProfileBuildsFromAPI(heroName);
+
         if (profileData != null) {
             return profileData;
         } else {
             if (remainingTries > 0) {
                 remainingTries--;
-                await this.gatherWhenFail(profileUrl, profileData, page, heroName, remainingTries);
+                await this.gatherWhenFail(profileData, page, heroName, remainingTries);
             } else {
-                App.log(`No more tries remaining for ${profileUrl}`);
+                App.log(`No more tries remaining for ${heroName}`);
                 return null;
             }
-        }
-    },
-
-    gatherIcyData: async function (page, icyUrl) {
-        try {
-            await page.goto(icyUrl, { waitUntil: 'domcontentloaded' });
-
-            return await page.evaluate((icyUrl) => {
-                const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.innerText);
-                const skills = Array.from(document.querySelectorAll('.talent_build_copy_button > input')).map(skillsElements => skillsElements.value);
-                const counters = Array.from(document.querySelectorAll('.hero_portrait_bad')).map(nameElements => nameElements.title);
-                const synergies = Array.from(document.querySelectorAll('.hero_portrait_good')).map(nameElements => nameElements.title);
-                const synergiesText = document.querySelector('.heroes_synergies .heroes_synergies_counters_content').innerText;
-                const countersText = document.querySelector('.heroes_counters .heroes_synergies_counters_content').innerText;
-                const strongerMaps = Array.from(document.querySelectorAll('.heroes_maps_stronger .heroes_maps_content span img')).map(i => i.title);
-                const tips = Array.from(document.querySelectorAll('.heroes_tips li')).map(i => i.innerText.trim().replaceAll('  ', ' '));
-
-                const builds = [];
-                for (let i in names) {
-                    builds.push({
-                        name: `[${names[i]}](${icyUrl})`,
-                        skills: skills[i]
-                    });
-                }
-
-                return {
-                    builds: builds,
-                    counters: { countersText, heroes: counters },
-                    synergies: { synergiesText, heroes: synergies },
-                    strongerMaps: strongerMaps,
-                    tips: tips
-                };
-
-            }, icyUrl);
-        } catch (ex) {
-            App.log(`Error while fetching icyData ${icyUrl}`, ex);
-            if (ex.stack.includes('Navigation timeout')) {
-                this.gatherIcyData(page, icyUrl);
-            }
-        }
-    },
-
-    gatherProfileBuildsFromAPI: async function (profileUrl, heroName) {
-        const drafterCookieValue = await this.createHeroesProfileDrafterSession(); 
-        const details = {
-            'hero': heroName,
-            'timeframe_type': 'minor',
-            'timeframe': [
-                drafterCookieValue?.version
-            ],
-            'statfilter': 'win_rate',
-            'game_type': [
-                'sl'
-            ],    
-            'talentbuildtype': 'Popular'
-        }
-        let data = null;
-        try {    
-            const requestOptions = {
-                method: 'POST',
-                headers:
-                {                    
-                    'X-Csrf-Token': drafterCookieValue.csrfToken,
-                    'Content-Type': 'application/json'
-                }
-                ,
-                body: JSON.stringify(details),
-            };
-
-            const fetchedData = await fetch(profileUrl, requestOptions)
-            data = await fetchedData.json();  
-
-            return {
-                builds: data.map((build) => {                     
-                    const name = `[Popular Build](https://www.heroesprofile.com/Global/Talents/${heroName}) (${build.win_rate}% win rate)`;
-                    buildString = `[T${build.level_one.sort}${build.level_four.sort}${build.level_seven.sort}${build.level_ten.sort}${build.level_thirteen.sort}${build.level_sixteen.sort}${build.level_twenty.sort},${heroName.replaceAll(' ','')}]`;
-                    return {
-                        name,
-                        skills: buildString
-                    }
-                })
-            }
-        } catch (e) {
-            App.log(`Error while gathering ${heroName} profile builds, with data ${data}`, e)
-            data = null;
         }
     },
 
@@ -558,7 +195,7 @@ exports.Network = {
         }
     },
 
-    endUpdate: async function () {
+    afterUpdate: async function () {
         await this.browser.close().catch();
         App.log(`Finished update process`);
         this.isUpdatingData = false;
@@ -656,7 +293,7 @@ exports.Network = {
             }
             // console.log('>>', request.method(), request.url(), request.resourceType());
         });
-////////         page.on('response', response => console.log('<<', response.status(), response.url()))
+        ////////         page.on('response', response => console.log('<<', response.status(), response.url()))
 
         return page;
     },
