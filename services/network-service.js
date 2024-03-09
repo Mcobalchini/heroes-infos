@@ -219,7 +219,7 @@ exports.Network = {
 
             return {
                 builds: data.map((build) => {                     
-                    const name = `[Popular Build](${profileUrl}) (${build.win_rate}% win rate)`;
+                    const name = `[Popular Build](https://www.heroesprofile.com/Global/Talents/${heroName}) (${build.win_rate}% win rate)`;
                     buildString = `[T${build.level_one.sort}${build.level_four.sort}${build.level_seven.sort}${build.level_ten.sort}${build.level_thirteen.sort}${build.level_sixteen.sort}${build.level_twenty.sort},${heroName.replaceAll(' ','')}]`;
                     return {
                         name,
