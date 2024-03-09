@@ -13,7 +13,8 @@ const bot = new Client({intents: myIntents});
 exports.App = {
     setBotStatus: setBotStatus,
     bot: bot,
-    log: log
+    log: log,
+    delay: delay = ms => new Promise(res => setTimeout(res, ms))
 };
 const {StringService} = require('./services/string-service.js');
 StringService.setup();

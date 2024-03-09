@@ -19,7 +19,7 @@ exports.run = async (heroName) => {
     }
 
     return {
-        authorImage: `images/${hero.name.unaccentClean().replaceAll(' ', '-')}.png`,
+        authorImage: `images/${hero.name.unaccentClean()}.png`,
         authorName: hero.name,
         authorUrl: `https://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`,
         data: {
