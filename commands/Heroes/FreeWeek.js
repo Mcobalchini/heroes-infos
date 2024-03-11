@@ -1,9 +1,9 @@
-const {StringService} = require('../../services/string-service');
-const {HeroService} = require('../../services/hero-service');
+const { StringService } = require('../../services/string-service');
+const { HeroService } = require('../../services/hero-service');
 
 exports.run = async () => {
     const freeHeroesObject = HeroService.freeHeroes
-    const options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'};
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 
     return {
         data: {

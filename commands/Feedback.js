@@ -19,7 +19,7 @@ exports.run = async (feedback, msg) => {
                             count++;
                         } catch (error) {
                             App.log("Could not send message to: " + element, error);
-                        }                    
+                        }
                     })
                     .catch(function (error) {
                         App.log("Could not send message to: " + element, error);

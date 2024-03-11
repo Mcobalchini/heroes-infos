@@ -1,8 +1,8 @@
-const {StringService} = require('../services/string-service');
-const {Network} = require('../services/network-service');
+const { StringService } = require('../services/string-service');
+const { BlizzardIntegrationService } = require('../services/integration/blizzard-integration-service');
 
 exports.run = () => {
-    return Network.gatherNews().then(
+    return BlizzardIntegrationService.gatherNews().then(
         returnedNews => {
             return {
                 data: {

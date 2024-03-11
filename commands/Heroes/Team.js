@@ -1,8 +1,8 @@
-const {StringService} = require('../../services/string-service');
-const {HeroService} = require('../../services/hero-service');
+const { StringService } = require('../../services/string-service');
+const { HeroService } = require('../../services/hero-service');
 
 exports.run = async (heroes) => {
-    heroes = heroes.replaceAll(',',' ').replaceAll(';',' ')
+    heroes = heroes.replaceAll(',', ' ').replaceAll(';', ' ')
     let heroesSorted = JSON.parse(JSON.stringify(HeroService.heroesInfos.sort(HeroService.sortByTierPosition)))
         .filter(it => it.name !== 'Gall' && it.name !== 'Cho');
 
