@@ -1,5 +1,5 @@
-const {StringService} = require('../../services/string-service');
-const {HeroService} = require('../../services/hero-service');
+const { StringService } = require('../../services/string-service');
+const { HeroService } = require('../../services/hero-service');
 
 exports.run = async (heroName) => {
     const hero = HeroService.findHero(heroName, true);

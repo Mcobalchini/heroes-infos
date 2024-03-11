@@ -1,4 +1,4 @@
-const {StringService} = require('../services/string-service');
+const { StringService } = require('../services/string-service');
 const { BlizzardIntegrationService } = require('../services/integration/blizzard-integration-service');
 
 exports.run = () => {

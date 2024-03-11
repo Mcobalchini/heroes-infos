@@ -1,7 +1,7 @@
-const {StringService} = require('../services/string-service');
-const {App} = require('../app');
+const { StringService } = require('../services/string-service');
+const { App } = require('../app');
 const config = require("../config.json");
-const {CommandService} = require("../services/command-service");
+const { CommandService } = require("../services/command-service");
 
 exports.run = (commandAsked, msg) => {
     let reply = '';
@@ -16,7 +16,7 @@ exports.run = (commandAsked, msg) => {
             //TODO improve this
             if (command.help.acceptParams) {
                 let example = '[argument]';
-                
+
                 if (command.help.paramOptions != null && command.help.paramOptions.length > 0) {
                     example = command.help.paramOptions[0]?.name;
                 } else if (command.help.argumentName.toLowerCase() === 'hero') {

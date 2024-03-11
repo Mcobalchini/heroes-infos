@@ -1,5 +1,5 @@
-const {StringService} = require('../services/string-service');
-const {App} = require('../app');
+const { StringService } = require('../services/string-service');
+const { App } = require('../app');
 const { ExternalDataService } = require('../services/external-data-service');
 
 exports.run = (args) => {

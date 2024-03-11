@@ -1,5 +1,5 @@
-const {StringService} = require('../services/string-service');
-const {App} = require('../app');
+const { StringService } = require('../services/string-service');
+const { App } = require('../app');
 
 exports.run = () => {
     let reply = StringService.get('some.infos.about.me');
