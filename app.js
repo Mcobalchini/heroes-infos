@@ -20,9 +20,9 @@ const {StringService} = require('./services/string-service.js');
 StringService.setup();
 
 const {CommandService} = require('./services/command-service.js');
-const {Network} = require('./services/network-service.js');
 const {EmbedService} = require('./services/embed-service');
 const {App} = require("./app");
+const { ExternalDataService } = require('./services/external-data-service.js');
 bot.commands = CommandService.assembleCommands();
 
 function setBotStatus(name, type) {
@@ -86,7 +86,7 @@ function createResponse(reply) {
         }
     }
 
-    if (Network.isUpdatingData) {
+    if (ExternalDataService.isUpdatingData) {
         let updatingWarningEmbed = EmbedService.createEmbed({
             featureName: StringService.get('note'),
             message: StringService.get('hold.still.updating.data')
@@ -113,10 +113,10 @@ async function handleResponse(interaction) {
 
 function periodicUpdateCheck(interval) {
     log('checking if update needed');
-    if (Network.isUpdateNeeded() || Network.isRotationUpdateNeeded()) {
-        const updateType = Network.isRotationUpdateNeeded() ? 'rotation' : '';
+    if (ExternalDataService.isUpdateNeeded() || ExternalDataService.isRotationUpdateNeeded()) {
+        const updateType = ExternalDataService.isRotationUpdateNeeded() ? 'rotation' : '';
         setBotStatus(`Updating ${updateType}`, 'WATCHING');
-        Network.updateData(updateType).then(() => setBotStatus('Heroes of the Storm', 'PLAYING'));
+        ExternalDataService.updateData(updateType).then(() => setBotStatus('Heroes of the Storm', 'PLAYING'));
     }
     if (interval)
         setInterval(periodicUpdateCheck, PERIOD, false);

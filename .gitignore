@@ -103,11 +103,11 @@ dist
 # TernJS port file
 .tern-port
 .vscode/launch.json
-data/heroes-infos.json
-data/freeweek.json
-data/compositions.json
-data/banlist.json
+**/heroes-infos.json
+**/freeweek.json
+**/compositions.json
+**/banlist.json
 package-lock.json
-
+data/variable/
 .idea
 .vscode

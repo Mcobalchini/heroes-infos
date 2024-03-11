@@ -10,10 +10,10 @@ let mustBanHeroes = [];
 let compositions = [];
 
 try {
-    heroesInfos = FileService.openJsonSync('./data/heroes-infos.json');
-    mustBanHeroes = FileService.openJsonSync('./data/banlist.json');
-    compositions = FileService.openJsonSync('./data/compositions.json');
-    freeHeroes = FileService.openJsonSync('./data/freeweek.json');
+    heroesInfos = FileService.openJsonSync(`./data/variable/${process.env.CLIENT_ID}/heroes-infos.json`);
+    mustBanHeroes = FileService.openJsonSync(`./data/variable/${process.env.CLIENT_ID}/banlist.json`);
+    compositions = FileService.openJsonSync(`./data/variable/${process.env.CLIENT_ID}/compositions.json`);
+    freeHeroes = FileService.openJsonSync(`./data/variable/${process.env.CLIENT_ID}/freeweek.json`);
 } catch (e) {
     App.log('error while reading json data', e);
 }
@@ -163,7 +163,7 @@ exports.HeroService = {
         for (let [heroKey, heroData] of heroesMap) {
             let index = heroesInfos.findIndex(it => it.id === heroKey);
             let icyData = heroData.icyData
-            let profileData = heroData.profileData
+            let profileBuilds = heroData.profileData
 
             if (heroesInfos[index] == null) {
                 heroesInfos[index] = {};
@@ -172,9 +172,9 @@ exports.HeroService = {
             heroesInfos[index].infos = {};
             heroesInfos[index].id = heroKey;
             heroesInfos[index].name = this.findHero(heroKey).name;
-            heroesInfos[index].infos.builds = this.assembleHeroBuilds(profileData,
-                heroesInfos[index],
-                icyData
+            heroesInfos[index].infos.builds = this.assembleHeroBuilds(heroesInfos[index],
+                profileBuilds?.builds,
+                icyData.builds
             );
 
             heroesInfos[index].infos.synergies = icyData.synergies;
@@ -182,21 +182,19 @@ exports.HeroService = {
             heroesInfos[index].infos.strongerMaps = icyData.strongerMaps;
             heroesInfos[index].infos.tips = icyData.tips.map(tip => `${tip}\n`).join('');
 
-            let obj = popularityWinRate?.find(it => {
-                return it.name.cleanVal() === heroesInfos[index].name.cleanVal()
-            });
+            let heroInfluence = popularityWinRate?.find(it => it.name.cleanVal() === heroesInfos[index].name.cleanVal());
 
-            if (obj?.influence) {
-                heroesInfos[index].infos.influence = parseInt(obj.influence) ?? - 1000;
+            if (heroInfluence?.influence) {
+                heroesInfos[index].infos.influence = parseInt(heroInfluence.influence) ?? - 1000;
             } else {
                 App.log(`No influence data gathered for ${heroesInfos[index].name}`)
-            }
-            
+            }            
         }
+
         const heroes = this.setHeroesTierPosition(heroesInfos);
         this.setHeroesInfos(heroes);
         this.setHeroesCommonSynergies();
-        FileService.writeJsonFile('data/heroes-infos.json', this.heroesInfos);
+        FileService.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/heroes-infos.json`, this.heroesInfos);
     },
 
     setHeroesCommonSynergies: function () {
@@ -209,26 +207,22 @@ exports.HeroService = {
         });
     },
 
-    assembleHeroBuilds: function (profileData, hero, icyData) {
+    assembleHeroBuilds: function (hero, profileBuilds, icyBuilds) {
+        if (profileBuilds == null)
+            profileBuilds = [];
 
-        if (profileData == null)
-            profileData = {};
-
-        if (profileData?.builds == null)
-            profileData.builds = [];
-
-        if (profileData?.builds?.length === 0) {
+        if (profileBuilds?.length === 0) {
             App.log(`No (profile) builds found for ${hero.name}`);
         }
 
         //retrieves the duplicate items
-        let repeatedBuilds = profileData?.builds?.filter(item =>
-            (icyData.builds.map(it => it.skills.unaccent()).includes(item.skills.unaccent()))
+        let repeatedBuilds = profileBuilds?.filter(item =>
+            (icyBuilds.map(it => it.skills.unaccent()).includes(item.skills.unaccent()))
         );
 
         //applies winrate on known builds names
         if (repeatedBuilds != null) {
-            icyData.builds.forEach(it => {
+            icyBuilds.forEach(it => {
                 for (let item of repeatedBuilds) {
                     if (item.skills.unaccent() === it.skills.unaccent()) {
                         it.name = `${it.name} (${item.name.match(/([\d.]%*)/g, '').join('').replace('..', '')} win rate)`
@@ -238,10 +232,10 @@ exports.HeroService = {
         }
 
         //removes the duplicate items
-        if (profileData)
-            profileData.builds = profileData?.builds?.filter(item => !repeatedBuilds.includes(item));
+        if (profileBuilds)
+            profileBuilds = profileBuilds?.filter(item => !repeatedBuilds.includes(item));
 
-        return icyData.builds.concat(profileData?.builds);
+        return icyBuilds.concat(profileBuilds);
     },
 
     setHeroesTierPosition: function (heroesParam) {
@@ -258,7 +252,7 @@ exports.HeroService = {
 
     setFreeHeroes: function (heroesParam) {
         this.freeHeroes = heroesParam;
-        FileService.writeJsonFile('data/freeweek.json', heroesParam);
+        FileService.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/freeweek.json`, heroesParam);
     },
 
     getRotationData: function () {
@@ -316,13 +310,13 @@ exports.HeroService = {
         }).reverse();
 
         this.setCompositions(sortedComposition);
-        FileService.writeJsonFile('data/compositions.json', sortedComposition);
+        FileService.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/compositions.json`, sortedComposition);
         App.log(`Updated compositions list`);
     },
 
     setBanHeroes: function (heroesParam) {
         this.mustBanHeroes = heroesParam;
-        FileService.writeJsonFile('data/banlist.json', heroesParam);
+        FileService.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/banlist.json`, heroesParam);
     },
 
     setCompositions: function (compositionsParam) {

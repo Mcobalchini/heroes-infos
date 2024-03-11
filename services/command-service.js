@@ -1,10 +1,10 @@
 const config = require('../config.json');
-const {StringService} = require('./string-service.js');
-const {Network} = require('./network-service.js');
-const {SlashCommandBuilder} = require('@discordjs/builders');
-const {App} = require('../app.js');
-const {FileService} = require("./file-service");
-const {Collection} = require("discord.js");
+const { StringService } = require('./string-service.js');
+const { SlashCommandBuilder } = require('@discordjs/builders');
+const { App } = require('../app.js');
+const { FileService } = require("./file-service");
+const { Collection } = require("discord.js");
+const { ExternalDataService } = require('./external-data-service.js');
 const COMMAND_FOLDER = "./commands"
 
 exports.CommandService = {
@@ -19,11 +19,11 @@ exports.CommandService = {
             }
         }).flat()
 
-        
+
         const commandsMap = new Collection();
         for (const file of commands) {
             const commandName = file.split(".")[0];
-            if (commandName === 'Help' && ignoreHelp) {                
+            if (commandName === 'Help' && ignoreHelp) {
                 continue;
             }
             const command = require(`.${COMMAND_FOLDER}/${file}`);
@@ -34,7 +34,7 @@ exports.CommandService = {
     },
 
     isUpdateSlashCommandsNeeded: async function () {
-        const apiCommandsSize = await Network.getApiCommandsSize();
+        const apiCommandsSize = await ExternalDataService.getApiCommandsSize();
         return process.env.UPDATE_COMMANDS === 'true' || (App.bot.commands.size !== apiCommandsSize);
     },
 
@@ -80,7 +80,7 @@ exports.CommandService = {
                                 .setRequired(it.requiredParam));
                     }
                 }
-                await Network.postSlashCommandsToAPI(commandSlashBuilder);
+                await ExternalDataService.postSlashCommandsToAPI(commandSlashBuilder);
             }
 
             App.log(`Successfully reloaded application / commands.`);
@@ -106,7 +106,7 @@ exports.CommandService = {
                 sourceImage: command.help?.sourceImage
             }
         }
-        
+
         if (reply.toString() === '[object Object]') {
             return reply;
         } else {

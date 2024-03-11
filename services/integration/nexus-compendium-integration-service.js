@@ -1,12 +1,15 @@
-exports.NexusCompendiumIntegrationService = {
-    gatherHeroesPrint: async function (page, remainingTries) {
-        remainingTries = remainingTries ?? 3;       
+const { App } = require("../../app");
+const { PuppeteerService } = require("../puppeteer-service");
 
+exports.NexusCompendiumIntegrationService = {
+    baseUrl: `https://nexuscompendium.com`,
+    gatherHeroesPrint: async function (remainingTries) {
+        remainingTries = remainingTries ?? 3;       
+        const page = await PuppeteerService.createPage(null, false);
         let result;
-        const url = `https://nexuscompendium.com/currently`;
 
         try {
-            await page.goto(url, { waitUntil: 'networkidle0' });
+            await page.goto(`${this.baseUrl}/currently`, { waitUntil: 'networkidle0' });
             result = await page.$('.primary-table > table:nth-child(9)');
             await result.screenshot({
                 path: 'images/freeweek.png'
@@ -23,15 +26,14 @@ exports.NexusCompendiumIntegrationService = {
         } else {
             if (remainingTries > 0) {
                 remainingTries--;
-                await this.gatherHeroesPrint(page, remainingTries);
+                await this.gatherHeroesPrint(remainingTries);
             } else {
                 App.log(`No more tries remaining for gathering heroes print`);
                 return null;
             }
         }
     },
-
-    //FIXME
+    
     gatherHeroesRotation: async function () {
         App.log(`Gathering heroes rotation`);
 
@@ -45,13 +47,13 @@ exports.NexusCompendiumIntegrationService = {
         };
 
         const options = {
-            url: 'https://nexuscompendium.com/api/currently/RotationHero',
+            url: `${this.baseUrl}/api/currently/RotationHero`,
             waitUntil: 'domcontentloaded',
             function: fun
         }
-        const result = await this.performConnection(options);
+        const result = await PuppeteerService.performConnection(options);
 
         if (result)
-            HeroService.updateRotation(result);
+            return result;
     },
 }

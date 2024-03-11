@@ -1,10 +1,12 @@
-const { MapService } = require("../services/map-service");
+const { App } = require("../../app");
+const { PuppeteerService } = require("../puppeteer-service");
 
 exports.IcyVeinsIntegrationService = {
     baseUrl: 'https://www.icy-veins.com/heroes/{{0}}-build-guide',
-    gatherIcyData: async function (page, heroName) {
+        gatherIcyData: async function (heroName) {
         icyUrl = this.getUrl(heroName);
-        try {
+        const page = await PuppeteerService.createPage();
+        try {        
             await page.goto(icyUrl, { waitUntil: 'domcontentloaded' });
 
             const heroIcyVeinsData = await page.evaluate((icyUrl) => {
@@ -34,24 +36,18 @@ exports.IcyVeinsIntegrationService = {
                 };
 
             }, icyUrl);
-
-            heroIcyVeinsData.strongerMaps = icyData.strongerMaps.map(it => {
-                const strongerMap = MapService.findMap(it);
-                return {
-                    name: strongerMap.name,
-                    localizedName: strongerMap.localizedName
-                }
-            });
             return heroIcyVeinsData;
         } catch (ex) {
             App.log(`Error while fetching icyData ${icyUrl}`, ex);
             if (ex.stack.includes('Navigation timeout')) {
-                this.gatherIcyData(page, heroName);
+                this.gatherIcyData(heroName);
             }
+        } finally {
+            await page.close();
         }
     },
 
     getUrl: function (heroName) {
-        return baseUrl.replace('{{0}}', heroName);
+        return this.baseUrl.replace('{{0}}', heroName);
     }
 }

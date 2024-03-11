@@ -1,13 +1,13 @@
 const {StringService} = require('../services/string-service');
 const {App} = require('../app');
-const {Network} = require('../services/network-service');
+const { ExternalDataService } = require('../services/external-data-service');
 
 exports.run = (args) => {
-    if (Network.isUpdatingData) {
+    if (ExternalDataService.isUpdatingData) {
         return StringService.get('hold.still.updating');
     } else {
         App.setBotStatus('Updating', 'WATCHING');
-        Network.updateData(args);
+        ExternalDataService.updateData(args);
         return StringService.get('update.process.started');
     }
 }

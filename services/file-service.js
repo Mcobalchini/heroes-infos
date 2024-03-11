@@ -17,7 +17,7 @@ exports.FileService = {
         return fs.writeFile(path, content, cb);
     },
 
-    writeJsonFile: function (path, content) {
+    writeJsonFile: function (path, content) {       
         return this.writeFile(path, JSON.stringify(content), (e) => {
             if (e != null) {
                 throw e;
