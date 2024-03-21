@@ -1,15 +1,15 @@
-const { App } = require("../../app");
+const { LogService } = require("../log-service");
 const { PuppeteerService } = require("../puppeteer-service");
 
 exports.IcyVeinsIntegrationService = {
-    baseUrl: 'https://www.icy-veins.com/heroes/{{0}}-build-guide',
-        gatherIcyData: async function (heroName) {
-        icyUrl = this.getUrl(heroName);
-        const page = await PuppeteerService.createPage();
-        try {        
-            await page.goto(icyUrl, { waitUntil: 'domcontentloaded' });
+    baseUrl: 'https://www.icy-veins.com/heroes/{0}-build-guide',
 
-            const heroIcyVeinsData = await page.evaluate((icyUrl) => {
+    gatherIcyData: async function (heroName) {
+        const page = await PuppeteerService.createPage()
+        try {
+            const icyUrl = this.getUrl(heroName);
+            await page.goto(icyUrl, { waitUntil: 'domcontentloaded' });
+            const heroIcyVeinsData = await page.evaluate((heroUrl) => {
                 const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.innerText);
                 const skills = Array.from(document.querySelectorAll('.talent_build_copy_button > input')).map(skillsElements => skillsElements.value);
                 const counters = Array.from(document.querySelectorAll('.hero_portrait_bad')).map(nameElements => nameElements.title);
@@ -22,7 +22,7 @@ exports.IcyVeinsIntegrationService = {
                 const builds = [];
                 for (let i in names) {
                     builds.push({
-                        name: `[${names[i]}](${icyUrl})`,
+                        name: `[${names[i]}](${heroUrl})`,
                         skills: skills[i]
                     });
                 }
@@ -38,16 +38,14 @@ exports.IcyVeinsIntegrationService = {
             }, icyUrl);
             return heroIcyVeinsData;
         } catch (ex) {
-            App.log(`Error while fetching icyData ${icyUrl}`, ex);
-            if (ex.stack.includes('Navigation timeout')) {
-                this.gatherIcyData(heroName);
-            }
+            LogService.log(`Error while fetching icyData ${icyUrl}`, ex);
+            return null;
         } finally {
             await page.close();
         }
     },
 
     getUrl: function (heroName) {
-        return this.baseUrl.replace('{{0}}', heroName);
+        return this.baseUrl.replace('{0}', heroName);
     }
 }

@@ -1,5 +1,5 @@
-const {App} = require("../app");
-const {FileService} = require("./file-service");
+const { FileService } = require("./file-service");
+const { LogService } = require("./log-service.js");
 const roles = FileService.openJsonSync('./data/constant/roles.json');
 const StringService = require('./string-service.js').StringService;
 const heroesBase = FileService.openJsonSync('./data/constant/heroes-base.json').sort((a, b) => a.name.localeCompare(b.name));
@@ -15,7 +15,7 @@ try {
     compositions = FileService.openJsonSync(`./data/variable/${process.env.CLIENT_ID}/compositions.json`);
     freeHeroes = FileService.openJsonSync(`./data/variable/${process.env.CLIENT_ID}/freeweek.json`);
 } catch (e) {
-    App.log('error while reading json data', e);
+    LogService.log('error while reading json data', e);
 }
 
 exports.HeroService = {
@@ -101,6 +101,10 @@ exports.HeroService = {
         return hero ? hero : this.findHeroByPropertyName(search);
     },
 
+    findHeroById: function (search) {
+        return heroesBase.find(heroInfo => heroInfo.id === search);
+    },
+
     findHeroByPropertyName: function (search) {
         if (this.heroesNamesMap.size === 0) {
             this.assembleHeroesNames();
@@ -120,7 +124,7 @@ exports.HeroService = {
     },
 
     getRoles: function () {
-        return roles;
+        return this.roles;
     },
 
 
@@ -159,39 +163,41 @@ exports.HeroService = {
         this.heroesInfos = heroesParam;
     },
 
-    updateHeroesInfos: function (heroesMap, popularityWinRate, heroesInfos) {
+    updateHeroesInfos: function (heroesMap, popularityWinRate) {
+        if (!this.heroesInfos.length) {
+            this.heroesInfos = JSON.parse(JSON.stringify(this.heroesBase));
+        }
+
         for (let [heroKey, heroData] of heroesMap) {
-            let index = heroesInfos.findIndex(it => it.id === heroKey);
+            let hero = this.heroesInfos.find(it => it.id === heroKey);
             let icyData = heroData.icyData
             let profileBuilds = heroData.profileData
 
-            if (heroesInfos[index] == null) {
-                heroesInfos[index] = {};
+            if (hero == null) {
+                hero = {};
             }
 
-            heroesInfos[index].infos = {};
-            heroesInfos[index].id = heroKey;
-            heroesInfos[index].name = this.findHero(heroKey).name;
-            heroesInfos[index].infos.builds = this.assembleHeroBuilds(heroesInfos[index],
+            hero.infos = {};            
+            hero.infos.builds = this.assembleHeroBuilds(hero,
                 profileBuilds?.builds,
                 icyData.builds
             );
 
-            heroesInfos[index].infos.synergies = icyData.synergies;
-            heroesInfos[index].infos.counters = icyData.counters;
-            heroesInfos[index].infos.strongerMaps = icyData.strongerMaps;
-            heroesInfos[index].infos.tips = icyData.tips.map(tip => `${tip}\n`).join('');
+            hero.infos.synergies = icyData.synergies;
+            hero.infos.counters = icyData.counters;
+            hero.infos.strongerMaps = icyData.strongerMaps;
+            hero.infos.tips = icyData.tips.map(tip => `${tip}\n`).join('');
 
-            let heroInfluence = popularityWinRate?.find(it => it.name.cleanVal() === heroesInfos[index].name.cleanVal());
+            let heroInfluence = popularityWinRate?.find(it => it.name.cleanVal() === hero.name.cleanVal());
 
             if (heroInfluence?.influence) {
-                heroesInfos[index].infos.influence = parseInt(heroInfluence.influence) ?? - 1000;
+                hero.infos.influence = parseInt(heroInfluence.influence) ?? - 1000;
             } else {
-                App.log(`No influence data gathered for ${heroesInfos[index].name}`)
-            }            
+                LogService.log(`No influence data gathered for ${hero.name}`)
+            }
         }
 
-        const heroes = this.setHeroesTierPosition(heroesInfos);
+        const heroes = this.setHeroesTierPosition(this.heroesInfos);
         this.setHeroesInfos(heroes);
         this.setHeroesCommonSynergies();
         FileService.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/heroes-infos.json`, this.heroesInfos);
@@ -212,7 +218,7 @@ exports.HeroService = {
             profileBuilds = [];
 
         if (profileBuilds?.length === 0) {
-            App.log(`No (profile) builds found for ${hero.name}`);
+            LogService.log(`No (profile) builds found for ${hero.name}`);
         }
 
         //retrieves the duplicate items
@@ -239,7 +245,7 @@ exports.HeroService = {
     },
 
     setHeroesTierPosition: function (heroesParam) {
-        App.log(`setting heroes tier position`);
+        LogService.log(`setting heroes tier position`);
         heroesParam.sort(function (a, b) {
             return (a.influence ?? 0) - (b.influence ?? 0);
         }).forEach(it => {
@@ -311,7 +317,7 @@ exports.HeroService = {
 
         this.setCompositions(sortedComposition);
         FileService.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/compositions.json`, sortedComposition);
-        App.log(`Updated compositions list`);
+        LogService.log(`Updated compositions list`);
     },
 
     setBanHeroes: function (heroesParam) {

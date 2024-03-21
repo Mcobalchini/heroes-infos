@@ -1,14 +1,14 @@
 const config = require('../config.json');
 const { StringService } = require('./string-service.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { App } = require('../app.js');
 const { FileService } = require("./file-service");
 const { Collection } = require("discord.js");
 const { ExternalDataService } = require('./external-data-service.js');
+const { LogService } = require('./log-service.js');
 const COMMAND_FOLDER = "./commands"
 
 exports.CommandService = {
-
+    commandsMap: null,
     assembleCommands: function (ignoreHelp) {
         const commands = FileService.openDir(COMMAND_FOLDER).map(it => {
             if (it.endsWith(".js")) {
@@ -30,12 +30,13 @@ exports.CommandService = {
             console.log(`Attempting to load command ${commandName}`);
             commandsMap.set(command.help.name.toLowerCase(), command);
         }
+        this.commandsMap = commandsMap;
         return commandsMap
     },
 
     isUpdateSlashCommandsNeeded: async function () {
         const apiCommandsSize = await ExternalDataService.getApiCommandsSize();
-        return process.env.UPDATE_COMMANDS === 'true' || (App.bot.commands.size !== apiCommandsSize);
+        return process.env.UPDATE_COMMANDS === 'true' || (this.commandsMap.size !== apiCommandsSize);
     },
 
     updateSlashCommands: async function () {
@@ -46,10 +47,10 @@ exports.CommandService = {
     },
 
     assembleSlashCommands: async function () {
-        App.log(`Started refreshing application (/) commands.`);
+        LogService.log(`Started refreshing application (/) commands.`);
 
         try {
-            for (let cmd of App.bot.commands.values()) {
+            for (let cmd of this.commandsMap.values()) {
                 const it = cmd.help;
                 const name = it.name;
                 const description = it.hint;
@@ -83,19 +84,19 @@ exports.CommandService = {
                 await ExternalDataService.postSlashCommandsToAPI(commandSlashBuilder);
             }
 
-            App.log(`Successfully reloaded application / commands.`);
+            LogService.log(`Successfully reloaded application / commands.`);
         } catch (error) {
-            App.log(`Error while reloading / commands`, error);
+            LogService.log(`Error while reloading / commands`, error);
         }
     },
 
     handleCommand: async function (interaction) {
         const receivedCommand = interaction.commandName.toString();
-        const command = App.bot.commands.get(receivedCommand);
+        const command = this.commandsMap.get(receivedCommand);
         const args = interaction.options?.data?.map(it => it.value).join(' ');
         let reply;
         if (this.isCommandAllowed(interaction, command)) {
-            App.log(`Command (${receivedCommand}) with params ${args} was called by ${interaction.member?.guild?.name}`);
+            LogService.log(`Command (${receivedCommand}) with params ${args} was called by ${interaction.member?.guild?.name}`);
             reply = await command.run(args, interaction);
         } else {
             reply = StringService.get('command.not.exists', receivedCommand);

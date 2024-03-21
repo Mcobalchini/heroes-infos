@@ -1,5 +1,5 @@
-const {EmbedBuilder, AttachmentBuilder} = require("discord.js");
-const {StringService} = require("./string-service");
+const { EmbedBuilder, AttachmentBuilder } = require("discord.js");
+const { StringService } = require("./string-service");
 const EMBBED_ARRAY_LIMIT = 25;
 
 exports.EmbedService = {

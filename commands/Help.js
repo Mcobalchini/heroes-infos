@@ -1,7 +1,7 @@
 const { StringService } = require('../services/string-service');
-const { App } = require('../app');
 const config = require("../config.json");
 const { CommandService } = require("../services/command-service");
+const { App } = require('../app');
 
 exports.run = (commandAsked, msg) => {
     let reply = '';

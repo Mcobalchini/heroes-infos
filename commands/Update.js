@@ -1,6 +1,6 @@
 const { StringService } = require('../services/string-service');
-const { App } = require('../app');
 const { ExternalDataService } = require('../services/external-data-service');
+const { App } = require('../app');
 
 exports.run = (args) => {
     if (ExternalDataService.isUpdatingData) {
@@ -25,6 +25,10 @@ exports.help = {
         {
             name: 'everything',
             description: 'updates.everything'
+        },
+        {
+            name: 'heroes',
+            description: 'updates.heroes'
         }
     ],
     argumentDescription: 'What to update',

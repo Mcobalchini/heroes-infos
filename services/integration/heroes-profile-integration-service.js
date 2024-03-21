@@ -1,6 +1,6 @@
 const { JSDOM } = require('jsdom');
 const { PuppeteerService } = require('../puppeteer-service');
-const { App } = require('../../app');
+const { LogService } = require('../log-service');
 
 const urlConfig = {
     apiUrl: 'https://www.heroesprofile.com/api/v1/global',
@@ -35,12 +35,12 @@ exports.HeroesProfileIntegrationService = {
                 csrfToken: obj.csrfToken,
             }
         } catch (ex) {
-            App.log(`Error while creating heroes draft session`, ex);
+            LogService.log(`Error while creating heroes draft session`, ex);
             if (remainingTries > 0) {
                 remainingTries--;
                 await this.createDrafterSession(remainingTries);
             } else {
-                App.log(`No more tries remaining for heroes draft session`);
+                LogService.log(`No more tries remaining for heroes draft session`);
                 return null;
             }
         } finally {
@@ -53,7 +53,7 @@ exports.HeroesProfileIntegrationService = {
             this.cookieValue = await this.createDrafterSession();
         }
 
-        App.log(`Gathering ban list`);
+        LogService.log(`Gathering ban list`);
         let data;
         const details = {
             'data[0][name]': 'timeframe',
@@ -97,7 +97,7 @@ exports.HeroesProfileIntegrationService = {
                 }
             });
         } catch (e) {
-            App.log('error while gathering heroes ban list', e)
+            LogService.log('error while gathering heroes ban list', e)
             data = [];
         }
 
@@ -110,7 +110,7 @@ exports.HeroesProfileIntegrationService = {
             this.cookieValue = await this.createDrafterSession();
         }
 
-        App.log(`Gathering compositions`);
+        LogService.log(`Gathering compositions`);
 
         const details = {
             'timeframe_type': 'minor',
@@ -150,18 +150,17 @@ exports.HeroesProfileIntegrationService = {
             }
 
         } catch (e) {
-            App.log(`Error while gathering profile compositions, with data ${compositions}`, e);
+            LogService.log(`Error while gathering profile compositions, with data ${compositions}`, e);
             compositions = null;
         }
     },
-
 
     getHeroesInfluenceFromAPI: async function () {
         if (!this.cookieValue) {
             this.cookieValue = await this.createDrafterSession();
         }
 
-        App.log(`Gathering heroes influence`);
+        LogService.log(`Gathering heroes influence`);
 
         const details = {
             'timeframe_type': 'minor',
@@ -200,7 +199,7 @@ exports.HeroesProfileIntegrationService = {
             }
 
         } catch (e) {
-            App.log(`Error while gathering ${heroName} profile builds, with data ${heroes}`, e);
+            LogService.log(`Error while gathering ${heroName} profile builds, with data ${heroes}`, e);
             heroes = null;
         }
     },
@@ -240,7 +239,7 @@ exports.HeroesProfileIntegrationService = {
 
             return {
                 builds: data.map((build) => {
-                    const name = `[Popular Build](${this.buildsTitleUrl}${heroName}) (${build.win_rate}% win rate)`;
+                    const name = `[Popular Build](${this.buildsTitleUrl}${heroName.replaceAll(' ','%20')}) (${build.win_rate}% win rate)`;
                     buildString = `[T${build.level_one.sort}${build.level_four.sort}${build.level_seven.sort}${build.level_ten.sort}${build.level_thirteen.sort}${build.level_sixteen.sort}${build.level_twenty.sort},${heroName.replaceAll(' ', '')}]`;
                     return {
                         name,
@@ -249,8 +248,8 @@ exports.HeroesProfileIntegrationService = {
                 })
             }
         } catch (e) {
-            App.log(`Error while gathering ${heroName} profile builds`, e)
-            data = null;
+            LogService.log(`Error while gathering ${heroName} profile builds`, e)            
+            return null;
         }
     },
 }

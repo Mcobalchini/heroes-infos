@@ -1,7 +1,8 @@
 const { StringService } = require('../services/string-service');
-const { App } = require('../app');
 const { EmbedBuilder, AttachmentBuilder } = require("discord.js");
 const config = require('../config.json');
+const { LogService } = require('../services/log-service');
+const { App } = require('../app');
 
 exports.run = async (feedback, msg) => {
     const owners = Array.from(App.bot.guilds._cache.map(it => it.ownerId)).filter(a => a !== config.adminId);
@@ -18,11 +19,11 @@ exports.run = async (feedback, msg) => {
                             await user.send('Hey, would like to give me a feedback? If that is the case, you can call the command `/feedback` and send me one');
                             count++;
                         } catch (error) {
-                            App.log("Could not send message to: " + element, error);
+                            LogService.log("Could not send message to: " + element, error);
                         }
                     })
                     .catch(function (error) {
-                        App.log("Could not send message to: " + element, error);
+                        LogService.log("Could not send message to: " + element, error);
                     });
             });
             reply = StringService.get('feedback.request.number.of.users', count);

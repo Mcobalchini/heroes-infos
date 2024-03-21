@@ -3,98 +3,111 @@ const HeroService = require('./hero-service.js').HeroService;
 const PromisePool = require('es6-promise-pool');
 const { Routes } = require('discord-api-types/v9');
 const { REST } = require('@discordjs/rest');
-const { App } = require('../app.js');
 const { NexusCompendiumIntegrationService } = require('./integration/nexus-compendium-integration-service.js');
 const { HeroesProfileIntegrationService } = require('./integration/heroes-profile-integration-service.js');
 const { IcyVeinsIntegrationService } = require('./integration/icy-veins-integration-service.js');
 const { BlizzardIntegrationService } = require('./integration/blizzard-integration-service.js');
 const { PuppeteerService } = require('./puppeteer-service.js');
+const { LogService } = require('./log-service.js');
+const { App } = require('../app.js');
+const { FileService } = require('./file-service.js');
 const rest = new REST({ version: '9' }).setToken(process.env.HEROES_INFOS_TOKEN);
+const HOUR = 1000 * 60 * 60;
+const PERIOD = HOUR * 1;
 
 exports.ExternalDataService = {
     isUpdatingData: false,
     replyTo: null,
     popularityWinRate: null,
+    missingUpdateHeroes: [],
+    numberOfWorkers: process.env.THREAD_WORKERS ? Number(process.env.THREAD_WORKERS) : 5,
 
     updateData: async function (args) {
         await PuppeteerService.setBrowser();
-        App.log(`Started updating data process`);
+        LogService.log(`Started updating data process`);
         this.isUpdatingData = true;
-        const numberOfWorkers = process.env.THREAD_WORKERS ? Number(process.env.THREAD_WORKERS) : 5;
         const updateSteps = [];
-        updateSteps.push(NexusCompendiumIntegrationService.gatherHeroesPrint());
-        updateSteps.push(NexusCompendiumIntegrationService.gatherHeroesRotation().then(result => HeroService.updateRotation(result)));
-
-        if (args === 'rotation') {
-            const rotationPromiseProducer = () => updateSteps.pop() ?? null;
-            const dataThread = new PromisePool(rotationPromiseProducer, numberOfWorkers);
-            dataThread.start().then(async () => {
-                await this.afterUpdate();
-                return;
-            });
+        if (args === 'heroes') {
+            const missingHeroes = this.missingUpdateHeroes.map(it => HeroService.findHeroById(it));
+            this.missingUpdateHeroes = [];
+            await this.updateHeroesData(missingHeroes);
+            return;
         } else {
-            this.popularityWinRate = null;
-            updateSteps.push(HeroesProfileIntegrationService.getBanTierListInfo().then(result => HeroService.updateBanList(result.splice(0, 20).map(it => it.name))));
-            updateSteps.push(HeroesProfileIntegrationService.getCompositionsInfo().then(result => HeroService.updateCompositions(result)));
-            updateSteps.push(HeroesProfileIntegrationService.getHeroesInfluenceFromAPI().then(result => this.popularityWinRate = result));
+            updateSteps.push(NexusCompendiumIntegrationService.gatherHeroesPrint());
+            updateSteps.push(NexusCompendiumIntegrationService.gatherHeroesRotation().then(result => HeroService.updateRotation(result)));
 
-            const dataPromiseProducer = () => {
-                const currPromise = updateSteps.pop()
-                return currPromise ?? null;
+            if (args === 'rotation') {
+                const rotationPromiseProducer = () => updateSteps.pop() ?? null;
+                const dataThread = new PromisePool(rotationPromiseProducer, this.numberOfWorkers);
+                dataThread.start().then(async () => {
+                    await this.afterUpdate();
+                    return;
+                });
+            } else {
+                this.popularityWinRate = null;
+                updateSteps.push(HeroesProfileIntegrationService.getBanTierListInfo().then(result => HeroService.updateBanList(result.splice(0, 20).map(it => it.name))));
+                updateSteps.push(HeroesProfileIntegrationService.getCompositionsInfo().then(result => HeroService.updateCompositions(result)));
+                updateSteps.push(HeroesProfileIntegrationService.getHeroesInfluenceFromAPI().then(result => this.popularityWinRate = result));
+
+                const dataPromiseProducer = () => {
+                    const currPromise = updateSteps.pop()
+                    return currPromise ?? null;
+                }
+
+                const dataThread = new PromisePool(dataPromiseProducer, this.numberOfWorkers);
+                dataThread.start().then(async () => this.updateHeroesData(HeroService.findAllHeroes()));
             }
-
-            const dataThread = new PromisePool(dataPromiseProducer, numberOfWorkers);
-            dataThread.start().then(async () => {
-                let heroesMap = new Map();
-                let heroesIdAndUrls = [];
-                let heroesInfos = HeroService.findAllHeroes();
-
-                for (let hero of heroesInfos) {
-                    let normalizedName = hero.name.replace('/ /g', '+').replace('/\'/g', '%27');
-                    heroesIdAndUrls.push({
-                        heroId: hero.id,
-                        accessLink: hero.accessLink,
-                        heroNormalizedName: normalizedName
-                    });
-                }
-
-                const heroUpdateSteps = () => {
-                    const heroCrawlInfo = heroesIdAndUrls.pop();
-                    return heroCrawlInfo ? this.gatherHeroStats(
-                        heroCrawlInfo.heroId,                        
-                        heroCrawlInfo.heroNormalizedName,
-                        heroCrawlInfo.accessLink,
-                        heroesMap).catch() : null;
-                };
-
-                let startTime = new Date();
-
-                const heroesInfosThread = new PromisePool(heroUpdateSteps, numberOfWorkers);
-
-                try {
-                    App.log(`Started gathering heroes data`);
-                    heroesInfosThread.start().then(async () => {
-                        let finishedTime = new Date();
-                        App.log(`Finished gathering process in ${(finishedTime.getTime() - startTime.getTime()) / 1000} seconds`);
-                        HeroService.updateHeroesInfos(heroesMap, this.popularityWinRate, heroesInfos);
-                        await this.afterUpdate();
-                    });
-                } catch (e) {
-                    if (e.stack.includes('Navigation timeout')
-                        || e.stack.includes('net::ERR_ABORTED')
-                        || e.stack.includes('net::ERR_NETWORK_CHANGED')) {
-                        App.log('Updating again after network error');
-                        await this.updateData();
-                    }
-                    App.log('Error while updating', e);
-                    this.isUpdatingData = false;
-                }
-            });
         }
     },
 
     gatherNews: async function () {
         await BlizzardIntegrationService.gatherNews();
+    },
+
+    updateHeroesData: async function (heroesInfos) {
+        let heroesMap = new Map();
+        let heroesIdAndUrls = [];
+
+        for (let hero of heroesInfos) {
+            let normalizedName = hero.name.replace('/ /g', '+').replace('/\'/g', '%27');
+            heroesIdAndUrls.push({
+                heroId: hero.id,
+                accessLink: hero.accessLink,
+                heroNormalizedName: normalizedName
+            });
+        }
+
+        const heroUpdateSteps = () => {
+            const heroCrawlInfo = heroesIdAndUrls.pop();
+            return heroCrawlInfo ? this.gatherHeroStats(
+                heroCrawlInfo.heroId,
+                heroCrawlInfo.heroNormalizedName,
+                heroCrawlInfo.accessLink,
+                heroesMap).catch() : null;
+        };
+
+        let startTime = new Date();
+
+        const heroesInfosThread = new PromisePool(heroUpdateSteps, this.numberOfWorkers);
+
+        try {
+            LogService.log(`Started gathering heroes data`);
+            heroesInfosThread.start().then(async () => {
+                let finishedTime = new Date();
+                LogService.log(`Finished gathering process in ${(finishedTime.getTime() - startTime.getTime()) / 1000} seconds`);
+                HeroService.updateHeroesInfos(heroesMap, this.popularityWinRate);
+                await this.afterUpdate();
+            });
+        } catch (e) {
+            if (e.stack.includes('Navigation timeout')
+                || e.stack.includes('net::ERR_ABORTED')
+                || e.stack.includes('net::ERR_NETWORK_CHANGED')) {
+                LogService.log('Updating again after network error');
+                await this.updateData();
+            }
+            LogService.log('Error while updating', e);
+            this.isUpdatingData = false;
+        }
     },
 
     gatherHeroStats: async function (heroId, heroName, heroIcyLink, heroesMap) {
@@ -107,15 +120,14 @@ exports.ExternalDataService = {
             if (icyData == null && profileData == null) {
                 await this.gatherHeroStats(heroId, heroName, heroIcyLink, heroesMap);
             } else if (profileData == null) {
-                profileData = await this.gatherWhenFail(null, heroName, 3);
+                profileData = await this.gatherWhenFail(null, heroId, heroName, 1);
                 heroesMap.set(heroId, { icyData, profileData });
             }
         }
     },
 
-    gatherWhenFail: async function (profileData, heroName, remainingTries) {
-        remainingTries = remainingTries ?? 3;
-        await App.delay(1500);
+    gatherWhenFail: async function (profileData, heroId, heroName, remainingTries) {
+        remainingTries = remainingTries ?? 1;
         profileData = await HeroesProfileIntegrationService.getBuildsFromAPI(heroName);
 
         if (profileData != null) {
@@ -123,9 +135,10 @@ exports.ExternalDataService = {
         } else {
             if (remainingTries > 0) {
                 remainingTries--;
-                await this.gatherWhenFail(profileData, heroName, remainingTries);
+                await this.gatherWhenFail(profileData, heroId, heroName, remainingTries);
             } else {
-                App.log(`No more tries remaining for ${heroName}`);
+                LogService.log(`No more tries remaining for ${heroName}`);
+                this.missingUpdateHeroes.push(heroId);
                 return null;
             }
         }
@@ -133,7 +146,7 @@ exports.ExternalDataService = {
 
     afterUpdate: async function () {
         PuppeteerService.closeBrowser();
-        App.log(`Finished update process`);
+        LogService.log(`Finished update process`);
         this.isUpdatingData = false;
         App.bot.updatedAt = new Date().toLocaleString('pt-BR');
         App.setBotStatus('Heroes of the Storm', 'PLAYING');
@@ -152,7 +165,26 @@ exports.ExternalDataService = {
     },
 
     isUpdateNeeded: function () {
-        return !HeroService.findHero('1', true)?.infos?.builds?.length > 0;
+        return !HeroService.findHero('1', true)?.infos?.builds?.length > 0 || this.missingUpdateHeroes.length > 0;
+    },
+
+    periodicUpdateCheck: function (interval) {
+        LogService.log('checking if update needed');
+        let arg = null;
+
+        if (this.isUpdateNeeded()) {
+            arg = 'heroes';
+        } else if (this.isRotationUpdateNeeded()) {
+            arg = 'rotation';
+        }
+
+        if (arg) {
+            App.setBotStatus(`Updating ${arg}`, 'WATCHING');
+            this.updateData(arg).then(() => App.setBotStatus('Heroes of the Storm', 'PLAYING'));
+        }
+
+        if (interval)
+            setInterval(() => this.periodicUpdateCheck(false), PERIOD);
     },
 
     isRotationUpdateNeeded: function () {

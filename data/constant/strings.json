@@ -261,6 +261,9 @@
     "updates.everything": "Updates everything"
   },
   {
+    "updates.heroes": "Updates specific heroes"
+  },
+  {
     "no.team.check.heroes": "I Couldn't suggest any team, check if you're providing valid heroes"
   },
   {

@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer');
-const { App } = require('../app.js');
 const { FileService } = require('./file-service.js');
+const { LogService } = require('./log-service.js');
 
 exports.PuppeteerService = {
     browser: null,
@@ -28,7 +28,7 @@ exports.PuppeteerService = {
             await page.goto(url, { waitUntil: options.waitUntil, timeout: 60000 });
             result = await page.evaluate(fun);
         } catch (ex) {
-            App.log(`Error while fetching ${options.url}`, ex);
+            LogService.log(`Error while fetching ${options.url}`, ex);
         } finally {
             await page.close();
         }
@@ -40,7 +40,7 @@ exports.PuppeteerService = {
                 remainingTries--;
                 await this.performConnection(remainingTries, options);
             } else {
-                App.log(`No more tries remaining for ${options.url}`);
+                LogService.log(`No more tries remaining for ${options.url}`);
                 return null;
             }
         }
@@ -125,7 +125,7 @@ exports.PuppeteerService = {
             } else {
                 request.continue();
             }
-            // console.log('>>', request.method(), request.url(), request.resourceType());
+            //console.log('>>', request.method(), request.url(), request.resourceType());
         });
         ////////         page.on('response', response => console.log('<<', response.status(), response.url()))
 
