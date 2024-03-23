@@ -18,6 +18,7 @@ We retain collected information only for as long as necessary to fulfill the pur
 
 Your Rights:
 You have the right to access the information we hold about you (if any) and to ask that your information be corrected, updated, or deleted.
+
 Changes to This Privacy Policy:
 We may update our Privacy Policy from time to time. Any changes we make will be effective immediately upon posting the updated Privacy Policy on this page.
 
