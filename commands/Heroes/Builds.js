@@ -5,10 +5,8 @@ exports.run = async (heroName) => {
     const hero = HeroService.findHero(heroName, true);
     if (!hero) return StringService.get('hero.not.found', heroName);
 
-    return {
-        authorImage: `images/${hero.name.unaccentClean()}.png`,
-        authorName: hero.name,
-        authorUrl: `https://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`,
+   return {
+        ...HeroService.assembleBaseObject(hero),
         data: {
             featureName: StringService.get('builds'),
             builds: hero.infos.builds.map(build => {
@@ -19,7 +17,7 @@ exports.run = async (heroName) => {
                 }
             })
         }
-    };
+    }
 }
 
 exports.help = {

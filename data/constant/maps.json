@@ -1,77 +1,62 @@
 [
   {
     "id": 1,
-    "name": "Alterac Pass",
-    "localizedName": "Garganta de Alterac"
+    "name": "Alterac Pass"
   },
   {
     "id": 2,
-    "name": "Garden of Terror",
-    "localizedName": "Jardim do Terror"
+    "name": "Garden of Terror"
   },
   {
     "id": 3,
-    "name": "Hanamura Temple",
-    "localizedName": "Templo de Hanamura"
+    "name": "Hanamura Temple"
   },
   {
     "id": 4,
-    "name": "Volskaya Foundry",
-    "localizedName": "Fundição Volskaya"
+    "name": "Volskaya Foundry"
   },
   {
     "id": 5,
-    "name": "Haunted Mines",
-    "localizedName": "Mina Assombrada"
+    "name": "Haunted Mines"
   },
   {
     "id": 6,
-    "name": "Towers of Doom",
-    "localizedName": "Torres da Perdição"
+    "name": "Towers of Doom"
   },
   {
     "id": 7,
-    "name": "Infernal Shrines",
-    "localizedName": "Santuários Infernais"
+    "name": "Infernal Shrines"
   },
   {
     "id": 8,
-    "name": "Battlefield of Eternity",
-    "localizedName": "Campo de Batalha da Eternidade"
+    "name": "Battlefield of Eternity"
   },
   {
     "id": 9,
-    "name": "Tomb of The Spider Queen",
-    "localizedName": "Tumba da Aranha Rainha"
+    "name": "Tomb of The Spider Queen"
   },
   {
     "id": 10,
-    "name": "Sky Temple",
-    "localizedName": "Templo Celeste"
+    "name": "Sky Temple"
   },
   {
     "id": 11,
-    "name": "Blackheart's Bay",
-    "localizedName": "Baía do Coração Negro"
+    "name": "Blackheart's Bay"
   },
   {
     "id": 12,
-    "name": "Dragon Shire",
-    "localizedName": "Condado do Dragão"
+    "name": "Dragon Shire"
   },
   {
     "id": 13,
-    "name": "Cursed Hollow",
-    "localizedName": "Clareira Maldita"
+    "name": "Cursed Hollow"
   },
   {
     "id": 14,
-    "name": "Braxis Holdout",
-    "localizedName": "Resistência de Braxis"
+    "name": "Braxis Holdout"
   },
   {
     "id": 15,
-    "name": "Warhead Junction",
-    "localizedName": "Junção da Ogiva"
+    "name": "Warhead Junction"
   }
 ]

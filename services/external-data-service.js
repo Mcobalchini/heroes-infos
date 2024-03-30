@@ -111,8 +111,13 @@ exports.ExternalDataService = {
     },
 
     gatherHeroStats: async function (heroId, heroName, heroIcyLink, heroesMap) {
-        const icyData = await IcyVeinsIntegrationService.gatherIcyData(heroIcyLink);
-        let profileData = await HeroesProfileIntegrationService.getBuildsFromAPI(heroName);
+        let [
+            icyData,
+            profileData
+        ] = await Promise.all([
+            IcyVeinsIntegrationService.gatherIcyData(heroIcyLink),
+            HeroesProfileIntegrationService.getBuildsFromAPI(heroName)
+        ])
 
         if (icyData && profileData) {
             heroesMap.set(heroId, { icyData, profileData });
@@ -165,14 +170,20 @@ exports.ExternalDataService = {
     },
 
     isUpdateNeeded: function () {
-        return !HeroService.findHero('1', true)?.infos?.builds?.length > 0 || this.missingUpdateHeroes.length > 0;
+        return this.isFirstLoad() || this.missingUpdateHeroes.length > 0;
     },
-
+    
+    isFirstLoad: function () {
+        return !HeroService.findHero('1', true)?.infos?.builds?.length > 0;
+    },
+    
     periodicUpdateCheck: function (interval) {
         LogService.log('checking if update needed');
         let arg = null;
 
-        if (this.isUpdateNeeded()) {
+        if (this.isFirstLoad()) {
+            arg = 'everything'
+        } else if (this.isUpdateNeeded()) {
             arg = 'heroes';
         } else if (this.isRotationUpdateNeeded()) {
             arg = 'rotation';

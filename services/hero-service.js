@@ -50,10 +50,6 @@ exports.HeroService = {
         });
     },
 
-    sortByTierPosition: function (a, b) {
-        return a.infos?.tierPosition - b.infos?.tierPosition;
-    },
-
     findAllHeroes: function (searchInfos) {
         if (searchInfos) {
             return heroesBase.map(hero => this.findHeroInfos(hero.id));
@@ -61,7 +57,7 @@ exports.HeroService = {
         return heroesBase;
     },
 
-    findHeroesByScore: function (roleId) {
+    listHeroesSortedByScore: function (roleId) {
         let list = this.heroesInfos.sort(this.sortByTierPosition);
 
         if (isNaN(roleId) === false) {
@@ -127,7 +123,6 @@ exports.HeroService = {
         return this.roles;
     },
 
-
     findRoleById: function (roleId) {
         let role = roles.find(role => (role.id.toString().cleanVal() === roleId.toString().cleanVal()));
         if (role) {
@@ -144,7 +139,7 @@ exports.HeroService = {
     },
 
     getHeroRole: function (hero) {
-        return this.findRoleById(hero.role).name;
+        return this.findRoleById(hero.role)?.name ?? '_ _';
     },
 
     // getHeroInfos: function () {
@@ -159,13 +154,17 @@ exports.HeroService = {
     //     };
     // },
 
+    sortByTierPosition: function (a, b) {
+        return a.infos?.tierPosition - b.infos?.tierPosition;
+    },
+
     setHeroesInfos: function (heroesParam) {
         this.heroesInfos = heroesParam;
     },
 
     updateHeroesInfos: function (heroesMap, popularityWinRate) {
         if (!this.heroesInfos.length) {
-            this.heroesInfos = JSON.parse(JSON.stringify(this.heroesBase));
+            this.heroesInfos = JSON.parse(JSON.stringify(heroesBase));
         }
 
         for (let [heroKey, heroData] of heroesMap) {
@@ -177,7 +176,7 @@ exports.HeroService = {
                 hero = {};
             }
 
-            hero.infos = {};            
+            hero.infos = {};
             hero.infos.builds = this.assembleHeroBuilds(hero,
                 profileBuilds?.builds,
                 icyData.builds
@@ -256,11 +255,6 @@ exports.HeroService = {
         return heroesParam;
     },
 
-    setFreeHeroes: function (heroesParam) {
-        this.freeHeroes = heroesParam;
-        FileService.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/freeweek.json`, heroesParam);
-    },
-
     getRotationData: function () {
         return this.freeHeroes;
     },
@@ -299,25 +293,38 @@ exports.HeroService = {
     },
 
     updateCompositions: function (result) {
-        result.sort(function (a, b) {
+        result?.sort(function (a, b) {
             return a.games - b.games;
         }).forEach((it, idx) => {
             it.tierPosition = parseInt(idx + 1);
         });
 
-        result.sort(function (a, b) {
+        result?.sort(function (a, b) {
             return a.winRate - b.winRate;
         }).forEach((it, idx) => {
             it.tierPosition = parseInt(it.tierPosition) + parseInt(idx + 1);
         });
 
-        let sortedComposition = result.sort(function (a, b) {
+        let sortedComposition = result?.sort(function (a, b) {
             return a.tierPosition - b.tierPosition
         }).reverse();
 
         this.setCompositions(sortedComposition);
         FileService.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/compositions.json`, sortedComposition);
         LogService.log(`Updated compositions list`);
+    },
+
+    assembleBaseObject: function (hero) {
+        return {
+            authorImage: `images/${hero.name.unaccentClean()}.png`,
+            authorName: hero.name,
+            authorUrl: `https://heroesofthestorm.blizzard.com/en-us/heroes/${hero.accessLink}`,
+        }
+    },
+
+    setFreeHeroes: function (heroesParam) {
+        this.freeHeroes = heroesParam;
+        FileService.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/freeweek.json`, heroesParam);
     },
 
     setBanHeroes: function (heroesParam) {

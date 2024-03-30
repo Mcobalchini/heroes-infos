@@ -15,7 +15,7 @@ exports.run = async (roleName) => {
     return {
         data: {
             featureName: StringService.get('suggested.heroes', str),
-            suggestions: HeroService.findHeroesByScore(parseInt(role?.id)).map(it => {
+            suggestions: HeroService.listHeroesSortedByScore(parseInt(role?.id)).map(it => {
                 return {
                     name: it.name,
                     value: it.score,

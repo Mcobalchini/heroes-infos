@@ -14,17 +14,11 @@ exports.run = async (heroName) => {
         }
     });
 
-    if (synergies.length > 24) {
-        synergies = synergies.slice(0, 24)
-    }
-
     return {
-        authorImage: `images/${hero.name.unaccentClean()}.png`,
-        authorName: hero.name,
-        authorUrl: `https://www.icy-veins.com/heroes/${hero.accessLink}-build-guide`,
+        ...HeroService.assembleBaseObject(hero),
         data: {
             featureName: StringService.get('synergies'),
-            featureDescription: hero.infos.synergies.synergiesText,
+            featureDescription: hero.infos.synergies.synergiesText + '\n' + StringService.get('hero.examples'),
             synergies
         }
     };

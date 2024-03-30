@@ -3,6 +3,10 @@ const { StringService } = require("./string-service");
 const EMBBED_ARRAY_LIMIT = 25;
 
 exports.EmbedService = {
+    authorName: 'Heroes of The Storm Bot',
+    authorUrl:  'https://top.gg/bot/783467749258559509',
+    authorIcon: 'attachment://hots.png',
+    extraEmbeds: [],
 
     addItemIntoListIfNeeded: function (array) {
         if (array.length % 3 !== 0 && array.every(it => it.inline)) {
@@ -18,9 +22,9 @@ exports.EmbedService = {
     },
 
     createEmbed: function (replyObject, authorName, authorUrl, authorIcon, thumbnail) {
-        authorName = authorName ? authorName : 'Heroes Infos Bot'
-        authorUrl = authorUrl ? authorUrl : 'https://top.gg/bot/783467749258559509'
-        authorIcon = authorIcon ? authorIcon : 'attachment://hots.png'
+        authorName = authorName ? authorName : this.authorName;
+        authorUrl = authorUrl ? authorUrl : this.authorUrl;    
+        authorIcon = authorIcon ? authorIcon : this.authorIcon;
 
         const author = {
             name: authorName,
@@ -44,13 +48,14 @@ exports.EmbedService = {
         if (Array.isArray(replyObject[attribute])) {
             let array = this.addItemIntoListIfNeeded(replyObject[attribute]);
 
-            if (array.length > 25) {
-                // const extraArray = array.splice(0, array.length - EMBBED_ARRAY_LIMIT);
-                // TODO create another response to the missing heroes
-                // const extraReplyObject = {...replyObject}
-                // extraReplyObject[attribute] = extraArray;
-                // createResponse(extraReplyObject);
-            }
+            if (array.length > EMBBED_ARRAY_LIMIT) {
+                const extraArray = array.splice(0, array.length - EMBBED_ARRAY_LIMIT);
+                const extraReplyObject = {...replyObject}
+                extraReplyObject.featureDescription = null;                
+                extraReplyObject[attribute] = extraArray;                
+                this.extraEmbeds.push(this.createEmbed(extraReplyObject, authorName,  '', ''));
+           }
+
             embed.addFields(array);
             embed.setDescription(featureDesc);
         } else {
@@ -67,19 +72,21 @@ exports.EmbedService = {
     },
 
     createEmbeds: function (replyObject, authorName, authorUrl, authorIcon) {
-        authorName = authorName ? authorName : 'Heroes Infos Bot';
-        authorUrl = authorUrl ? authorUrl : 'https://top.gg/bot/783467749258559509';
-        authorIcon = authorIcon ? authorIcon : 'attachment://hots.png';
         let embeds = [];
-
         Object.keys(replyObject).forEach(function (key, _) {
-            const attribute = replyObject[key];
+            const attribute = replyObject[key];            
             if (this.isObject(replyObject, key)) {
                 embeds.push(this.createEmbed(attribute, authorName, authorUrl, authorIcon));
             } else if (this.isNotReservedKey(key)) {
                 embeds.push(this.createEmbed(replyObject, authorName, authorUrl, authorIcon));
             }
         }, this);
+
+        if (this.extraEmbeds.length > 0) {
+            embeds = embeds.concat(this.extraEmbeds);
+            this.extraEmbeds = [];
+        }
+
         return embeds;
     },
 
@@ -123,7 +130,7 @@ exports.EmbedService = {
     fillFooter: function (attachment, embeds, footerObj) {
         embeds.forEach(it => {
             if (footerObj) {
-                let footer = {
+                const footer = {
                     text: StringService.get('data.from', footerObj.source),
                     iconURL: footerObj.sourceImage
                 }
