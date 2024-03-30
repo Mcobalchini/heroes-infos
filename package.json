@@ -1,6 +1,6 @@
 {
   "name": "heroes-infos",
-  "version": "3.6.2",
+  "version": "3.7.0",
   "description": "Heroes of the Storm infos bot",
   "main": "app.js",
   "scripts": {
@@ -8,15 +8,15 @@
   },
   "author": "Matheus Cobalchini",
   "dependencies": {
-    "@discordjs/builders": "^1.3.0",
-    "@discordjs/rest": "^1.3.0",
-    "discord-api-types": "^0.37.16",
-    "discord.js": "^14.6.0",
-    "dotenv": "^16.0.3",
+    "@discordjs/builders": "^1.7.0",
+    "@discordjs/rest": "^2.2.0",
+    "discord-api-types": "^0.37.77",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5",
     "es6-promise-pool": "2.5.0",
     "fs": "^0.0.1-security",
-    "jsdom": "^22.1.0",
-    "puppeteer": "^19.2.2"
+    "jsdom": "^24.0.0",
+    "puppeteer": "^22.6.1"
   },
   "engines": {
     "node": ">=18.17.0"

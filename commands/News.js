@@ -22,7 +22,7 @@ exports.run = () => {
 
 exports.help = {
     name: 'News',
-    hint: 'Display the latest news of the game',
+    hint: 'Display the latest news about the game',
     acceptParams: false,
     requiredParam: false,
     defaultPermission: true,

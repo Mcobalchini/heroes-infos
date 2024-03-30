@@ -5,7 +5,7 @@ exports.run = async (heroName) => {
     const hero = HeroService.findHero(heroName, true);
     if (!hero) return StringService.get('hero.not.found', heroName);
 
-    let synergies = hero.infos.synergies.heroes.map(synergy => {
+    const synergies = hero.infos.synergies.heroes.map(synergy => {
         const synergyHero = HeroService.findHero(synergy);
         return {
             name: synergyHero.name,
