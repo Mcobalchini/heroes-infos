@@ -131,8 +131,7 @@ exports.HeroService = {
     },
 
     findRoleByName: function (roleName) {
-        let role = roles.find(role => (role.name.cleanVal() === roleName.cleanVal() ||
-            role.localizedName.cleanVal() === roleName.cleanVal()));
+        let role = roles.find(role => role.name.cleanVal() === roleName.cleanVal());
         if (role) {
             return role;
         }

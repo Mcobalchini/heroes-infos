@@ -1,32 +1,26 @@
 [
   {
     "name": "Ranged Assassin",
-    "localizedName": "Assassino de longo alcance",
     "id": "1"
   },
   {
     "name": "Healer",
-    "localizedName": "Curandeiro",
     "id": "2"
   },
   {
     "name": "Melee Assassin",
-    "localizedName": "Assassino corpo a corpo",
     "id": "3"
   },
   {
     "name": "Tank",
-    "localizedName": "Tanque",
     "id": "4"
   },
   {
     "name": "Support",
-    "localizedName": "Suporte",
     "id": "5"
   },
   {
     "name": "Bruiser",
-    "localizedName": "Guerreiro",
     "id": "6"
   }
 ]
