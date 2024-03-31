@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer');
-const { FileService } = require('./file-service.js');
 const { LogService } = require('./log-service.js');
+const { FileUtils } = require('../utils/file-utils.js');
 
 exports.PuppeteerService = {
     browser: null,
@@ -102,7 +102,7 @@ exports.PuppeteerService = {
 
     createPage: async function (browser = null, blockStuff = true) {    
         if (this.hosts == null) {
-            const hostFile = FileService.openFile('./data/constant/blocked-hosts.txt').split('\n');
+            const hostFile = FileUtils.openFile('./data/constant/blocked-hosts.txt').split('\n');
             this.hosts = hostFile.map(it => {
                 const frag = it.split(' ');
                 if (frag.length > 1 && frag[0] === '0.0.0.0') {

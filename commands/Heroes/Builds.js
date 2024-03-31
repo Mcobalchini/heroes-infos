@@ -1,14 +1,14 @@
-const { StringService } = require('../../services/string-service');
-const { HeroService } = require("../../services/hero-service");
+const { HeroService } = require('../../services/hero-service');
+const { StringUtils } = require('../../utils/string-utils');
 
 exports.run = async (heroName) => {
     const hero = HeroService.findHero(heroName, true);
-    if (!hero) return StringService.get('hero.not.found', heroName);
+    if (!hero) return StringUtils.get('hero.not.found', heroName);
 
    return {
         ...HeroService.assembleBaseObject(hero),
         data: {
-            featureName: StringService.get('builds'),
+            featureName: StringUtils.get('builds'),
             builds: hero.infos.builds.map(build => {
                 return {
                     name: build.skills,

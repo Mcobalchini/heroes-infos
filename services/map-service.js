@@ -1,5 +1,5 @@
-const { FileService } = require("./file-service");
-const maps = FileService.openJsonSync('./data/constant/maps.json');
+const { FileUtils } = require('../utils/file-utils');
+const maps = FileUtils.openJsonSync('./data/constant/maps.json');
 
 exports.MapService = {
 

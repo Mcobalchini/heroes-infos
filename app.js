@@ -13,13 +13,15 @@ exports.App = {
     bot: bot,
     delay: delay = ms => new Promise(res => setTimeout(res, ms))
 };
-const { StringService } = require('./services/string-service.js');
-StringService.setup();
+
+const { StringUtils } = require('./utils/string-utils.js');
+StringUtils.setup();
 
 const { CommandService } = require('./services/command-service.js');
 const { LogService } = require('./services/log-service.js');
 const { ExternalDataService } = require('./services/external-data-service.js');
-const { EmbedService } = require('./services/embed-service');
+const { EmbedUtils } = require('./utils/embed-utils');
+
 bot.commands = CommandService.assembleCommands();
 
 function setBotStatus(name, type) {
@@ -41,16 +43,16 @@ function createResponse(reply) {
         }
 
         if (reply.data != null) {
-            embeds.push(...EmbedService.createEmbeds(reply.data, reply.authorName, reply.authorUrl, attachment));
+            embeds.push(...EmbedUtils.createEmbeds(reply.data, reply.authorName, reply.authorUrl, attachment));
             embeds[0].setThumbnail(attachment);
-            EmbedService.fillFooter(attachment, embeds, reply.footer);
+            EmbedUtils.fillFooter(attachment, embeds, reply.footer);
         }
     }
 
     if (ExternalDataService.isUpdatingData) {
-        let updatingWarningEmbed = EmbedService.createEmbed({
-            featureName: StringService.get('note'),
-            message: StringService.get('hold.still.updating.data')
+        let updatingWarningEmbed = EmbedUtils.createEmbed({
+            featureName: StringUtils.get('note'),
+            message: StringUtils.get('hold.still.updating.data')
         }, null, null, null, 'attachment://download.png');
 
         embeds.push(updatingWarningEmbed);
@@ -62,7 +64,7 @@ async function handleResponse(interaction) {
     try {
         const reply = await CommandService.handleCommand(interaction);
         const embeds = createResponse(reply);
-        const replyObject = EmbedService.assembleEmbedObject(embeds);
+        const replyObject = EmbedUtils.assembleEmbedObject(embeds);
         replyObject.ephemeral = true;
         interaction.editReply(replyObject).catch(e => {
             LogService.log(`Error while responding`, e);
@@ -75,22 +77,22 @@ async function handleResponse(interaction) {
 function assembleGuildData(guild) {
     return [
         {
-            name: StringService.get('server.name'),
+            name: StringUtils.get('server.name'),
             value: guild?.name ?? `_ _`,
             inline: false
         },
         {
-            name: StringService.get('server.id'),
+            name: StringUtils.get('server.id'),
             value: guild?.id?.toString() ?? '0',
             inline: true
         },
         {
-            name: StringService.get('server.member.count'),
+            name: StringUtils.get('server.member.count'),
             value: guild?.memberCount?.toString() ?? '0',
             inline: true
         },
         {
-            name: StringService.get('server.owner.id'),
+            name: StringUtils.get('server.owner.id'),
             value: guild?.ownerId?.toString() ?? '_ _',
             inline: true
         }
@@ -113,7 +115,7 @@ bot.once('ready', function () {
         bot.channels?.cache?.find(channel => channel.id === process.env.ERRORS_CHANNEL_ID)
     );
     LogService.log(`Application ready!`);
-    bot.updatedAt = StringService.get('not.updated.yet');
+    bot.updatedAt = StringUtils.get('not.updated.yet');
     setBotStatus('Heroes of the Storm', 'PLAYING');
     ExternalDataService.periodicUpdateCheck(true);    
     CommandService.isUpdateSlashCommandsNeeded().then(needed => {
@@ -128,24 +130,24 @@ bot.once('ready', function () {
 bot.on('guildCreate', guild => {
     LogService.log(`Owner id ${guild.ownerId}`);
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.JOIN_SERVER_CHANNEL_ID);
-    const embed = EmbedService.createEmbed({
-        featureName: StringService.get('joined.new.server'),
+    const embed = EmbedUtils.createEmbed({
+        featureName: StringUtils.get('joined.new.server'),
         guildData: assembleGuildData(guild)
     }, null, null, null, guild.iconURL());
-    channel?.send(EmbedService.assembleEmbedObject(embed));
+    channel?.send(EmbedUtils.assembleEmbedObject(embed));
 });
 
 bot.on('guildDelete', guild => {
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.LEAVE_SERVER_CHANNEL_ID);
     if (guild?.name) {
-        const embed = EmbedService.createEmbed({
-            featureName: StringService.get('left.server'),
+        const embed = EmbedUtils.createEmbed({
+            featureName: StringUtils.get('left.server'),
             guildData: assembleGuildData(guild)
         }, null, null, null, guild.iconURL());
-        channel?.send(EmbedService.assembleEmbedObject(embed));
+        channel?.send(EmbedUtils.assembleEmbedObject(embed));
     }
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN).then(() =>
-    LogService.log("Successfully logged in")
+    LogService.log('Successfully logged in')
 );

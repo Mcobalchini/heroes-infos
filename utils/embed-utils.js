@@ -1,10 +1,10 @@
-const { EmbedBuilder, AttachmentBuilder } = require("discord.js");
-const { StringService } = require("./string-service");
+const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
+const { StringUtils } = require('./string-utils');
 const EMBBED_ARRAY_LIMIT = 25;
 
-exports.EmbedService = {
+exports.EmbedUtils = {
     authorName: 'Heroes of The Storm Bot',
-    authorUrl:  'https://top.gg/bot/783467749258559509',
+    authorUrl: 'https://top.gg/bot/783467749258559509',
     authorIcon: 'attachment://hots.png',
     extraEmbeds: [],
 
@@ -23,7 +23,7 @@ exports.EmbedService = {
 
     createEmbed: function (replyObject, authorName, authorUrl, authorIcon, thumbnail) {
         authorName = authorName ? authorName : this.authorName;
-        authorUrl = authorUrl ? authorUrl : this.authorUrl;    
+        authorUrl = authorUrl ? authorUrl : this.authorUrl;
         authorIcon = authorIcon ? authorIcon : this.authorIcon;
 
         const author = {
@@ -46,16 +46,17 @@ exports.EmbedService = {
         const attribute = Object.keys(replyObject).find(it => this.isNotReservedKey(it));
 
         if (Array.isArray(replyObject[attribute])) {
-            let array = this.addItemIntoListIfNeeded(replyObject[attribute]);
+            let array = replyObject[attribute];
 
             if (array.length > EMBBED_ARRAY_LIMIT) {
                 const extraArray = array.splice(0, array.length - EMBBED_ARRAY_LIMIT);
-                const extraReplyObject = {...replyObject}
-                extraReplyObject.featureDescription = null;                
-                extraReplyObject[attribute] = extraArray;                
-                this.extraEmbeds.push(this.createEmbed(extraReplyObject, authorName,  '', ''));
-           }
-
+                const extraReplyObject = { ...replyObject }
+                extraReplyObject.featureDescription = null;
+                extraReplyObject[attribute] = extraArray;
+                this.extraEmbeds.push(this.createEmbed(extraReplyObject, authorName, '', ''));
+            }
+            
+            array = this.addItemIntoListIfNeeded(replyObject[attribute])
             embed.addFields(array);
             embed.setDescription(featureDesc);
         } else {
@@ -74,7 +75,7 @@ exports.EmbedService = {
     createEmbeds: function (replyObject, authorName, authorUrl, authorIcon) {
         let embeds = [];
         Object.keys(replyObject).forEach(function (key, _) {
-            const attribute = replyObject[key];            
+            const attribute = replyObject[key];
             if (this.isObject(replyObject, key)) {
                 embeds.push(this.createEmbed(attribute, authorName, authorUrl, authorIcon));
             } else if (this.isNotReservedKey(key)) {
@@ -131,7 +132,7 @@ exports.EmbedService = {
         embeds.forEach(it => {
             if (footerObj) {
                 const footer = {
-                    text: StringService.get('data.from', footerObj.source),
+                    text: StringUtils.get('data.from', footerObj.source),
                     iconURL: footerObj.sourceImage
                 }
                 it.setFooter(footer)

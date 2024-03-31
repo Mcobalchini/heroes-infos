@@ -1,28 +1,28 @@
 const config = require('../config.json');
-const { StringService } = require('./string-service.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { FileService } = require("./file-service");
-const { Collection } = require("discord.js");
+const { Collection } = require('discord.js');
 const { ExternalDataService } = require('./external-data-service.js');
 const { LogService } = require('./log-service.js');
-const COMMAND_FOLDER = "./commands"
+const { StringUtils } = require('../utils/string-utils.js');
+const { FileUtils } = require('../utils/file-utils.js');
+const COMMAND_FOLDER = './commands'
 
 exports.CommandService = {
     commandsMap: null,
     assembleCommands: function (ignoreHelp) {
-        const commands = FileService.openDir(COMMAND_FOLDER).map(it => {
-            if (it.endsWith(".js")) {
+        const commands = FileUtils.openDir(COMMAND_FOLDER).map(it => {
+            if (it.endsWith('.js')) {
                 return it
             } else {
-                const dir = FileService.openDir(`${COMMAND_FOLDER}/${it}`)
-                return dir.filter(filter => filter.endsWith(".js")).map(cmd => `${it}/${cmd}`)
+                const dir = FileUtils.openDir(`${COMMAND_FOLDER}/${it}`)
+                return dir.filter(filter => filter.endsWith('.js')).map(cmd => `${it}/${cmd}`)
             }
         }).flat()
 
 
         const commandsMap = new Collection();
         for (const file of commands) {
-            const commandName = file.split(".")[0];
+            const commandName = file.split('.')[0];
             if (commandName === 'Help' && ignoreHelp) {
                 continue;
             }
@@ -64,7 +64,7 @@ exports.CommandService = {
                     if (it.paramOptions) {
                         const options = it.paramOptions.map(param => {
                             return {
-                                name: StringService.getWithoutNewLine(param.description).toLowerCase(),
+                                name: StringUtils.getWithoutNewLine(param.description).toLowerCase(),
                                 value: param.name
                             }
                         });
@@ -99,7 +99,7 @@ exports.CommandService = {
             LogService.log(`Command (${receivedCommand}) with params ${args} was called by ${interaction.member?.guild?.name}`);
             reply = await command.run(args, interaction);
         } else {
-            reply = StringService.get('command.not.exists', receivedCommand);
+            reply = StringUtils.get('command.not.exists', receivedCommand);
         }
         if (command && command.help?.source) {
             reply.footer = {

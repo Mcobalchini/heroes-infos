@@ -1,8 +1,8 @@
 const fs = require('fs');
 
-exports.FileService = {
+exports.FileUtils = {
     openFile: function (filePath) {
-        return fs.readFileSync(filePath, {encoding: 'utf8', flag: 'r'});
+        return fs.readFileSync(filePath, { encoding: 'utf8', flag: 'r' });
     },
 
     openJsonSync: function (filePath) {

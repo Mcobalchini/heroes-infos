@@ -1,8 +1,8 @@
-const { FileService } = require("./file-service");
-const { LogService } = require("./log-service.js");
-const roles = FileService.openJsonSync('./data/constant/roles.json');
-const StringService = require('./string-service.js').StringService;
-const heroesBase = FileService.openJsonSync('./data/constant/heroes-base.json').sort((a, b) => a.name.localeCompare(b.name));
+const { FileUtils } = require('../utils/file-utils.js');
+const { StringUtils } = require('../utils/string-utils.js');
+const { LogService } = require('./log-service.js');
+const roles = FileUtils.openJsonSync('./data/constant/roles.json');
+const heroesBase = FileUtils.openJsonSync('./data/constant/heroes-base.json').sort((a, b) => a.name.localeCompare(b.name));
 const heroesPropertiesDir = './data/constant/heroes-names/';
 let heroesInfos = [];
 let freeHeroes = [];
@@ -10,10 +10,10 @@ let mustBanHeroes = [];
 let compositions = [];
 
 try {
-    heroesInfos = FileService.openJsonSync(`./data/variable/${process.env.CLIENT_ID}/heroes-infos.json`);
-    mustBanHeroes = FileService.openJsonSync(`./data/variable/${process.env.CLIENT_ID}/banlist.json`);
-    compositions = FileService.openJsonSync(`./data/variable/${process.env.CLIENT_ID}/compositions.json`);
-    freeHeroes = FileService.openJsonSync(`./data/variable/${process.env.CLIENT_ID}/freeweek.json`);
+    heroesInfos = FileUtils.openJsonSync(`./data/variable/${process.env.CLIENT_ID}/heroes-infos.json`);
+    mustBanHeroes = FileUtils.openJsonSync(`./data/variable/${process.env.CLIENT_ID}/banlist.json`);
+    compositions = FileUtils.openJsonSync(`./data/variable/${process.env.CLIENT_ID}/compositions.json`);
+    freeHeroes = FileUtils.openJsonSync(`./data/variable/${process.env.CLIENT_ID}/freeweek.json`);
 } catch (e) {
     LogService.log('error while reading json data', e);
 }
@@ -29,11 +29,11 @@ exports.HeroService = {
 
     assembleHeroesNames: function () {
         const heroesNames = [];
-        const folder = FileService.openDir(heroesPropertiesDir);
+        const folder = FileUtils.openDir(heroesPropertiesDir);
         folder.forEach(folderLanguage => {
             heroesNames.push(
                 JSON.parse(
-                    FileService.openFile(heroesPropertiesDir + folderLanguage + '/heroes.json')
+                    FileUtils.openFile(heroesPropertiesDir + folderLanguage + '/heroes.json')
                 )
             );
         });
@@ -67,7 +67,7 @@ exports.HeroService = {
         return list.sort(this.sortByTierPosition).reverse().map(it => {
             return {
                 name: it.name,
-                score: StringService.get('hero.score', it.infos.tierPosition)
+                score: StringUtils.get('hero.score', it.infos.tierPosition)
             }
         }).splice(0, 12)
     },
@@ -107,7 +107,7 @@ exports.HeroService = {
         }
         let heroProperty = null;
         for (let [heroProp, heroNames] of this.heroesNamesMap.entries()) {
-            if (heroNames.split(",").find(it => it.unaccentClean() === search || it.unaccentClean().includes(search))) {
+            if (heroNames.split(',').find(it => it.unaccentClean() === search || it.unaccentClean().includes(search))) {
                 heroProperty = heroProp;
                 break;
             }
@@ -198,7 +198,7 @@ exports.HeroService = {
         const heroes = this.setHeroesTierPosition(this.heroesInfos);
         this.setHeroesInfos(heroes);
         this.setHeroesCommonSynergies();
-        FileService.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/heroes-infos.json`, this.heroesInfos);
+        FileUtils.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/heroes-infos.json`, this.heroesInfos);
     },
 
     setHeroesCommonSynergies: function () {
@@ -309,7 +309,7 @@ exports.HeroService = {
         }).reverse();
 
         this.setCompositions(sortedComposition);
-        FileService.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/compositions.json`, sortedComposition);
+        FileUtils.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/compositions.json`, sortedComposition);
         LogService.log(`Updated compositions list`);
     },
 
@@ -323,12 +323,12 @@ exports.HeroService = {
 
     setFreeHeroes: function (heroesParam) {
         this.freeHeroes = heroesParam;
-        FileService.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/freeweek.json`, heroesParam);
+        FileUtils.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/freeweek.json`, heroesParam);
     },
 
     setBanHeroes: function (heroesParam) {
         this.mustBanHeroes = heroesParam;
-        FileService.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/banlist.json`, heroesParam);
+        FileUtils.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/banlist.json`, heroesParam);
     },
 
     setCompositions: function (compositionsParam) {

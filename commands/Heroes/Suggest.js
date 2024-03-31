@@ -1,20 +1,20 @@
-const { StringService } = require('../../services/string-service');
-const { HeroService } = require("../../services/hero-service");
+const { HeroService } = require('../../services/hero-service');
+const { StringUtils } = require('../../utils/string-utils');
 
 exports.run = async (roleName) => {
     let role = null;
     if (roleName != null && roleName !== '') {
         role = HeroService.findRoleByName(roleName)
         if (role == null) {
-            return StringService.get('role.not.found', roleName);
+            return StringUtils.get('role.not.found', roleName);
         }
     }
 
-    const str = role !== null ? StringService.get('on.role', role.name) : '';
+    const str = role !== null ? StringUtils.get('on.role', role.name) : '';
 
     return {
         data: {
-            featureName: StringService.get('suggested.heroes', str),
+            featureName: StringUtils.get('suggested.heroes', str),
             suggestions: HeroService.listHeroesSortedByScore(parseInt(role?.id)).map(it => {
                 return {
                     name: it.name,

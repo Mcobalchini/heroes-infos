@@ -1,7 +1,7 @@
-const {FileService} = require('./file-service');
-const strings = FileService.openJsonSync('./data/constant/strings.json');
+const { FileUtils } = require('./file-utils');
+const strings = FileUtils.openJsonSync('./data/constant/strings.json');
 
-exports.StringService = {
+exports.StringUtils = {
     EN_US: 'en-US',
 
     accentsMap: new Map([
@@ -58,9 +58,9 @@ exports.StringService = {
             Object.defineProperty(String.prototype, 'cleanVal', {
                 value: function cleanVal() {
                     return this.split('\'').join('')
-                    .split('.').join('').toLowerCase()
-                    .split('-').join('')
-                    .split(' ').join('');
+                        .split('.').join('').toLowerCase()
+                        .split('-').join('')
+                        .split(' ').join('');
                 },
                 writable: true,
                 configurable: true

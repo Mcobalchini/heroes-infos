@@ -1,5 +1,5 @@
-const { StringService } = require('../../services/string-service');
 const { HeroService } = require('../../services/hero-service');
+const { StringUtils } = require('../../utils/string-utils');
 
 exports.run = async () => {
     const freeHeroesObject = HeroService.freeHeroes
@@ -7,11 +7,11 @@ exports.run = async () => {
 
     return {
         data: {
-            featureName: StringService.get('free.heroes'),
-            featureDescription: StringService.get('rotation.dates',
-                new Date(`${freeHeroesObject?.startDate} `).toLocaleDateString(StringService.EN_US, options),
-                new Date(`${freeHeroesObject?.endDate} `).toLocaleDateString(StringService.EN_US, options)),
-            freeHeroes: (freeHeroesObject?.heroes?.length <= 0 ? StringService.get('no.free.heroes') : freeHeroesObject?.heroes?.map(freeHero => {
+            featureName: StringUtils.get('free.heroes'),
+            featureDescription: StringUtils.get('rotation.dates',
+                new Date(`${freeHeroesObject?.startDate} `).toLocaleDateString(StringUtils.EN_US, options),
+                new Date(`${freeHeroesObject?.endDate} `).toLocaleDateString(StringUtils.EN_US, options)),
+            freeHeroes: (freeHeroesObject?.heroes?.length <= 0 ? StringUtils.get('no.free.heroes') : freeHeroesObject?.heroes?.map(freeHero => {
                 const hero = HeroService.findHero(freeHero.name);
                 return {
                     name: hero.name,

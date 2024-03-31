@@ -1,9 +1,9 @@
 const { App } = require('../app');
 const { LogService } = require('../services/log-service');
-const { StringService } = require('../services/string-service');
+const { StringUtils } = require('../utils/string-utils');
 
 exports.run = () => {
-    let reply = StringService.get('some.infos.about.me');
+    let reply = StringUtils.get('some.infos.about.me');
 
     let totalSeconds = (App.bot.uptime / 1000);
     const days = Math.floor(totalSeconds / 86400);
@@ -12,32 +12,32 @@ exports.run = () => {
     totalSeconds %= 3600;
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = Math.floor(totalSeconds % 60);
-    const uptime = StringService.get('uptime.string', days, hours, minutes, seconds);
+    const uptime = StringUtils.get('uptime.string', days, hours, minutes, seconds);
     const servers = App.bot.guilds._cache;
     LogService.log(`Servers. ${servers.map(it => it.name)}`);
     let list = [
         {
-            name: StringService.get('im.on'),
-            value: StringService.get('number.of.servers', servers.size.toString()),
+            name: StringUtils.get('im.on'),
+            value: StringUtils.get('number.of.servers', servers.size.toString()),
             inline: true
         },
         {
-            name: StringService.get('used.by'),
-            value: StringService.get('number.of.users', App.bot.users.cache.filter(user => !user.bot).size),
+            name: StringUtils.get('used.by'),
+            value: StringUtils.get('number.of.users', App.bot.users.cache.filter(user => !user.bot).size),
             inline: true
         },
         {
-            name: StringService.get('online.for'),
+            name: StringUtils.get('online.for'),
             value: uptime,
             inline: false
         },
         {
-            name: StringService.get('last.time.database.updated'),
+            name: StringUtils.get('last.time.database.updated'),
             value: App.bot.updatedAt,
             inline: false
         },
         {
-            name: StringService.get('my.invitation.link.is'),
+            name: StringUtils.get('my.invitation.link.is'),
             value: `https://discord.com/api/oauth2/authorize?client_id=${process.env.CLIENT_ID}&permissions=277025508352&scope=applications.commands%20bot`,
             inline: false
         }
@@ -45,7 +45,7 @@ exports.run = () => {
 
     return {
         data: {
-            featureName: StringService.get('bot.general.information'),
+            featureName: StringUtils.get('bot.general.information'),
             featureDescription: reply,
             list: list,
         },

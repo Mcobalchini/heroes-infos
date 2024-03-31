@@ -1,9 +1,9 @@
-const { StringService } = require('../../services/string-service');
 const { HeroService } = require('../../services/hero-service');
+const { StringUtils } = require('../../utils/string-utils');
 
 exports.run = async (heroName) => {
     const hero = HeroService.findHero(heroName, true);
-    if (!hero) return StringService.get('hero.not.found', heroName);
+    if (!hero) return StringUtils.get('hero.not.found', heroName);
 
     const synergies = hero.infos.synergies.heroes.map(synergy => {
         const synergyHero = HeroService.findHero(synergy);
@@ -17,8 +17,8 @@ exports.run = async (heroName) => {
     return {
         ...HeroService.assembleBaseObject(hero),
         data: {
-            featureName: StringService.get('synergies'),
-            featureDescription: hero.infos.synergies.synergiesText + '\n' + StringService.get('hero.examples'),
+            featureName: StringUtils.get('synergies'),
+            featureDescription: hero.infos.synergies.synergiesText + '\n' + StringUtils.get('hero.examples'),
             synergies
         }
     };

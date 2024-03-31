@@ -1,12 +1,12 @@
-const { StringService } = require('../services/string-service');
 const { BlizzardIntegrationService } = require('../services/integration/blizzard-integration-service');
+const { StringUtils } = require('../utils/string-utils');
 
 exports.run = () => {
     return BlizzardIntegrationService.gatherNews().then(
         returnedNews => {
             return {
                 data: {
-                    featureName: StringService.get('news'),
+                    featureName: StringUtils.get('news'),
                     news: returnedNews.map(it => {
                         return {
                             name: it.header,

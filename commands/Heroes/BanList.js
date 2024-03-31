@@ -1,11 +1,11 @@
-const { StringService } = require('../../services/string-service');
-const { HeroService } = require("../../services/hero-service");
+const { HeroService } = require('../../services/hero-service');
+const { StringUtils } = require('../../utils/string-utils');
 
 exports.run = async () => {
     return {
         data: {
-            featureName: StringService.get('suggested.bans'),
-            featureDescription: StringService.get('banheroes.description'),
+            featureName: StringUtils.get('suggested.bans'),
+            featureDescription: StringUtils.get('banheroes.description'),
             mustBanHeroes: HeroService.mustBanHeroes.map(ban => {
                 const hero = HeroService.findHero(ban.name);
                 return {

@@ -1,7 +1,7 @@
-const { StringService } = require('../services/string-service');
 const config = require("../config.json");
 const { CommandService } = require("../services/command-service");
 const { App } = require('../app');
+const { StringUtils } = require('../utils/string-utils');
 
 exports.run = (commandAsked, msg) => {
     let reply = '';
@@ -27,23 +27,23 @@ exports.run = (commandAsked, msg) => {
 
                 list = [
                     {
-                        name: StringService.get('accept.arguments'),
+                        name: StringUtils.get('accept.arguments'),
                         value: command.help.argumentDescription,
                         inline: false
                     },
                     {
-                        name: StringService.get('example'),
-                        value: StringService.get('command.example', '/', command.help.name.toLowerCase(), example),
+                        name: StringUtils.get('example'),
+                        value: StringUtils.get('command.example', '/', command.help.name.toLowerCase(), example),
                         inline: true
                     }
                 ]
             }
         } else {
-            reply = StringService.get('command.not.exists', commandAsked);
+            reply = StringUtils.get('command.not.exists', commandAsked);
         }
     } else {
 
-        reply = StringService.get('available.commands.are');
+        reply = StringUtils.get('available.commands.are');
         list = Array.from(commands.values()).filter(it => CommandService.isCommandAllowed(msg, it)).map(it => {
             return {
                 name: it.help.name,
@@ -52,24 +52,24 @@ exports.run = (commandAsked, msg) => {
             };
         })
 
-        commandInfos = StringService.get('all.commands.supported.both.languages');
-        commandInfos += StringService.get('all.data.gathered.from');
+        commandInfos = StringUtils.get('all.commands.supported.both.languages');
+        commandInfos += StringUtils.get('all.data.gathered.from');
         commandInfos += 'https://www.icy-veins.com/heroes/\n';
         commandInfos += 'https://www.heroesprofile.com\n';
         commandInfos += 'https://nexuscompendium.com\n';
-        commandInfos += StringService.get('if.want.to.know.more.about.specific.command');
-        commandInfos += StringService.get('version', config.version);
+        commandInfos += StringUtils.get('if.want.to.know.more.about.specific.command');
+        commandInfos += StringUtils.get('version', config.version);
     }
 
     const responseData = {
-        featureName: StringService.get('help'),
+        featureName: StringUtils.get('help'),
         featureDescription: reply,
         list: list
     };
 
     if (commandInfos?.length) {
         responseData.commandInfos = {
-            featureName: StringService.get('help'),
+            featureName: StringUtils.get('help'),
             featureDescription: commandInfos,
         };
     }

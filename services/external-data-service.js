@@ -10,7 +10,6 @@ const { BlizzardIntegrationService } = require('./integration/blizzard-integrati
 const { PuppeteerService } = require('./puppeteer-service.js');
 const { LogService } = require('./log-service.js');
 const { App } = require('../app.js');
-const { FileService } = require('./file-service.js');
 const rest = new REST({ version: '9' }).setToken(process.env.HEROES_INFOS_TOKEN);
 const HOUR = 1000 * 60 * 60;
 const PERIOD = HOUR * 1;

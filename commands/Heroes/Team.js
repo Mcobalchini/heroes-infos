@@ -1,5 +1,5 @@
-const { StringService } = require('../../services/string-service');
 const { HeroService } = require('../../services/hero-service');
+const { StringUtils } = require('../../utils/string-utils');
 
 exports.run = async (heroes) => {
     heroes = heroes.replaceAll(',', ' ').replaceAll(';', ' ')
@@ -25,7 +25,7 @@ exports.run = async (heroes) => {
     }
 
     if (currentCompHeroes.size > 4) {
-        return StringService.get('more.than.four.heroes');
+        return StringUtils.get('more.than.four.heroes');
     }
 
     if (currentCompHeroes.size > 0) {
@@ -109,8 +109,8 @@ exports.run = async (heroes) => {
 
             return {
                 data: {
-                    featureName: StringService.get('suggested.team'),
-                    featureDescription: StringService.get('current.team', currentHeroes.map(it => `*${it.name}*`)?.join(', ')),
+                    featureName: StringUtils.get('suggested.team'),
+                    featureDescription: StringUtils.get('current.team', currentHeroes.map(it => `*${it.name}*`)?.join(', ')),
                     suggestedHeroes: Array.from(missingRolesMap).map(([rolesArray, heroes]) => {
                         const missingHeroes = heroes.map(it => {
                             return `${it.name} - **${HeroService.findRoleById(it.role).name}**\n`
@@ -131,8 +131,8 @@ exports.run = async (heroes) => {
         } else {
             return {
                 data: {
-                    featureName: StringService.get('suggested.team'),
-                    featureDescription: `${StringService.get('current.team', Array.from(currentCompHeroes).map(([_, value]) => `${value.name}`).join(', '))}`,
+                    featureName: StringUtils.get('suggested.team'),
+                    featureDescription: `${StringUtils.get('current.team', Array.from(currentCompHeroes).map(([_, value]) => `${value.name}`).join(', '))}`,
                     suggestedHeroes: Array.from(heroesSorted.splice(0, remainingHeroes)).map(it => {
                         return {
                             name: it.name,
@@ -144,7 +144,7 @@ exports.run = async (heroes) => {
             };
         }
     }
-    return StringService.get('no.team.check.heroes');
+    return StringUtils.get('no.team.check.heroes');
 }
 
 exports.help = {

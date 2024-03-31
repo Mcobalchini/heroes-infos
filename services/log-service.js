@@ -1,5 +1,5 @@
-const { EmbedService } = require("./embed-service");
-const { StringService } = require("./string-service");
+const { EmbedUtils } = require('../utils/embed-utils');
+const { StringUtils } = require('../utils/string-utils');
 
 exports.LogService = {
     logChannel: null,
@@ -12,7 +12,7 @@ exports.LogService = {
     
     log: function (text, error) {
         try {
-            const date = new Date().toLocaleString("pt-BR");
+            const date = new Date().toLocaleString('pt-BR');
             if (error) {
                 process.stdout.write(`[${date}] - ${text} - [ERROR]: ${error} \n`);
                 if (this.errorChannel) {
@@ -37,11 +37,11 @@ exports.LogService = {
 
     sendError: function (errorMessage) {    
         const reply = {
-            featureName: StringService.get('bot.error'),
+            featureName: StringUtils.get('bot.error'),
             data: errorMessage.message,
         }
-        const embed = EmbedService.createEmbed(reply, null, null, null, 'attachment://fire.png');
+        const embed = EmbedUtils.createEmbed(reply, null, null, null, 'attachment://fire.png');
         embed.setColor('#FE4F60');
-        this.errorChannel?.send(EmbedService.assembleEmbedObject(embed));
+        this.errorChannel?.send(EmbedUtils.assembleEmbedObject(embed));
     }
 };
