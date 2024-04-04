@@ -219,27 +219,35 @@ exports.HeroService = {
             LogService.log(`No (profile) builds found for ${hero.name}`);
         }
 
-        //retrieves the duplicate items
+        //retrieves the duplicates
         let repeatedBuilds = profileBuilds?.filter(item =>
             (icyBuilds.map(it => it.skills.unaccent()).includes(item.skills.unaccent()))
         );
 
-        //applies winrate on known builds names
+        //applies win rate on known build names
         if (repeatedBuilds != null) {
             icyBuilds.forEach(it => {
                 for (let item of repeatedBuilds) {
                     if (item.skills.unaccent() === it.skills.unaccent()) {
-                        it.name = `${it.name} (${item.name.match(/([\d.]%*)/g, '').join('').replace('..', '')} win rate)`
+                        it.winRate = item.winRate;
                     }
                 }
             });
         }
 
         //removes the duplicate items
-        if (profileBuilds)
+        if (profileBuilds) {
             profileBuilds = profileBuilds?.filter(item => !repeatedBuilds.includes(item));
+        }
 
-        return icyBuilds.concat(profileBuilds);
+        const allBuilds = icyBuilds.concat(profileBuilds);
+        allBuilds.forEach(build => {
+            build.name = `[${build.name}](${build.link})`;
+            if (build.winRate) {
+                build.name = `${build.name} (${build.winRate}% win rate)`;
+            }
+        });
+        return allBuilds;
     },
 
     setHeroesTierPosition: function (heroesParam) {

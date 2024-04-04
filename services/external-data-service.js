@@ -116,7 +116,7 @@ exports.ExternalDataService = {
         ] = await Promise.all([
             IcyVeinsIntegrationService.gatherIcyData(heroIcyLink),
             HeroesProfileIntegrationService.getBuildsFromAPI(heroName)
-        ])
+        ]);
 
         if (icyData && profileData) {
             heroesMap.set(heroId, { icyData, profileData });

@@ -239,10 +239,14 @@ exports.HeroesProfileIntegrationService = {
 
             return {
                 builds: data.map((build) => {
-                    const name = `[Popular Build](${this.buildsTitleUrl}${heroName.replaceAll(' ','%20')}) (${build.win_rate}% win rate)`;
-                    buildString = `[T${build.level_one.sort}${build.level_four.sort}${build.level_seven.sort}${build.level_ten.sort}${build.level_thirteen.sort}${build.level_sixteen.sort}${build.level_twenty.sort},${heroName.replaceAll(' ', '')}]`;
+                    const name = `Popular Build`;
+                    const winRate = build.win_rate;
+                    const link = `${this.buildsTitleUrl}${heroName.replaceAll(' ', '%20')}`;
+                    buildString = `[T${build.level_one.sort}${build.level_four.sort}${build.level_seven.sort}${build.level_ten.sort}${build.level_thirteen.sort}${build.level_sixteen.sort}${build.level_twenty.sort},${heroName.replaceAll(' ', '').replaceAll('.','')}]`;
                     return {
                         name,
+                        winRate,
+                        link,
                         skills: buildString
                     }
                 })

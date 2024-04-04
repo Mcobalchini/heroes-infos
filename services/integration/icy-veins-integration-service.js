@@ -22,7 +22,8 @@ exports.IcyVeinsIntegrationService = {
                 const builds = [];
                 for (let i in names) {
                     builds.push({
-                        name: `[${names[i]}](${heroUrl})`,
+                        name: names[i],
+                        link: heroUrl,
                         skills: skills[i]
                     });
                 }
