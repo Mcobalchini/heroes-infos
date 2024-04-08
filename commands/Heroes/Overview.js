@@ -5,10 +5,16 @@ exports.run = async (heroName) => {
     const hero = HeroService.findHero(heroName, true);
     if (!hero) return StringUtils.get('hero.not.found', heroName);
 
+    let overviewText = 'Quick overview about the hero';
+    if (hero.infos.overviewText) {
+        overviewText = `**Via Icy Veins**: ${hero.infos.overviewText}`
+    }
+    //TODO use stringUtils
     return {
         ...HeroService.assembleBaseObject(hero),
         data: {
             featureName: StringUtils.get('overview'),
+            featureDescription: overviewText,
             overview: [
                 {
                     name: StringUtils.get('role'),

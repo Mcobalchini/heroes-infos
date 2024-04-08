@@ -9,7 +9,17 @@ exports.run = async (heroName) => {
         ...HeroService.assembleBaseObject(hero),
         data: {
             featureName: StringUtils.get('tips'),
-            description: hero.infos.tips
+            featureDescription: hero.infos.tips,
+            strengths: [{
+                name: 'Hero Strengths',
+                value: hero.infos.strengths.join('\n'),
+                inline: true
+            }],
+            weaknesses: [{
+                name: 'Hero Weaknesses',
+                value: hero.infos.weaknesses.join('\n'),
+                inline: true
+            }],
         }
     }
 }

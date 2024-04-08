@@ -120,7 +120,7 @@ exports.HeroService = {
     },
 
     getRoles: function () {
-        return this.roles;
+        return roles;
     },
 
     findRoleById: function (roleId) {
@@ -180,7 +180,9 @@ exports.HeroService = {
                 profileBuilds?.builds,
                 icyData.builds
             );
-
+            hero.infos.overviewText = icyData.overviewText;
+            hero.infos.strengths = icyData.strengths;
+            hero.infos.weaknesses = icyData.weaknesses
             hero.infos.synergies = icyData.synergies;
             hero.infos.counters = icyData.counters;
             hero.infos.strongerMaps = icyData.strongerMaps;

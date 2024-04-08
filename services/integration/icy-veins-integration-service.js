@@ -10,6 +10,9 @@ exports.IcyVeinsIntegrationService = {
             const icyUrl = this.getUrl(heroName);
             await page.goto(icyUrl, { waitUntil: 'domcontentloaded' });
             const heroIcyVeinsData = await page.evaluate((heroUrl) => {
+                const overviewText = document.querySelector('.page_content > p').innerText;
+                const strengths = Array.from(document.querySelectorAll('.strengths li')).map(it => it.innerText);
+                const weaknesses = Array.from(document.querySelectorAll('.weaknesses li')).map(it => it.innerText);
                 const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.innerText);
                 const skills = Array.from(document.querySelectorAll('.talent_build_copy_button > input')).map(skillsElements => skillsElements.value);
                 const counters = Array.from(document.querySelectorAll('.hero_portrait_bad')).map(nameElements => nameElements.title);
@@ -29,11 +32,14 @@ exports.IcyVeinsIntegrationService = {
                 }
 
                 return {
-                    builds: builds,
+                    overviewText,
+                    builds,
+                    strengths,
+                    weaknesses,
                     counters: { countersText, heroes: counters },
                     synergies: { synergiesText, heroes: synergies },
-                    strongerMaps: strongerMaps,
-                    tips: tips
+                    strongerMaps,
+                    tips
                 };
 
             }, icyUrl);
