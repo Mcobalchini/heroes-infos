@@ -90,11 +90,45 @@ exports.HeroService = {
     },
 
     findHeroByName: function (search) {
-        let hero = heroesBase.find(heroInfo =>
+        const hero = heroesBase.find(heroInfo =>
             heroInfo.name.unaccentClean() === search ||
             heroInfo.name.unaccentClean().includes(search)
         );
         return hero ? hero : this.findHeroByPropertyName(search);
+    },
+
+    listHeroesByName: function (search) {
+        return heroesBase.filter(heroInfo =>
+            heroInfo.name.unaccentClean() === search ||
+            heroInfo.name.unaccentClean().startsWith(search)            
+        );            
+    },
+
+    listHeroesByPropertyName: function (search) {
+        if (this.heroesNamesMap.size === 0) {
+            this.assembleHeroesNames();
+        }
+        const heroProperty = [];
+        for (let [heroProp, heroNames] of this.heroesNamesMap.entries()) {
+            const namesArray = heroNames.split(',');
+            for (let name of namesArray) {
+                const cleanName = name.unaccentClean();
+                if (cleanName === search || cleanName.includes(search)) {
+                    heroProperty.push(heroProp);
+                    break;
+                }
+            }
+        }
+        return heroProperty.length > 0 
+            ? heroesBase.filter(hero => heroProperty.includes(hero.propertyName)) 
+            : [];
+    },
+
+    autoCompleteHeroes: function(heroName) {        
+        const heroesByName = this.listHeroesByName(heroName);
+        const heroesByProp = this.listHeroesByPropertyName(heroName);
+        const heroesSet = Array.from(new Set(heroesByName.concat(heroesByProp))).splice(0, 24);
+        return heroesSet
     },
 
     findHeroById: function (search) {

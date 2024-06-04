@@ -36,6 +36,17 @@ exports.run = async (heroName) => {
     }
 }
 
+exports.autoComplete = (interaction) => {
+    const focusedValue = interaction.options.getFocused();
+    const heroes = HeroService.autoCompleteHeroes(focusedValue);
+    return heroes.map(hero => (
+        {
+            name: hero.name,
+            value: hero.name
+        }
+    ));
+}
+
 exports.help = {
     name: 'Overview',
     hint: 'Display a simple overview for the specified hero!',

@@ -5,19 +5,30 @@ exports.run = async (heroName) => {
     const hero = HeroService.findHero(heroName, true);
     if (!hero) return StringUtils.get('hero.not.found', heroName);
 
-   return {
+    return {
         ...HeroService.assembleBaseObject(hero),
         data: {
             featureName: StringUtils.get('builds'),
-            builds: hero.infos.builds.map(build => {
-                return {
+            builds: hero.infos.builds.map(build => (
+                {
                     name: build.skills,
                     value: build.name,
                     inline: false
                 }
-            })
+            ))
         }
     }
+}
+
+exports.autoComplete = (interaction) => {
+    const focusedValue = interaction.options.getFocused();
+    const heroes = HeroService.autoCompleteHeroes(focusedValue);
+    return heroes.map(hero => (
+        {
+            name: hero.name,
+            value: hero.name
+        }
+    ));
 }
 
 exports.help = {

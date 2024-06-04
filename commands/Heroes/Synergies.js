@@ -24,6 +24,17 @@ exports.run = async (heroName) => {
     };
 }
 
+exports.autoComplete = (interaction) => {
+    const focusedValue = interaction.options.getFocused();
+    const heroes = HeroService.autoCompleteHeroes(focusedValue);
+    return heroes.map(hero => (
+        {
+            name: hero.name,
+            value: hero.name
+        }
+    ));
+}
+
 exports.help = {
     name: 'Synergies',
     hint: 'Display heroes that synergize with the specified hero!',

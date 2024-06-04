@@ -1,6 +1,6 @@
 const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const { StringUtils } = require('./string-utils');
-const EMBBED_ARRAY_LIMIT = 25;
+const EMBBED_ARRAY_LIMIT = 24;
 
 exports.EmbedUtils = {
     authorName: 'Heroes of The Storm Bot',

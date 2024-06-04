@@ -62,13 +62,17 @@ function createResponse(reply) {
 
 async function handleResponse(interaction) {
     try {
-        const reply = await CommandService.handleCommand(interaction);
-        const embeds = createResponse(reply);
-        const replyObject = EmbedUtils.assembleEmbedObject(embeds);
-        replyObject.ephemeral = true;
-        interaction.editReply(replyObject).catch(e => {
-            LogService.log(`Error while responding`, e);
-        });
+        if (interaction.isAutocomplete()) {
+            CommandService.handleAutocomplete(interaction);        
+        } else {
+            const reply = await CommandService.handleCommand(interaction);
+            const embeds = createResponse(reply);
+            const replyObject = EmbedUtils.assembleEmbedObject(embeds);
+            replyObject.ephemeral = true;
+            interaction.editReply(replyObject).catch(e => {
+                LogService.log(`Error while responding`, e);
+            });
+        }
     } catch (e) {
         LogService.log(`Error while responding`, e);
     }
@@ -100,14 +104,26 @@ function assembleGuildData(guild) {
 }
 
 bot.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand()) return;
-    try {
-        await interaction.deferReply();
-        await handleResponse(interaction);
-    } catch (e) {
-        LogService.log(`Error while handling response`, e);
+    if (isSupportedInteraction(interaction)) {
+        await handleInteraction(interaction);
     }
 });
+
+function isSupportedInteraction(interaction) {
+    return interaction.isCommand() || interaction.isAutocomplete();
+}
+
+
+async function handleInteraction(interaction) {
+    try {
+        if (interaction.isCommand()) {
+            await interaction.deferReply();
+        }
+        await handleResponse(interaction);
+    } catch (error) {
+        logError('Error while handling response', error);
+    }
+}
 
 bot.once('ready', function () {
     LogService.setUp(
@@ -117,7 +133,7 @@ bot.once('ready', function () {
     LogService.log(`Application ready!`);
     bot.updatedAt = StringUtils.get('not.updated.yet');
     setBotStatus('Heroes of the Storm', 'PLAYING');
-    ExternalDataService.periodicUpdateCheck(true);    
+    ExternalDataService.periodicUpdateCheck(true);
     CommandService.isUpdateSlashCommandsNeeded().then(needed => {
         if (needed) {
             CommandService.updateSlashCommands();
@@ -128,7 +144,7 @@ bot.once('ready', function () {
 });
 
 bot.on('guildCreate', guild => {
-    LogService.log(`Owner id ${guild.ownerId}`);
+    LogService.log(`Bot was added to server ${guild.name}`);
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.JOIN_SERVER_CHANNEL_ID);
     const embed = EmbedUtils.createEmbed({
         featureName: StringUtils.get('joined.new.server'),
@@ -138,6 +154,7 @@ bot.on('guildCreate', guild => {
 });
 
 bot.on('guildDelete', guild => {
+    LogService.log(`Bot was removed from server ${guild.name}`);
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.LEAVE_SERVER_CHANNEL_ID);
     if (guild?.name) {
         const embed = EmbedUtils.createEmbed({

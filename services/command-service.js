@@ -51,18 +51,47 @@ exports.CommandService = {
 
         try {
             for (let cmd of this.commandsMap.values()) {
-                const it = cmd.help;
-                const name = it.name;
-                const description = it.hint;
+                const commandHelpObject = cmd.help;
+                const name = commandHelpObject.name;
+                const description = commandHelpObject.hint;
 
                 let commandSlashBuilder = new SlashCommandBuilder()
                     .setName(name.toLowerCase())
                     .setDMPermission(true)
                     .setDescription(description.substring(0, 100));
 
-                if (it.acceptParams) {
-                    if (it.paramOptions) {
-                        const options = it.paramOptions.map(param => {
+                commandHelpObject.subCommands?.forEach(subcommand => {
+                    const currCommand =
+                        commandSlashBuilder.addSubcommand(it =>
+                            it.setName(subcommand.name)
+                                .setDescription(StringUtils.getWithoutNewLine(subcommand.description).toLowerCase()
+                                )
+                        );
+                    if (subcommand.paramOptions) {
+                        const options = subcommand.paramOptions.map(param => {
+                            return {
+                                name: StringUtils.getWithoutNewLine(param.description).toLowerCase(),
+                                value: param.name
+                            }
+                        });
+                        currCommand.addStringOption(option =>
+                            option.setName('option')
+                                .setDescription('select one')
+                                .setRequired(subcommand.requiredParam)
+                                .addChoices(...options)
+                        );
+                    } else {
+                        currCommand.addStringOption(option =>
+                            option.setName(subcommand.argumentName.toLowerCase())
+                                .setDescription(subcommand.argumentDescription.toLowerCase())
+                                .setRequired(subcommand.requiredParam)
+                        );
+                    }
+                });
+
+                if (commandHelpObject.acceptParams) {
+                    if (commandHelpObject.paramOptions) {
+                        const options = commandHelpObject.paramOptions.map(param => {
                             return {
                                 name: StringUtils.getWithoutNewLine(param.description).toLowerCase(),
                                 value: param.name
@@ -71,14 +100,15 @@ exports.CommandService = {
                         commandSlashBuilder.addStringOption(option =>
                             option.setName('option')
                                 .setDescription('select one')
-                                .setRequired(it.requiredParam)
+                                .setRequired(commandHelpObject.requiredParam)
                                 .addChoices(...options)
                         );
                     } else {
                         commandSlashBuilder.addStringOption(option =>
-                            option.setName(it.argumentName.toLowerCase())
-                                .setDescription(it.argumentDescription.toLowerCase())
-                                .setRequired(it.requiredParam));
+                            option.setName(commandHelpObject.argumentName.toLowerCase())
+                                .setDescription(commandHelpObject.argumentDescription.toLowerCase())
+                                .setRequired(commandHelpObject.requiredParam)
+                                .setAutocomplete(cmd.autoComplete != null));
                     }
                 }
                 await ExternalDataService.postSlashCommandsToAPI(commandSlashBuilder);
@@ -90,14 +120,13 @@ exports.CommandService = {
         }
     },
 
-    handleCommand: async function (interaction) {
-        const receivedCommand = interaction.commandName.toString();
-        const command = this.commandsMap.get(receivedCommand);
-        const args = interaction.options?.data?.map(it => it.value).join(' ');
+    handleCommand: async function (interaction) {        
         let reply;
-        if (this.isCommandAllowed(interaction, command)) {
-            LogService.log(`Command (${receivedCommand}) with params ${args} was called by ${interaction.member?.guild?.name}`);
-            reply = await command.run(args, interaction);
+        const command = this.findCommand(interaction)
+        if (command) {
+            const arguments = interaction.options?.data?.map(it => it.value).join(' ');
+            LogService.log(`Command (${interaction.commandName}) with params ${arguments} was called by ${interaction.member?.user?.globalName} at server ${interaction.member?.guild?.name}`);
+            reply = await command.run(arguments, interaction);
         } else {
             reply = StringUtils.get('command.not.exists', receivedCommand);
         }
@@ -117,6 +146,24 @@ exports.CommandService = {
                     message: reply,
                 }
             };
+        }
+    },
+
+    handleAutocomplete: async function (interaction) {
+        const command = this.findCommand(interaction);
+        if (command) {
+            const reply = command.autoComplete(interaction) || [];
+            await interaction.respond(reply);
+        }
+    },
+
+    findCommand: function(interaction) {
+        const receivedCommand = interaction.commandName.toString();
+        const command = this.commandsMap.get(receivedCommand);
+        if (this.isCommandAllowed(interaction, command)) {
+            return command;
+        } else {
+            return null;
         }
     },
 
