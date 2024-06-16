@@ -151,8 +151,9 @@ exports.CommandService = {
 
     handleAutocomplete: async function (interaction) {
         const command = this.findCommand(interaction);
+        const arguments = interaction?.options?.getFocused();
         if (command) {
-            const reply = command.autoComplete(interaction) || [];
+            const reply = command.autoComplete(arguments, interaction) || [];
             await interaction.respond(reply);
         }
     },
