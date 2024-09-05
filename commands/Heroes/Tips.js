@@ -10,21 +10,28 @@ exports.run = async (heroName) => {
         data: {
             featureName: StringUtils.get('tips'),
             featureDescription: hero.infos.tips,
-            strengths: [{
-                name: 'Hero Strengths',
-                value: hero.infos.strengths.join('\n'),
-                inline: true
-            }],
-            weaknesses: [{
-                name: 'Hero Weaknesses',
-                value: hero.infos.weaknesses.join('\n'),
-                inline: true
-            }],
+            strengthsWeaknesses: [
+                {
+                    name: 'Hero Strengths',
+                    value: hero.infos.strengths.join('\n'),
+                    inline: false
+                },
+                {
+                    name: `_ _`,
+                    value: `|| ||`,
+                    inline: true
+                },
+                {
+                    name: 'Hero Weaknesses',
+                    value: hero.infos.weaknesses.join('\n'),
+                    inline: false
+                }
+            ]
         }
     }
 }
 
-exports.autoComplete = (heroName) => {    
+exports.autoComplete = (heroName) => {
     const heroes = HeroService.autoCompleteHeroes(heroName);
     return heroes.map(hero => (
         {
