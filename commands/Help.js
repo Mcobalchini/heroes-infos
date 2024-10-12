@@ -51,7 +51,7 @@ exports.run = (commandAsked, msg) => {
                 inline: true
             };
         })
-
+        //TODO rewrite this using sources.json
         commandInfos = StringUtils.get('all.commands.supported.both.languages');
         commandInfos += StringUtils.get('all.data.gathered.from');
         commandInfos += 'https://www.icy-veins.com/heroes/\n';

@@ -4,7 +4,7 @@ const { PuppeteerService } = require("../puppeteer-service");
 exports.IcyVeinsIntegrationService = {
     baseUrl: 'https://www.icy-veins.com/heroes/{0}-build-guide',
 
-    gatherIcyData: async function (heroName) {
+    getIcyVeinsData: async function (heroName) {
         const page = await PuppeteerService.createPage()
         try {
             const icyUrl = this.getUrl(heroName);

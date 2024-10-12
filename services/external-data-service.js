@@ -54,7 +54,7 @@ exports.ExternalDataService = {
                 }
 
                 const dataThread = new PromisePool(dataPromiseProducer, this.numberOfWorkers);
-                dataThread.start().then(async () => this.updateHeroesData(HeroService.findAllHeroes()));
+                dataThread.start().then(async () => this.updateHeroesData(HeroService.getAllHeroes()));
             }
         }
     },
@@ -114,7 +114,7 @@ exports.ExternalDataService = {
             icyData,
             profileData
         ] = await Promise.all([
-            IcyVeinsIntegrationService.gatherIcyData(heroIcyLink),
+            IcyVeinsIntegrationService.getIcyVeinsData(heroIcyLink),
             HeroesProfileIntegrationService.getBuildsFromAPI(heroName)
         ]);
 

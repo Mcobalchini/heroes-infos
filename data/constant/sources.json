@@ -1,0 +1,20 @@
+[
+    {
+        "id": "ICY_VEINS",
+        "name": "Icy Veins",
+        "image": "https://static.icy-veins.com/images/common/favicon-high-resolution.png",
+        "site": "https://www.icy-veins.com/heroes/"
+    },
+    {
+        "id": "HEROES_PROFILE",
+        "name": "Heroes Profile",
+        "image": "https://www.heroesprofile.com/images/logo/heroesprofilelogo.png",
+        "site": "https://www.heroesprofile.com"
+    },
+    {
+        "id": "NEXUS_COMPENDIUM",
+        "name": "The Nexus Compendium",
+        "image": "https://nexuscompendium.com/images/logoes/site-logo.png",
+        "site": "https://nexuscompendium.com/"
+    }
+]

@@ -5,11 +5,11 @@ exports.run = async (heroName) => {
     const hero = HeroService.findHero(heroName, true);
     if (!hero) return StringUtils.get('hero.not.found', heroName);
 
-    let overviewText = 'Quick overview about the hero';
+    let overviewText = StringUtils.get('quick.overview.about.hero');
     if (hero.infos.overviewText) {
-        overviewText = `**Via Icy Veins**: ${hero.infos.overviewText}`
+        overviewText = StringUtils.get('via.source', 'Icy Veins', hero.infos.overviewText);
     }
-    //TODO use stringUtils
+    //TODO rewrite this using sources.json
     return {
         ...HeroService.assembleBaseObject(hero),
         data: {
@@ -23,7 +23,7 @@ exports.run = async (heroName) => {
                 },
                 {
                     name: StringUtils.get('universe'),
-                    value: hero.universe,
+                    value: hero.universe.capitalize(),
                     inline: true
                 },
                 {

@@ -93,6 +93,12 @@
     "suggested.bans": "I recommend banning the following heroes"
   },
   {
+    "suggested.hero": "Give {0} a try"
+  },
+  {
+    "quick.overview.about.hero": "Quick overview about the hero"
+  },
+  {
     "banheroes.description": "These heroes are often causing trouble! Here's a list of the top 20 banned heroes, based on how frequently they disrupt games. Keep an eye out for them!"
   },
   {
@@ -274,5 +280,8 @@
   },
   {
     "accept.arguments": "This command accepts arguments, which are as follows"
+  },
+  {
+    "via.source": "**Via {0}**: {1}"
   }
 ]

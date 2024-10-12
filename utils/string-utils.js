@@ -51,6 +51,7 @@ exports.StringUtils = {
         this.setupCleanVal();
         this.setupUnaccent();
         this.setupUnaccentClean();
+        this.setupCapitalize();
     },
 
     setupCleanVal: function () {
@@ -64,6 +65,17 @@ exports.StringUtils = {
                 },
                 writable: true,
                 configurable: true
+            });
+        }
+    },
+
+    setupCapitalize: function () {
+        if (!String().capitalize) {
+            Object.defineProperty(String.prototype, 'capitalize', {
+                value: function () {
+                    return this.charAt(0).toUpperCase() + this.slice(1);
+                },
+                enumerable: false
             });
         }
     },

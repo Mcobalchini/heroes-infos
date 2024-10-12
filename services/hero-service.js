@@ -50,7 +50,7 @@ exports.HeroService = {
         });
     },
 
-    findAllHeroes: function (searchInfos) {
+    getAllHeroes: function (searchInfos) {
         if (searchInfos) {
             return heroesBase.map(hero => this.findHeroInfos(hero.id));
         }

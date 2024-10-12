@@ -128,7 +128,7 @@ exports.CommandService = {
             LogService.log(`Command (${interaction.commandName}) with params ${arguments} was called by ${interaction.member?.user?.globalName} at server ${interaction.member?.guild?.name}`);
             reply = await command.run(arguments, interaction);
         } else {
-            reply = StringUtils.get('command.not.exists', receivedCommand);
+            reply = StringUtils.get('command.not.exists', interaction.commandName.toString());
         }
         if (command && command.help?.source) {
             reply.footer = {
