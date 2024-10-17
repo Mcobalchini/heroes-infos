@@ -124,7 +124,7 @@ exports.ExternalDataService = {
             if (icyData == null && profileData == null) {
                 await this.gatherHeroStats(heroId, heroName, heroIcyLink, heroesMap);
             } else if (profileData == null) {
-                profileData = await this.gatherWhenFail(null, heroId, heroName, 1);
+                profileData = await this.gatherWhenFail(null, heroId, heroName, 0);
                 heroesMap.set(heroId, { icyData, profileData });
             }
         }
