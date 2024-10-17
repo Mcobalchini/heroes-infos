@@ -1,6 +1,6 @@
 const { EmbedBuilder } = require('discord.js');
 const config = require('../config.json');
-const { LogService } = require('../services/log-service');
+const { logger } = require('../services/log-service');
 const { App } = require('../app');
 const { StringUtils } = require('../utils/string-utils');
 
@@ -19,11 +19,11 @@ exports.run = async (feedback, msg) => {
                             await user.send('Hey, would like to give me a feedback? If that is the case, you can call the command `/feedback` and send me one');
                             count++;
                         } catch (error) {
-                            LogService.log('Could not send message to: ' + element, error);
+                            logger.error('could not send message to: ' + element, error);
                         }
                     })
                     .catch(function (error) {
-                        LogService.log('Could not send message to: ' + element, error);
+                        logger.error('could not send message to: ' + element, error);
                     });
             });
             reply = StringUtils.get('feedback.request.number.of.users', count);

@@ -1,4 +1,4 @@
-const { LogService } = require("../log-service");
+const { logger } = require("../log-service");
 const { PuppeteerService } = require("../puppeteer-service");
 
 exports.NexusCompendiumIntegrationService = {
@@ -16,7 +16,7 @@ exports.NexusCompendiumIntegrationService = {
             });
 
         } catch (ex) {
-            LogService.log(`Error while gathering rotation image`, ex);
+            logger.error(`error while gathering rotation image`, ex);
         } finally {
             await page.close();
         }
@@ -28,14 +28,14 @@ exports.NexusCompendiumIntegrationService = {
                 remainingTries--;
                 await this.gatherHeroesPrint(remainingTries);
             } else {
-                LogService.log(`No more tries remaining for gathering heroes print`);
+                logger.warn(`no more tries remaining for gathering heroes print`);
                 return null;
             }
         }
     },
     
     gatherHeroesRotation: async function () {
-        LogService.log(`Gathering heroes rotation`);
+        logger.info(`gathering heroes rotation`);
 
         const fun = function () {
             const obj = JSON.parse(document.body.innerText).RotationHero;

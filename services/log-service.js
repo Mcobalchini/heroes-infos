@@ -1,47 +1,30 @@
-const { EmbedUtils } = require('../utils/embed-utils');
-const { StringUtils } = require('../utils/string-utils');
+const { App } = require('../app');
+const log4js = require('log4js');
+const logger = log4js.getLogger();
+logger.level = process.env?.LOG_LEVEL ?? 'info';
 
-exports.LogService = {
-    logChannel: null,
-    errorChannel: null,
-
-    setUp: function(logChannel, errorChannel) {    
-        this.logChannel = logChannel;
-        this.errorChannel = errorChannel;
-    },
-    
-    log: function (text, error) {
-        try {
-            const date = new Date().toLocaleString('pt-BR');
-            if (error) {
-                process.stdout.write(`[${date}] - ${text} - [ERROR]: ${error} \n`);
-                if (this.errorChannel) {
-                    this.sendError(error);
-                }
-            } else {
-                const log = `[${date}] - ${text}\n`;
-                process.stdout.write(log);
-                if (this.logChannel) {
-                    this.sendLog(log);
-                }
-            }
-        } catch (e) {
-            process.stdout.write(`error while sending error ${e.message}\n`);
+log4js.configuration = {
+    appenders: {
+        out: { type: 'stdout' },
+        console: { type: 'console', layout: { "type": "pattern", "pattern": "%d - [%p] %m" } },
+        fileLog: { type: 'file', filename: '/logs/application.log' },
+        consoleFilter: {
+			type: 'logLevelFilter', appender: 'console', level: process.env.LOG_LEVEL || 'all'
+		},
+        discordWebhookAppender: {
+            type: 'discord-log-appender',
+            webhookId: process.env.LOGS_WEBHOOK_ID ?? '',
+            webhookToken: process.env.LOGS_WEBHOOK_TOKEN ?? '',
+            layout: { "type": "pattern", "pattern": "%d - [%p] ```%m```" }
+        },
+        discordFilter: {
+            type: 'logLevelFilter', appender: 'discordWebhookAppender', level: process.env.WEBHOOK_LOG_LEVEL || 'warn'
         }
     },
-
-    //TODO fix log stream
-    sendLog: function (logMessage) {
-        this.logChannel?.send(logMessage);
-    },
-
-    sendError: function (errorMessage) {    
-        const reply = {
-            featureName: StringUtils.get('bot.error'),
-            data: errorMessage.message,
-        }
-        const embed = EmbedUtils.createEmbed(reply, null, null, null, 'attachment://fire.png');
-        embed.setColor('#FE4F60');
-        this.errorChannel?.send(EmbedUtils.assembleEmbedObject(embed));
+    categories: {
+        default: { appenders: ['consoleFilter', 'fileLog', 'discordFilter'], level: process.env.LOG_LEVEL || 'info' },
     }
-};
+}
+log4js.configure(log4js.configuration);
+
+module.exports = { logger };

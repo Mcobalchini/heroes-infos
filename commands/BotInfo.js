@@ -1,5 +1,5 @@
 const { App } = require('../app');
-const { LogService } = require('../services/log-service');
+const { logger } = require('../services/log-service');
 const { StringUtils } = require('../utils/string-utils');
 
 exports.run = () => {
@@ -14,7 +14,7 @@ exports.run = () => {
     const seconds = Math.floor(totalSeconds % 60);
     const uptime = StringUtils.get('uptime.string', days, hours, minutes, seconds);
     const servers = App.bot.guilds._cache;
-    LogService.log(`Servers. ${servers.map(it => it.name)}`);
+    logger.info(`servers. ${servers.map(it => it.name)}`);
     let list = [
         {
             name: StringUtils.get('im.on'),

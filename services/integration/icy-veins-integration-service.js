@@ -1,4 +1,4 @@
-const { LogService } = require("../log-service");
+const { logger } = require("../log-service");
 const { PuppeteerService } = require("../puppeteer-service");
 
 exports.IcyVeinsIntegrationService = {
@@ -45,7 +45,7 @@ exports.IcyVeinsIntegrationService = {
             }, icyUrl);
             return heroIcyVeinsData;
         } catch (ex) {
-            LogService.log(`Error while fetching icyData ${icyUrl}`, ex);
+            logger.error(`error while fetching icyData ${icyUrl}`, ex);
             return null;
         } finally {
             await page.close();

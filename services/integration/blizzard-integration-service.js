@@ -1,4 +1,4 @@
-const { LogService } = require("../log-service");
+const { logger } = require("../log-service");
 const { PuppeteerService } = require("../puppeteer-service");
 
 exports.BlizzardIntegrationService = {
@@ -22,7 +22,7 @@ exports.BlizzardIntegrationService = {
             await page.close();
             PuppeteerService.closeBrowser();
         } catch (ex) {
-            LogService.log('Error while gathering news', ex);
+            logger.error('error while gathering news', ex);
         }
         if (result != null) {
             return result;

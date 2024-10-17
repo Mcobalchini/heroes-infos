@@ -1,6 +1,6 @@
 const { FileUtils } = require('../utils/file-utils.js');
 const { StringUtils } = require('../utils/string-utils.js');
-const { LogService } = require('./log-service.js');
+const { logger } = require('./log-service.js');
 const roles = FileUtils.openJsonSync('./data/constant/roles.json');
 const heroesBase = FileUtils.openJsonSync('./data/constant/heroes-base.json').sort((a, b) => a.name.localeCompare(b.name));
 const heroesPropertiesDir = './data/constant/heroes-names/';
@@ -15,7 +15,7 @@ try {
     compositions = FileUtils.openJsonSync(`./data/variable/${process.env.CLIENT_ID}/compositions.json`);
     freeHeroes = FileUtils.openJsonSync(`./data/variable/${process.env.CLIENT_ID}/freeweek.json`);
 } catch (e) {
-    LogService.log('error while reading json data', e);
+    logger.warn('error while reading json data', e);
 }
 
 exports.HeroService = {
@@ -227,7 +227,7 @@ exports.HeroService = {
             if (heroInfluence?.influence) {
                 hero.infos.influence = parseInt(heroInfluence.influence) ?? - 1000;
             } else {
-                LogService.log(`No influence data gathered for ${hero.name}`)
+                logger.warn(`No influence data gathered for ${hero.name}`)
             }
         }
 
@@ -252,7 +252,7 @@ exports.HeroService = {
             profileBuilds = [];
 
         if (profileBuilds?.length === 0) {
-            LogService.log(`No (profile) builds found for ${hero.name}`);
+            logger.warn(`No (profile) builds found for ${hero.name}`);
         }
 
         //retrieves the duplicates
@@ -287,7 +287,7 @@ exports.HeroService = {
     },
 
     setHeroesTierPosition: function (heroesParam) {
-        LogService.log(`setting heroes tier position`);
+        logger.info(`setting heroes tier position`);
         heroesParam.sort(function (a, b) {
             return (a.influence ?? 0) - (b.influence ?? 0);
         }).forEach(it => {
@@ -354,7 +354,7 @@ exports.HeroService = {
 
         this.setCompositions(sortedComposition);
         FileUtils.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/compositions.json`, sortedComposition);
-        LogService.log(`Updated compositions list`);
+        logger.info(`updated compositions list`);
     },
 
     assembleBaseObject: function (hero) {

@@ -8,7 +8,7 @@ const { HeroesProfileIntegrationService } = require('./integration/heroes-profil
 const { IcyVeinsIntegrationService } = require('./integration/icy-veins-integration-service.js');
 const { BlizzardIntegrationService } = require('./integration/blizzard-integration-service.js');
 const { PuppeteerService } = require('./puppeteer-service.js');
-const { LogService } = require('./log-service.js');
+const { logger } = require('./log-service.js');
 const { App } = require('../app.js');
 const rest = new REST({ version: '9' }).setToken(process.env.HEROES_INFOS_TOKEN);
 const HOUR = 1000 * 60 * 60;
@@ -23,7 +23,7 @@ exports.ExternalDataService = {
 
     updateData: async function (args) {
         await PuppeteerService.setBrowser();
-        LogService.log(`Started updating data process`);
+        logger.info(`started updating data process`);
         this.isUpdatingData = true;
         const updateSteps = [];
         if (args === 'heroes') {
@@ -90,10 +90,10 @@ exports.ExternalDataService = {
         const heroesInfosThread = new PromisePool(heroUpdateSteps, this.numberOfWorkers);
 
         try {
-            LogService.log(`Started gathering heroes data`);
+            logger.info(`started gathering heroes data`);
             heroesInfosThread.start().then(async () => {
                 let finishedTime = new Date();
-                LogService.log(`Finished gathering process in ${(finishedTime.getTime() - startTime.getTime()) / 1000} seconds`);
+                logger.info(`finished gathering process in ${(finishedTime.getTime() - startTime.getTime()) / 1000} seconds`);
                 HeroService.updateHeroesInfos(heroesMap, this.popularityWinRate);
                 await this.afterUpdate();
             });
@@ -101,10 +101,10 @@ exports.ExternalDataService = {
             if (e.stack.includes('Navigation timeout')
                 || e.stack.includes('net::ERR_ABORTED')
                 || e.stack.includes('net::ERR_NETWORK_CHANGED')) {
-                LogService.log('Updating again after network error');
+                logger.error('updating again after network error', e);
                 await this.updateData();
             }
-            LogService.log('Error while updating', e);
+            logger.error('error while updating', e);
             this.isUpdatingData = false;
         }
     },
@@ -141,7 +141,7 @@ exports.ExternalDataService = {
                 remainingTries--;
                 await this.gatherWhenFail(profileData, heroId, heroName, remainingTries);
             } else {
-                LogService.log(`No more tries remaining for ${heroName}`);
+                logger.warn(`no more tries remaining for ${heroName}`);
                 this.missingUpdateHeroes.push(heroId);
                 return null;
             }
@@ -150,7 +150,7 @@ exports.ExternalDataService = {
 
     afterUpdate: async function () {
         PuppeteerService.closeBrowser();
-        LogService.log(`Finished update process`);
+        logger.info(`finished update process`);
         this.isUpdatingData = false;
         App.bot.updatedAt = new Date().toLocaleString('pt-BR');
         App.setBotStatus('Heroes of the Storm', 'PLAYING');
@@ -177,7 +177,7 @@ exports.ExternalDataService = {
     },
     
     periodicUpdateCheck: function (interval) {
-        LogService.log('checking if update needed');
+        logger.info('checking if update needed');
         let arg = null;
 
         if (this.isFirstLoad()) {

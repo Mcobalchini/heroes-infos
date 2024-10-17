@@ -2,7 +2,7 @@ const config = require('../config.json');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { Collection } = require('discord.js');
 const { ExternalDataService } = require('./external-data-service.js');
-const { LogService } = require('./log-service.js');
+const { logger } = require('./log-service.js');
 const { StringUtils } = require('../utils/string-utils.js');
 const { FileUtils } = require('../utils/file-utils.js');
 const COMMAND_FOLDER = './commands'
@@ -27,7 +27,7 @@ exports.CommandService = {
                 continue;
             }
             const command = require(`.${COMMAND_FOLDER}/${file}`);
-            console.log(`Attempting to load command ${commandName}`);
+            logger.debug(`attempting to load command ${commandName}`);
             commandsMap.set(command.help.name.toLowerCase(), command);
         }
         this.commandsMap = commandsMap;
@@ -47,7 +47,7 @@ exports.CommandService = {
     },
 
     assembleSlashCommands: async function () {
-        LogService.log(`Started refreshing application (/) commands.`);
+        logger.debug(`started refreshing application (/) commands.`);
 
         try {
             for (let cmd of this.commandsMap.values()) {
@@ -114,9 +114,9 @@ exports.CommandService = {
                 await ExternalDataService.postSlashCommandsToAPI(commandSlashBuilder);
             }
 
-            LogService.log(`Successfully reloaded application / commands.`);
+            logger.debug(`successfully reloaded application / commands.`);
         } catch (error) {
-            LogService.log(`Error while reloading / commands`, error);
+            logger.error(`error while reloading / commands`, error);
         }
     },
 
@@ -125,7 +125,7 @@ exports.CommandService = {
         const command = this.findCommand(interaction)
         if (command) {
             const arguments = interaction.options?.data?.map(it => it.value).join(' ');
-            LogService.log(`Command (${interaction.commandName}) with params ${arguments} was called by ${interaction.member?.user?.globalName} at server ${interaction.member?.guild?.name}`);
+            logger.info(`command (${interaction.commandName}) with params ${arguments} was called by ${interaction.member?.user?.globalName} at server ${interaction.member?.guild?.name}`);
             reply = await command.run(arguments, interaction);
         } else {
             reply = StringUtils.get('command.not.exists', interaction.commandName.toString());

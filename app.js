@@ -18,7 +18,7 @@ const { StringUtils } = require('./utils/string-utils.js');
 StringUtils.setup();
 
 const { CommandService } = require('./services/command-service.js');
-const { LogService } = require('./services/log-service.js');
+const { logger } = require('./services/log-service.js');
 const { ExternalDataService } = require('./services/external-data-service.js');
 const { EmbedUtils } = require('./utils/embed-utils');
 
@@ -63,18 +63,18 @@ function createResponse(reply) {
 async function handleResponse(interaction) {
     try {
         if (interaction.isAutocomplete()) {
-            CommandService.handleAutocomplete(interaction);        
+            CommandService.handleAutocomplete(interaction);
         } else {
             const reply = await CommandService.handleCommand(interaction);
             const embeds = createResponse(reply);
             const replyObject = EmbedUtils.assembleEmbedObject(embeds);
             replyObject.ephemeral = true;
             interaction.editReply(replyObject).catch(e => {
-                LogService.log(`Error while responding`, e);
+                logger.error(`error while responding`, e);
             });
         }
     } catch (e) {
-        LogService.log(`Error while responding`, e);
+        logger.error(`error while responding`, e);
     }
 }
 
@@ -125,12 +125,8 @@ async function handleInteraction(interaction) {
     }
 }
 
-bot.once('ready', function () {
-    LogService.setUp(
-        bot.channels?.cache?.find(channel => channel.id === process.env.LOGS_CHANNEL_ID),
-        bot.channels?.cache?.find(channel => channel.id === process.env.ERRORS_CHANNEL_ID)
-    );
-    LogService.log(`Application ready!`);
+bot.once('ready', function () {    
+    logger.info(`application ready!`);
     bot.updatedAt = StringUtils.get('not.updated.yet');
     setBotStatus('Heroes of the Storm', 'PLAYING');
     ExternalDataService.periodicUpdateCheck(true);
@@ -138,13 +134,13 @@ bot.once('ready', function () {
         if (needed) {
             CommandService.updateSlashCommands();
         } else {
-            LogService.log(`Slash commands update not needed`);
+            logger.info(`slash commands update not needed`);
         }
     });
 });
 
 bot.on('guildCreate', guild => {
-    LogService.log(`Bot was added to server ${guild.name}`);
+    logger.info(`bot was added to server ${guild.name}`);
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.JOIN_SERVER_CHANNEL_ID);
     const embed = EmbedUtils.createEmbed({
         featureName: StringUtils.get('joined.new.server'),
@@ -154,7 +150,7 @@ bot.on('guildCreate', guild => {
 });
 
 bot.on('guildDelete', guild => {
-    LogService.log(`Bot was removed from server ${guild.name}`);
+    logger.info(`bot was removed from server ${guild.name}`);
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.LEAVE_SERVER_CHANNEL_ID);
     if (guild?.name) {
         const embed = EmbedUtils.createEmbed({
@@ -166,5 +162,5 @@ bot.on('guildDelete', guild => {
 });
 
 bot.login(process.env.HEROES_INFOS_TOKEN).then(() =>
-    LogService.log('Successfully logged in')
+    logger.info('successfully logged in')
 );

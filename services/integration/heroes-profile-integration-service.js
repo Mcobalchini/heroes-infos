@@ -1,6 +1,6 @@
 const { JSDOM } = require('jsdom');
 const { PuppeteerService } = require('../puppeteer-service');
-const { LogService } = require('../log-service');
+const { logger } = require('../log-service');
 
 const urlConfig = {
     apiUrl: 'https://www.heroesprofile.com/api/v1/global',
@@ -35,12 +35,12 @@ exports.HeroesProfileIntegrationService = {
                 csrfToken: obj.csrfToken,
             }
         } catch (ex) {
-            LogService.log(`Error while creating heroes draft session`, ex);
+            logger.error(`error while creating heroes draft session`, ex);
             if (remainingTries > 0) {
                 remainingTries--;
                 await this.createDrafterSession(remainingTries);
             } else {
-                LogService.log(`No more tries remaining for heroes draft session`);
+                logger.warn(`no more tries remaining for heroes draft session`);
                 return null;
             }
         } finally {
@@ -53,7 +53,7 @@ exports.HeroesProfileIntegrationService = {
             this.cookieValue = await this.createDrafterSession();
         }
 
-        LogService.log(`Gathering ban list`);
+        logger.info(`gathering ban list`);
         let data;
         const details = {
             'data[0][name]': 'timeframe',
@@ -97,7 +97,7 @@ exports.HeroesProfileIntegrationService = {
                 }
             });
         } catch (e) {
-            LogService.log('error while gathering heroes ban list', e)
+            logger.error('error while gathering heroes ban list', e)
             data = [];
         }
 
@@ -110,7 +110,7 @@ exports.HeroesProfileIntegrationService = {
             this.cookieValue = await this.createDrafterSession();
         }
 
-        LogService.log(`Gathering compositions`);
+        logger.info(`gathering compositions`);
 
         const details = {
             'timeframe_type': 'minor',
@@ -150,7 +150,7 @@ exports.HeroesProfileIntegrationService = {
             }
 
         } catch (e) {
-            LogService.log(`Error while gathering profile compositions, with data ${compositions}`, e);
+            logger.error(`error while gathering profile compositions, with data ${compositions}`, e);
             compositions = null;
         }
     },
@@ -160,7 +160,7 @@ exports.HeroesProfileIntegrationService = {
             this.cookieValue = await this.createDrafterSession();
         }
 
-        LogService.log(`Gathering heroes influence`);
+        logger.info(`Gathering heroes influence`);
 
         const details = {
             'timeframe_type': 'minor',
@@ -199,7 +199,7 @@ exports.HeroesProfileIntegrationService = {
             }
 
         } catch (e) {
-            LogService.log(`Error while gathering ${heroName} profile builds, with data ${heroes}`, e);
+            logger.error(`error while gathering ${heroName} profile builds, with data ${heroes}`, e);
             heroes = null;
         }
     },
@@ -252,7 +252,7 @@ exports.HeroesProfileIntegrationService = {
                 })
             }
         } catch (e) {
-            LogService.log(`Error while gathering ${heroName} profile builds`, e)            
+            logger.error(`error while gathering ${heroName} profile builds`, e);
             return null;
         }
     },

@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const { LogService } = require('./log-service.js');
+const { logger } = require('./log-service.js');
 const { FileUtils } = require('../utils/file-utils.js');
 
 exports.PuppeteerService = {
@@ -28,7 +28,7 @@ exports.PuppeteerService = {
             await page.goto(url, { waitUntil: options.waitUntil, timeout: 60000 });
             result = await page.evaluate(fun);
         } catch (ex) {
-            LogService.log(`Error while fetching ${options.url}`, ex);
+            logger.error(`error while fetching ${options.url}`, ex);
         } finally {
             await page.close();
         }
@@ -40,7 +40,7 @@ exports.PuppeteerService = {
                 remainingTries--;
                 await this.performConnection(remainingTries, options);
             } else {
-                LogService.log(`No more tries remaining for ${options.url}`);
+                logger.warn(`no more tries remaining for ${options.url}`);
                 return null;
             }
         }
@@ -57,7 +57,7 @@ exports.PuppeteerService = {
 
     createBrowser: async function () {
         return await puppeteer.launch({
-            headless: true,
+            headless: "shell",
             devtools: false,
             args: [
                 '--no-sandbox',
