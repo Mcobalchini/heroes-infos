@@ -109,5 +109,6 @@ dist
 **/banlist.json
 package-lock.json
 data/variable/
+images/freeweek.png
 .idea
 .vscode
