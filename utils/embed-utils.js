@@ -3,9 +3,9 @@ const { StringUtils } = require('./string-utils');
 const EMBBED_ARRAY_LIMIT = 24;
 
 exports.EmbedUtils = {
-    authorName: 'Heroes of The Storm Bot',
-    authorUrl: 'https://top.gg/bot/783467749258559509',
-    authorIcon: 'attachment://hots.png',
+    defaultAuthorName: 'Heroes of The Storm Bot',
+    defaultAuthorUrl: 'https://top.gg/bot/783467749258559509',
+    defaultAuthorIcon: 'attachment://hots.png',
     extraEmbeds: [],
 
     addItemIntoListIfNeeded: function (array) {
@@ -21,26 +21,26 @@ exports.EmbedUtils = {
         return array;
     },
 
-    createEmbed: function (replyObject, authorName, authorUrl, authorIcon, thumbnail) {
-        authorName = authorName ? authorName : this.authorName;
-        authorUrl = authorUrl ? authorUrl : this.authorUrl;
-        authorIcon = authorIcon ? authorIcon : this.authorIcon;
+    createEmbed: function (replyObject, authorName, authorUrl, avatar, thumbnail) {
+        authorName = authorName ? authorName : this.defaultAuthorName;
+        authorUrl = authorUrl ? authorUrl : this.defaultAuthorUrl;
+        avatar = avatar ? avatar : this.defaultAuthorIcon;
 
         const author = {
             name: authorName,
             url: authorUrl,
-            iconURL: authorIcon
+            iconURL: avatar
         }
 
         let featureDesc = replyObject.featureDescription ? replyObject.featureDescription : '_ _';
-        let image = replyObject.image ? replyObject.image.replace('images/', 'attachment://') : 'attachment://footer.png';
+        let bottomImage = replyObject.image ? replyObject.image.replace('images/', 'attachment://') : 'attachment://footer.png';
 
         const embed = new EmbedBuilder()
             .setColor('#0099ff')
             .setTitle(replyObject.featureName)
             .setAuthor(author)
-            .setImage(image)
-            .setThumbnail(thumbnail)
+            .setImage(bottomImage)
+            .setThumbnail(thumbnail) //image on the right
             .setTimestamp();
 
         const attribute = Object.keys(replyObject).find(it => this.isNotReservedKey(it));
@@ -55,7 +55,7 @@ exports.EmbedUtils = {
                 extraReplyObject[attribute] = extraArray;
                 this.extraEmbeds.push(this.createEmbed(extraReplyObject, authorName, '', ''));
             }
-            
+
             array = this.addItemIntoListIfNeeded(replyObject[attribute])
             embed.addFields(array);
             embed.setDescription(featureDesc);
@@ -65,6 +65,7 @@ exports.EmbedUtils = {
         }
 
         return embed;
+
     },
 
     isObject: function (object, key) {
@@ -72,14 +73,14 @@ exports.EmbedUtils = {
             && !Array.isArray(object[key]) && key !== 'footer';
     },
 
-    createEmbeds: function (replyObject, authorName, authorUrl, authorIcon) {
+    createEmbeds: function (replyObject, authorName, authorUrl, avatar) {
         let embeds = [];
         Object.keys(replyObject).forEach(function (key, _) {
             const attribute = replyObject[key];
             if (this.isObject(replyObject, key)) {
-                embeds.push(this.createEmbed(attribute, authorName, authorUrl, authorIcon));
+                embeds.push(this.createEmbed(attribute, authorName, authorUrl, avatar));
             } else if (this.isNotReservedKey(key)) {
-                embeds.push(this.createEmbed(replyObject, authorName, authorUrl, authorIcon));
+                embeds.push(this.createEmbed(replyObject, authorName, authorUrl, avatar));
             }
         }, this);
 

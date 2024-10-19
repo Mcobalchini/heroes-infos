@@ -1,6 +1,6 @@
 {
   "name": "heroes-infos",
-  "version": "3.8.0",
+  "version": "3.9.0",
   "description": "Heroes of the Storm infos bot",
   "main": "app.js",
   "scripts": {
@@ -16,7 +16,7 @@
     "es6-promise-pool": "^2.5.0",
     "fs": "^0.0.1-security",
     "jsdom": "^25.0.1",
-    "log4js": "^6.9.1",  
+    "log4js": "^6.9.1",
     "puppeteer": "^23.6.0"
   },
   "engines": {
