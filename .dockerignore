@@ -1,0 +1,11 @@
+node_modules/
+.vscode/launch.json
+**/heroes-infos.json
+**/freeweek.json
+**/compositions.json
+**/banlist.json
+package-lock.json
+data/variable/
+images/freeweek.png
+.idea
+.vscode
