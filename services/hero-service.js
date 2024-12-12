@@ -227,7 +227,7 @@ exports.HeroService = {
             if (heroInfluence?.influence) {
                 hero.infos.influence = parseInt(heroInfluence.influence) ?? - 1000;
             } else {
-                logger.warn(`No influence data gathered for ${hero.name}`)
+                logger.warn(`no influence data gathered for ${hero.name}`)
             }
         }
 
@@ -252,7 +252,7 @@ exports.HeroService = {
             profileBuilds = [];
 
         if (profileBuilds?.length === 0) {
-            logger.warn(`No (profile) builds found for ${hero.name}`);
+            logger.warn(`no (profile) builds found for ${hero.name}`);
         }
 
         //retrieves the duplicates
@@ -351,10 +351,13 @@ exports.HeroService = {
         let sortedComposition = result?.sort(function (a, b) {
             return a.tierPosition - b.tierPosition
         }).reverse();
-
-        this.setCompositions(sortedComposition);
-        FileUtils.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/compositions.json`, sortedComposition);
-        logger.info(`updated compositions list`);
+        if (sortedComposition) {
+            this.setCompositions(sortedComposition);
+            FileUtils.writeJsonFile(`data/variable/${process.env.CLIENT_ID}/compositions.json`, sortedComposition);
+            logger.info(`updated compositions list`);
+        } else {
+            logger.info(`compositions list not updated (no data found)`);
+        }        
     },
 
     assembleBaseObject: function (hero) {
