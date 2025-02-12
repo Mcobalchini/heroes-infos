@@ -1,6 +1,6 @@
 {
   "name": "heroes-infos",
-  "version": "3.9.1",
+  "version": "3.10.0",
   "description": "Heroes of the Storm infos bot",
   "main": "app.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "@discordjs/builders": "^1.9.0",
     "@discordjs/rest": "^2.4.0",
     "discord-api-types": "^0.37.102",
-    "discord.js": "^14.16.3",
+    "discord.js": "^14.17.3",
     "dotenv": "^16.4.5",
     "es6-promise-pool": "^2.5.0",
     "fs": "^0.0.1-security",

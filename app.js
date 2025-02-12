@@ -113,7 +113,6 @@ function isSupportedInteraction(interaction) {
     return interaction.isCommand() || interaction.isAutocomplete();
 }
 
-
 async function handleInteraction(interaction) {
     try {
         if (interaction.isCommand()) {

@@ -7,7 +7,6 @@ const { NexusCompendiumIntegrationService } = require('./integration/nexus-compe
 const { HeroesProfileIntegrationService } = require('./integration/heroes-profile-integration-service.js');
 const { IcyVeinsIntegrationService } = require('./integration/icy-veins-integration-service.js');
 const { BlizzardIntegrationService } = require('./integration/blizzard-integration-service.js');
-const { PuppeteerService } = require('./puppeteer-service.js');
 const { logger } = require('./log-service.js');
 const { App } = require('../app.js');
 const rest = new REST({ version: '9' }).setToken(process.env.HEROES_INFOS_TOKEN);
@@ -21,8 +20,7 @@ exports.ExternalDataService = {
     missingUpdateHeroes: [],
     numberOfWorkers: process.env.THREAD_WORKERS ? Number(process.env.THREAD_WORKERS) : 5,
 
-    updateData: async function (args) {
-        await PuppeteerService.setBrowser();
+    updateData: async function (args) {        
         logger.info(`started updating data process`);
         this.isUpdatingData = true;
         const updateSteps = [];
@@ -148,8 +146,7 @@ exports.ExternalDataService = {
         }
     },
 
-    afterUpdate: async function () {
-        PuppeteerService.closeBrowser();
+    afterUpdate: async function () {    
         logger.info(`finished update process`);
         this.isUpdatingData = false;
         App.bot.updatedAt = new Date().toLocaleString('pt-BR');

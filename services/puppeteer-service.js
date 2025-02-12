@@ -51,6 +51,13 @@ exports.PuppeteerService = {
         this.browser = await this.createBrowser();
     },
 
+    getBrowser: async function() {
+        if (!this.browser) {
+            this.browser = await this.createBrowser();
+        }
+        return this.browser;
+    },
+
     closeBrowser: function () {
         this.browser?.close()?.catch();        
     },
@@ -110,7 +117,7 @@ exports.PuppeteerService = {
                 }
             }).filter(it => it);
         }
-        const auxBrowser = browser ?? this.browser;
+        const auxBrowser = browser ?? await this.getBrowser();
         const page = await auxBrowser.newPage();
         await page.setRequestInterception(true);
         page.on('request', (request) => {

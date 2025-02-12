@@ -4,7 +4,7 @@ const { PuppeteerService } = require("../puppeteer-service");
 exports.NexusCompendiumIntegrationService = {
     baseUrl: `https://nexuscompendium.com`,
     gatherHeroesPrint: async function (remainingTries) {
-        remainingTries = remainingTries ?? 3;       
+        remainingTries = remainingTries ?? 3;
         const page = await PuppeteerService.createPage(null, false);
         let result;
 
@@ -19,6 +19,7 @@ exports.NexusCompendiumIntegrationService = {
             logger.error(`error while gathering rotation image`, ex);
         } finally {
             await page.close();
+            PuppeteerService.closeBrowser();
         }
 
         if (result != null) {
@@ -33,27 +34,22 @@ exports.NexusCompendiumIntegrationService = {
             }
         }
     },
-    
+
     gatherHeroesRotation: async function () {
         logger.info(`gathering heroes rotation`);
-
-        const fun = function () {
-            const obj = JSON.parse(document.body.innerText).RotationHero;
-            return {
-                startDate: obj.StartDate,
-                endDate: obj.EndDate,
-                heroes: obj.Heroes.map(it => it.ID)
-            }
-        };
-
-        const options = {
-            url: `${this.baseUrl}/api/currently/RotationHero`,
-            waitUntil: 'domcontentloaded',
-            function: fun
+        const response = await fetch(`${this.baseUrl}/api/currently/RotationHero`);
+        let result = null;
+        if (!response.ok) {
+            logger.error(`error while gathering rotation data`, response.statusText);
         }
-        const result = await PuppeteerService.performConnection(options);
-
-        if (result)
-            return result;
+        result = await response.json();
+        if (result) {
+            base = result.RotationHero;
+            return {
+                startDate: base.StartDate,
+                endDate: base.EndDate,
+                heroes: base.Heroes.map(it => it.ID)
+            };
+        }
     },
 }

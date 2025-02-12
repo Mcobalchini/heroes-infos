@@ -1,5 +1,4 @@
 const { JSDOM } = require('jsdom');
-const { PuppeteerService } = require('../puppeteer-service');
 const { logger } = require('../log-service');
 
 const urlConfig = {
@@ -19,32 +18,24 @@ exports.HeroesProfileIntegrationService = {
     banDataUrl: `${urlConfig.drafterBaseUrl}/getDraftBanData`,
     cookieValue: '',
 
-    createDrafterSession: async function (remainingTries) {
-        remainingTries = remainingTries ?? 3;
-        const page = await PuppeteerService.createPage();
+    createDrafterSession: async function (remainingTries = 3) {
         try {
-            await page.goto(this.drafterUrl, { waitUntil: 'domcontentloaded' });
-            const obj = await page.evaluate(() => {
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-                const version = document.querySelector('[name="minor_timeframe"] option[selected]').value;
-                return { csrfToken, version }
-            });
-
-            return {
-                version: obj.version,
-                csrfToken: obj.csrfToken,
-            }
+            const response = await fetch(this.drafterUrl);
+            const html = await response.text();
+            const dom = new JSDOM(html);
+            const document = dom.window.document;
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+            const versionElement = document.querySelector('[name="minor_timeframe"] option[selected]');
+            const version = versionElement ? versionElement.value : null;
+            return { version, csrfToken };
         } catch (ex) {
             logger.error(`error while creating heroes draft session`, ex);
             if (remainingTries > 0) {
-                remainingTries--;
-                await this.createDrafterSession(remainingTries);
+                return await createDrafterSession(remainingTries - 1);
             } else {
                 logger.warn(`no more tries remaining for heroes draft session`);
                 return null;
             }
-        } finally {
-            await page.close();
         }
     },
 
@@ -186,7 +177,7 @@ exports.HeroesProfileIntegrationService = {
                 body: JSON.stringify(details),
             };
 
-            const fetchedData = await fetch(this.influenceUrl, request)        
+            const fetchedData = await fetch(this.influenceUrl, request)
             heroes = await fetchedData.json();
 
             if (heroes?.data?.length) {
@@ -234,7 +225,7 @@ exports.HeroesProfileIntegrationService = {
                 body: JSON.stringify(details),
             };
 
-            const fetchedData = await fetch(this.buildsUrl, request);        
+            const fetchedData = await fetch(this.buildsUrl, request);
             data = await fetchedData.json();
 
             return {
@@ -242,7 +233,7 @@ exports.HeroesProfileIntegrationService = {
                     const name = `Popular Build`;
                     const winRate = build.win_rate;
                     const link = `${this.buildsTitleUrl}${heroName.replaceAll(' ', '%20')}`;
-                    buildString = `[T${build.level_one.sort}${build.level_four.sort}${build.level_seven.sort}${build.level_ten.sort}${build.level_thirteen.sort}${build.level_sixteen.sort}${build.level_twenty.sort},${heroName.replaceAll(' ', '').replaceAll('.','')}]`;
+                    buildString = `[T${build.level_one.sort}${build.level_four.sort}${build.level_seven.sort}${build.level_ten.sort}${build.level_thirteen.sort}${build.level_sixteen.sort}${build.level_twenty.sort},${heroName.replaceAll(' ', '').replaceAll('.', '')}]`;
                     return {
                         name,
                         winRate,

@@ -1,6 +1,6 @@
 const config = require('../config.json');
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { Collection } = require('discord.js');
+const { Collection, InteractionContextType } = require('discord.js');
 const { ExternalDataService } = require('./external-data-service.js');
 const { logger } = require('./log-service.js');
 const { StringUtils } = require('../utils/string-utils.js');
@@ -56,8 +56,8 @@ exports.CommandService = {
                 const description = commandHelpObject.hint;
 
                 let commandSlashBuilder = new SlashCommandBuilder()
-                    .setName(name.toLowerCase())
-                    .setDMPermission(true)
+                    .setName(name.toLowerCase())                    
+                    .setContexts([InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel])
                     .setDescription(description.substring(0, 100));
 
                 commandHelpObject.subCommands?.forEach(subcommand => {
