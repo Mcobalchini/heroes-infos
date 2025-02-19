@@ -27,21 +27,21 @@ exports.HeroesProfileIntegrationService = {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
             const versionElement = document.querySelector('[name="minor_timeframe"] option[selected]');
             const version = versionElement ? versionElement.value : null;
-            return { version, csrfToken };
+            this.cookieValue = { version, csrfToken };
         } catch (ex) {
             logger.error(`error while creating heroes draft session`, ex);
             if (remainingTries > 0) {
-                return await createDrafterSession(remainingTries - 1);
+                await createDrafterSession(remainingTries - 1);
             } else {
                 logger.warn(`no more tries remaining for heroes draft session`);
-                return null;
+                this.cookieValue = null;                
             }
         }
     },
 
     getBanTierListInfo: async function () {
         if (!this.cookieValue) {
-            this.cookieValue = await this.createDrafterSession();
+            await this.createDrafterSession();
         }
 
         logger.info(`gathering ban list`);
@@ -65,12 +65,10 @@ exports.HeroesProfileIntegrationService = {
 
             const requestOptions = {
                 method: 'POST',
-                headers:
-                {
+                headers: {
                     'X-Csrf-Token': this.cookieValue.csrfToken,
                     'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                }
-                ,
+                },
                 body: formBody,
             };
 
@@ -98,35 +96,15 @@ exports.HeroesProfileIntegrationService = {
 
     getCompositionsInfo: async function () {
         if (!this.cookieValue) {
-            this.cookieValue = await this.createDrafterSession();
+            await this.createDrafterSession();
         }
 
         logger.info(`gathering compositions`);
 
-        const details = {
-            'timeframe_type': 'minor',
-            'timeframe': [
-                this.cookieValue?.version
-            ],
-            'minimum_games': '100',
-            'game_type': [
-                'sl'
-            ],
-        }
-
+        const details = { 'minimum_games': '100' }
         let compositions = null;
         try {
-            const request = {
-                method: 'POST',
-                headers:
-                {
-                    'X-Csrf-Token': this.cookieValue.csrfToken,
-                    'Content-Type': 'application/json'
-                }
-                ,
-                body: JSON.stringify(details),
-            };
-
+            const request = this.createPostRequest(details);
             const fetchedData = await fetch(this.compositionsUrl, request)
             compositions = await fetchedData.json();
 
@@ -148,35 +126,16 @@ exports.HeroesProfileIntegrationService = {
 
     getHeroesInfluenceFromAPI: async function () {
         if (!this.cookieValue) {
-            this.cookieValue = await this.createDrafterSession();
+            await this.createDrafterSession();
         }
 
         logger.info(`Gathering heroes influence`);
 
-        const details = {
-            'timeframe_type': 'minor',
-            'timeframe': [
-                this.cookieValue?.version
-            ],
-            'statfilter': 'win_rate',
-            'game_type': [
-                'sl'
-            ],
-        }
+        const details = { 'statfilter': 'win_rate' }
 
         let heroes = null;
         try {
-            const request = {
-                method: 'POST',
-                headers:
-                {
-                    'X-Csrf-Token': this.cookieValue.csrfToken,
-                    'Content-Type': 'application/json'
-                }
-                ,
-                body: JSON.stringify(details),
-            };
-
+            const request = this.createPostRequest(details);
             const fetchedData = await fetch(this.influenceUrl, request)
             heroes = await fetchedData.json();
 
@@ -184,9 +143,10 @@ exports.HeroesProfileIntegrationService = {
                 return heroes.data.map((hero) => {
                     return {
                         name: hero.name,
-                        influence: hero.influence
+                        influence: hero.influence,
+                        winRate: hero.win_rate
                     }
-                })
+                });
             }
 
         } catch (e) {
@@ -197,34 +157,17 @@ exports.HeroesProfileIntegrationService = {
 
     getBuildsFromAPI: async function (heroName) {
         if (!this.cookieValue) {
-            this.cookieValue = await this.createDrafterSession();
+            await this.createDrafterSession();
         }
 
         const details = {
             'hero': heroName,
-            'timeframe_type': 'minor',
-            'timeframe': [
-                this.cookieValue?.version
-            ],
             'statfilter': 'win_rate',
-            'game_type': [
-                'sl'
-            ],
             'talentbuildtype': 'Popular'
         }
         let data = null;
         try {
-            const request = {
-                method: 'POST',
-                headers:
-                {
-                    'X-Csrf-Token': this.cookieValue.csrfToken,
-                    'Content-Type': 'application/json'
-                }
-                ,
-                body: JSON.stringify(details),
-            };
-
+            const request = this.createPostRequest(details);
             const fetchedData = await fetch(this.buildsUrl, request);
             data = await fetchedData.json();
 
@@ -247,4 +190,25 @@ exports.HeroesProfileIntegrationService = {
             return null;
         }
     },
+
+    createPostRequest: function (details) {
+        const baseBody = {
+            'timeframe_type': 'minor',
+            'timeframe': [
+                this.cookieValue?.version
+            ],
+            'game_type': [
+                'sl'
+            ],
+            ...details
+        }
+        return {
+            method: 'POST',
+            headers: {
+                'X-Csrf-Token': this.cookieValue.csrfToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(baseBody),
+        };
+    }
 }

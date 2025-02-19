@@ -1,30 +1,19 @@
 const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const { StringUtils } = require('./string-utils');
+const { CommandService } = require('../services/command-service');
 const EMBBED_ARRAY_LIMIT = 24;
 
 exports.EmbedUtils = {
     defaultAuthorName: 'Heroes of The Storm Bot',
     defaultAuthorUrl: 'https://top.gg/bot/783467749258559509',
     defaultAuthorIcon: 'attachment://hots.png',
-    extraEmbeds: [],
+    remainingItems: [],
 
-    addItemIntoListIfNeeded: function (array) {
-        if (array.length % 3 !== 0 && array.every(it => it.inline)) {
-            array.push(
-                {
-                    name: `_ _`,
-                    value: `|| ||`,
-                    inline: true
-                }
-            )
-        }
-        return array;
-    },
-
-    createEmbed: function (replyObject, authorName, authorUrl, avatar, thumbnail) {
-        authorName = authorName ? authorName : this.defaultAuthorName;
-        authorUrl = authorUrl ? authorUrl : this.defaultAuthorUrl;
-        avatar = avatar ? avatar : this.defaultAuthorIcon;
+    createSingleEmbed: function (response) {
+        const authorName = response.authorName ?? this.defaultAuthorName;
+        const authorUrl = response.authorUrl ?? this.defaultAuthorUrl;
+        const avatar = response.avatar ?? this.defaultAuthorIcon;
+        let thumbnail = null;
 
         const author = {
             name: authorName,
@@ -32,68 +21,63 @@ exports.EmbedUtils = {
             iconURL: avatar
         }
 
-        let featureDesc = replyObject.featureDescription ? replyObject.featureDescription : '_ _';
-        let bottomImage = replyObject.image ? replyObject.image.replace('images/', 'attachment://') : 'attachment://footer.png';
+        if (response.thumbnail != null) {
+            thumbnail = 'attachment://' + response.thumbnail.replace('images/', '');
+        }
+
+        let featureDesc = response.featureDescription ?? '_ _';
+        let bottomImage = response.bottomImage?.replace('images/', 'attachment://') ?? 'attachment://footer.png';
 
         const embed = new EmbedBuilder()
             .setColor('#0099ff')
-            .setTitle(replyObject.featureName)
+            .setTitle(response.featureName)
+            .setDescription(featureDesc)
             .setAuthor(author)
             .setImage(bottomImage)
             .setThumbnail(thumbnail) //image on the right
             .setTimestamp();
 
-        const attribute = Object.keys(replyObject).find(it => this.isNotReservedKey(it));
-
-        if (Array.isArray(replyObject[attribute])) {
-            let array = replyObject[attribute];
-
-            if (array.length > EMBBED_ARRAY_LIMIT) {
-                const extraArray = array.splice(0, array.length - EMBBED_ARRAY_LIMIT);
-                const extraReplyObject = { ...replyObject }
-                extraReplyObject.featureDescription = null;
-                extraReplyObject[attribute] = extraArray;
-                this.extraEmbeds.push(this.createEmbed(extraReplyObject, authorName, '', ''));
+        if (response.footer) {
+            const footer = {
+                text: StringUtils.get('data.from', response.footer.source),
+                iconURL: response.footer.sourceImage
             }
-
-            array = this.addItemIntoListIfNeeded(replyObject[attribute])
-            embed.addFields(array);
-            embed.setDescription(featureDesc);
-        } else {
-            let desc = replyObject[attribute];
-            embed.setDescription(desc ? desc : featureDesc);
+            embed.setFooter(footer);
         }
 
+        const data = response.data;
+        if (data) {
+            Object.entries(data).forEach(([key, value]) => {
+                if (Array.isArray(value)) {
+                    const list = this.createPaginationAndReturnList(key, value);
+                    embed.addFields(list);
+                } else {
+                    if (value != null) {
+                        embed.setDescription(value ?? featureDesc);
+                    }
+                }
+            });
+        }
         return embed;
-
     },
 
-    isObject: function (object, key) {
-        return object[key].toString() === '[object Object]'
-            && !Array.isArray(object[key]) && key !== 'footer';
-    },
+    addEmbedRecursively: function (response, attachment, embeds) {
+        const embed = this.createSingleEmbed(response, attachment);
+        embeds.push(embed);
 
-    createEmbeds: function (replyObject, authorName, authorUrl, avatar) {
-        let embeds = [];
-        Object.keys(replyObject).forEach(function (key, _) {
-            const attribute = replyObject[key];
-            if (this.isObject(replyObject, key)) {
-                embeds.push(this.createEmbed(attribute, authorName, authorUrl, avatar));
-            } else if (this.isNotReservedKey(key)) {
-                embeds.push(this.createEmbed(replyObject, authorName, authorUrl, avatar));
-            }
-        }, this);
-
-        if (this.extraEmbeds.length > 0) {
-            embeds = embeds.concat(this.extraEmbeds);
-            this.extraEmbeds = [];
+        if (this.remainingItems.length > 0) {
+            const responseAux = JSON.parse(JSON.stringify(response));
+            responseAux.data = this.remainingItems.shift();
+            responseAux.featureDescription = null;
+            responseAux.thumbnail = null;
+            this.addEmbedRecursively(responseAux, attachment, embeds);
         }
-
-        return embeds;
     },
 
-    isNotReservedKey: function (key) {
-        return key !== 'featureName' && key !== 'featureDescription' && key !== 'footer' && key !== 'image';
+    createEmbeds: function (response, attachment) {
+        const embeds = [];
+        this.addEmbedRecursively(response, attachment, embeds);
+        return embeds;
     },
 
     fillAttachments: function (embeds) {
@@ -107,13 +91,9 @@ exports.EmbedUtils = {
         return Array.from(files.values());
     },
 
-    removeAttachmentPrefix: function (text) {
-        return text.replace('attachment://', '');
-    },
-
     addToMap: function (fileMap, property) {
         if (property != null) {
-            const fileName = this.removeAttachmentPrefix(property);
+            const fileName = property.replace('attachment://', '');
             if (!fileName.includes('http') && fileName.length > 0 && !fileMap.has(fileName))
                 fileMap.set(fileName, new AttachmentBuilder(`images/${fileName}`, fileName));
         }
@@ -129,15 +109,25 @@ exports.EmbedUtils = {
         };
     },
 
-    fillFooter: function (attachment, embeds, footerObj) {
-        embeds.forEach(it => {
-            if (footerObj) {
-                const footer = {
-                    text: StringUtils.get('data.from', footerObj.source),
-                    iconURL: footerObj.sourceImage
+    addItemIntoListIfNeeded: function (array) {
+        if (array.length % 3 !== 0 && array.every(it => it.inline)) {
+            array.push(
+                {
+                    name: `_ _`,
+                    value: `|| ||`,
+                    inline: true
                 }
-                it.setFooter(footer)
-            }
-        });
+            )
+        }
+        return array;
+    },
+
+    createPaginationAndReturnList: function (attributeName, list) {
+        if (list.length > EMBBED_ARRAY_LIMIT) {
+            const extraArray = list.splice(0, list.length - EMBBED_ARRAY_LIMIT);
+            this.remainingItems.push({ attributeName: extraArray });
+        }
+        list = this.addItemIntoListIfNeeded(list);
+        return list;
     }
 }

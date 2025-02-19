@@ -2,9 +2,7 @@ const { HeroService } = require('../../services/hero-service');
 const { StringUtils } = require('../../utils/string-utils');
 
 exports.run = async (heroName) => {
-    const hero = HeroService.findHero(heroName, true);
-    if (!hero) return StringUtils.get('hero.not.found', heroName);
-
+    const hero = HeroService.findHeroOrThrow(heroName, true);
     const synergies = hero.infos.synergies.heroes.map(synergy => {
         const synergyHero = HeroService.findHero(synergy);
         return {
@@ -15,10 +13,9 @@ exports.run = async (heroName) => {
     });
 
     return {
-        ...HeroService.assembleBaseObject(hero),
+        ...HeroService.assembleBaseObject(hero),        
+        featureDescription: hero.infos.synergies.synergiesText + '\n' + StringUtils.get('hero.examples'),
         data: {
-            featureName: StringUtils.get('synergies'),
-            featureDescription: hero.infos.synergies.synergiesText + '\n' + StringUtils.get('hero.examples'),
             synergies
         }
     };
@@ -36,6 +33,7 @@ exports.autoComplete = (heroName) => {
 
 exports.help = {
     name: 'Synergies',
+    displayName: StringUtils.get('synergies'),
     hint: 'Display heroes that synergize with the specified hero!',
     argumentName: 'Hero',
     argumentDescription: 'Enter the hero\'s full name or a partial match of its name.',

@@ -7,8 +7,7 @@ exports.run = async () => {
     const heroFromIndex = heroes[randomIndex];    
     return {
         ...HeroService.assembleBaseObject(heroFromIndex),
-        data: {
-            featureName: StringUtils.get('suggested.hero', heroFromIndex.name),            
+        data: {         
             overview: [
                 {
                     name: StringUtils.get('role'),
@@ -27,6 +26,7 @@ exports.run = async () => {
 
 exports.help = {
     name: 'Random',
+    displayName: StringUtils.get('suggested.hero'),
     hint: 'Suggest a random hero for you to play',
     acceptParams: false,
     defaultPermission: true,

@@ -4,6 +4,7 @@ const { logger } = require('./log-service.js');
 const roles = FileUtils.openJsonSync('./data/constant/roles.json');
 const heroesBase = FileUtils.openJsonSync('./data/constant/heroes-base.json').sort((a, b) => a.name.localeCompare(b.name));
 const heroesPropertiesDir = './data/constant/heroes-names/';
+const { HeroNotFoundException } = require('../utils/exception-utils.js');
 let heroesInfos = [];
 let freeHeroes = [];
 let mustBanHeroes = [];
@@ -89,6 +90,14 @@ exports.HeroService = {
         return hero
     },
 
+    findHeroOrThrow: function (searchTerm, searchInfos) {
+        const hero = this.findHero(searchTerm, searchInfos);
+        if (!hero) {
+            throw new HeroNotFoundException(searchTerm);
+        }
+        return hero;
+    },
+
     findHeroByName: function (search) {
         const hero = heroesBase.find(heroInfo =>
             heroInfo.name.unaccentClean() === search ||
@@ -100,8 +109,8 @@ exports.HeroService = {
     listHeroesByName: function (search) {
         return heroesBase.filter(heroInfo =>
             heroInfo.name.unaccentClean() === search ||
-            heroInfo.name.unaccentClean().startsWith(search)            
-        );            
+            heroInfo.name.unaccentClean().startsWith(search)
+        );
     },
 
     listHeroesByPropertyName: function (search) {
@@ -119,16 +128,16 @@ exports.HeroService = {
                 }
             }
         }
-        return heroProperty.length > 0 
-            ? heroesBase.filter(hero => heroProperty.includes(hero.propertyName)) 
+        return heroProperty.length > 0
+            ? heroesBase.filter(hero => heroProperty.includes(hero.propertyName))
             : [];
     },
 
-    autoCompleteHeroes: function(heroName) {        
+    autoCompleteHeroes: function (heroName) {
         const heroesByName = this.listHeroesByName(heroName);
         const heroesByProp = this.listHeroesByPropertyName(heroName);
         const heroesSet = Array.from(new Set(heroesByName.concat(heroesByProp))).splice(0, 24);
-        return heroesSet
+        return heroesSet;
     },
 
     findHeroById: function (search) {
@@ -357,12 +366,12 @@ exports.HeroService = {
             logger.info(`updated compositions list`);
         } else {
             logger.info(`compositions list not updated (no data found)`);
-        }        
+        }
     },
 
     assembleBaseObject: function (hero) {
         return {
-            authorImage: `images/${hero.name.unaccentClean()}.png`,
+            thumbnail: `images/${hero.name.unaccentClean()}.png`,
             authorName: hero.name,
             authorUrl: `https://heroesofthestorm.blizzard.com/en-us/heroes/${hero.accessLink}`,
         }

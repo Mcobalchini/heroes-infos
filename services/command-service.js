@@ -5,10 +5,12 @@ const { ExternalDataService } = require('./external-data-service.js');
 const { logger } = require('./log-service.js');
 const { StringUtils } = require('../utils/string-utils.js');
 const { FileUtils } = require('../utils/file-utils.js');
+const { HeroNotFoundException } = require('../utils/exception-utils.js');
 const COMMAND_FOLDER = './commands'
 
 exports.CommandService = {
     commandsMap: null,
+
     assembleCommands: function (ignoreHelp) {
         const commands = FileUtils.openDir(COMMAND_FOLDER).map(it => {
             if (it.endsWith('.js')) {
@@ -18,7 +20,6 @@ exports.CommandService = {
                 return dir.filter(filter => filter.endsWith('.js')).map(cmd => `${it}/${cmd}`)
             }
         }).flat()
-
 
         const commandsMap = new Collection();
         for (const file of commands) {
@@ -56,7 +57,7 @@ exports.CommandService = {
                 const description = commandHelpObject.hint;
 
                 let commandSlashBuilder = new SlashCommandBuilder()
-                    .setName(name.toLowerCase())                    
+                    .setName(name.toLowerCase())
                     .setContexts([InteractionContextType.BotDM, InteractionContextType.Guild, InteractionContextType.PrivateChannel])
                     .setDescription(description.substring(0, 100));
 
@@ -120,33 +121,41 @@ exports.CommandService = {
         }
     },
 
-    handleCommand: async function (interaction) {        
-        let reply;
-        const command = this.findCommand(interaction)
+    handleCommand: async function (interaction) {
+        let response = {};
+        const command = this.findCommand(interaction);
         if (command) {
             const arguments = interaction.options?.data?.map(it => it.value).join(' ');
             logger.info(`command (${interaction.commandName}) with params ${arguments} was called by ${interaction.member?.user?.globalName} at server ${interaction.member?.guild?.name}`);
-            reply = await command.run(arguments, interaction);
-        } else {
-            reply = StringUtils.get('command.not.exists', interaction.commandName.toString());
-        }
-        if (command && command.help?.source) {
-            reply.footer = {
-                source: command.help?.source,
-                sourceImage: command.help?.sourceImage
+
+            try {
+                response = await command.run(arguments, interaction);
+            } catch (e) {
+                if (!response.data) {
+                    response.data = {};
+                }
+                if (e instanceof HeroNotFoundException) {
+                    response.data.message = StringUtils.get('hero.not.found', e.message);
+                } else {
+                    throw e;
+                }
             }
+
+            if (response.featureName == null) {
+                response.featureName = command.help?.displayName ?? ' ';
+            }
+            
+            if (command.help?.source) {
+                response.footer = {
+                    source: command.help?.source,
+                    sourceImage: command.help?.sourceImage
+                }
+            }
+        } else {
+            response = StringUtils.get('command.not.exists', interaction.commandName.toString());
         }
 
-        if (reply.toString() === '[object Object]') {
-            return reply;
-        } else {
-            return {
-                data: {
-                    featureName: ' ',
-                    message: reply,
-                }
-            };
-        }
+        return response;
     },
 
     handleAutocomplete: async function (interaction) {
@@ -158,7 +167,7 @@ exports.CommandService = {
         }
     },
 
-    findCommand: function(interaction) {
+    findCommand: function (interaction) {
         const receivedCommand = interaction.commandName.toString();
         const command = this.commandsMap.get(receivedCommand);
         if (this.isCommandAllowed(interaction, command)) {
@@ -180,5 +189,9 @@ exports.CommandService = {
                     );
             }
         }
-    }
+    },
+
+    isNotReservedKey: function (key) {
+        return key !== 'featureName' && key !== 'featureDescription' && key !== 'footer' && key !== 'image';
+    },
 };

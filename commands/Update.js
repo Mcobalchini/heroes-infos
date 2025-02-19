@@ -3,17 +3,20 @@ const { App } = require('../app');
 const { StringUtils } = require('../utils/string-utils');
 
 exports.run = (args) => {
-    if (ExternalDataService.isUpdatingData) {
-        return StringUtils.get('hold.still.updating');
-    } else {
+    let message = StringUtils.get('hold.still.updating');
+    if (!ExternalDataService.isUpdatingData) {
         App.setBotStatus('Updating', 'WATCHING');
         ExternalDataService.updateData(args);
-        return StringUtils.get('update.process.started');
+        message = StringUtils.get('update.process.started');
+    }
+    return {
+        featureDescription: message   
     }
 }
 
 exports.help = {
     name: 'Update',
+    displayName: StringUtils.get('update'),
     hint: 'Update all bot database',
     acceptParams: true,
     requiredParam: false,

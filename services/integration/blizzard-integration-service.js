@@ -12,7 +12,7 @@ exports.BlizzardIntegrationService = {
         result = await response.json();
 
         if (result != null) {
-            return result.feed?.contentItems?.slice(0, 3).map(it => {
+            return result.feed?.contentItems?.slice(0, 4).map(it => {
                 return {
                     header: it.properties.title,
                     link: it.properties.newsUrl

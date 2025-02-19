@@ -51,7 +51,7 @@ exports.PuppeteerService = {
         this.browser = await this.createBrowser();
     },
 
-    getBrowser: async function() {
+    getBrowser: async function () {
         if (!this.browser) {
             this.browser = await this.createBrowser();
         }
@@ -59,7 +59,8 @@ exports.PuppeteerService = {
     },
 
     closeBrowser: function () {
-        this.browser?.close()?.catch();        
+        this.browser?.close()?.catch();
+        this.browser = null;
     },
 
     createBrowser: async function () {
@@ -107,7 +108,7 @@ exports.PuppeteerService = {
         });
     },
 
-    createPage: async function (browser = null, blockStuff = true) {    
+    createPage: async function (blockStuff = true) {
         if (this.hosts == null) {
             const hostFile = FileUtils.openFile('./data/constant/blocked-hosts.txt').split('\n');
             this.hosts = hostFile.map(it => {
@@ -117,7 +118,7 @@ exports.PuppeteerService = {
                 }
             }).filter(it => it);
         }
-        const auxBrowser = browser ?? await this.getBrowser();
+        const auxBrowser = await this.getBrowser();
         const page = await auxBrowser.newPage();
         await page.setRequestInterception(true);
         page.on('request', (request) => {

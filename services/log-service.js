@@ -1,4 +1,3 @@
-const { App } = require('../app');
 const log4js = require('log4js');
 const logger = log4js.getLogger();
 logger.level = process.env?.LOG_LEVEL ?? 'info';
@@ -9,8 +8,8 @@ log4js.configuration = {
         console: { type: 'console', layout: { "type": "pattern", "pattern": "%d - [%p] %m" } },
         fileLog: { type: 'file', filename: '/logs/application.log' },
         consoleFilter: {
-			type: 'logLevelFilter', appender: 'console', level: process.env.LOG_LEVEL || 'all'
-		},
+            type: 'logLevelFilter', appender: 'console', level: process.env.LOG_LEVEL || 'all'
+        },
         discordWebhookAppender: {
             type: 'discord-log-appender',
             webhookId: process.env.LOGS_WEBHOOK_ID ?? '',

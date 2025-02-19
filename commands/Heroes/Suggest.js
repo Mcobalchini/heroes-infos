@@ -1,6 +1,6 @@
 const { HeroService } = require('../../services/hero-service');
 const { StringUtils } = require('../../utils/string-utils');
-
+//TODO fix me
 exports.run = async (roleName) => {
     let role = null;
     if (roleName != null && roleName !== '') {
@@ -13,8 +13,8 @@ exports.run = async (roleName) => {
     const str = role !== null ? StringUtils.get('on.role', role.name) : '';
 
     return {
-        data: {
-            featureName: StringUtils.get('suggested.heroes', str),
+        featureName: StringUtils.get('suggested.heroes', str),
+        data: {            
             suggestions: HeroService.listHeroesSortedByScore(parseInt(role?.id)).map(it => {
                 return {
                     name: it.name,

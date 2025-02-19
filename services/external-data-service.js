@@ -6,7 +6,6 @@ const { REST } = require('@discordjs/rest');
 const { NexusCompendiumIntegrationService } = require('./integration/nexus-compendium-integration-service.js');
 const { HeroesProfileIntegrationService } = require('./integration/heroes-profile-integration-service.js');
 const { IcyVeinsIntegrationService } = require('./integration/icy-veins-integration-service.js');
-const { BlizzardIntegrationService } = require('./integration/blizzard-integration-service.js');
 const { logger } = require('./log-service.js');
 const { App } = require('../app.js');
 const rest = new REST({ version: '9' }).setToken(process.env.HEROES_INFOS_TOKEN);
@@ -36,10 +35,7 @@ exports.ExternalDataService = {
             if (args === 'rotation') {
                 const rotationPromiseProducer = () => updateSteps.pop() ?? null;
                 const dataThread = new PromisePool(rotationPromiseProducer, this.numberOfWorkers);
-                dataThread.start().then(async () => {
-                    await this.afterUpdate();
-                    return;
-                });
+                dataThread.start().then(async () => await this.afterUpdate());
             } else {
                 this.popularityWinRate = null;
                 updateSteps.push(HeroesProfileIntegrationService.getBanTierListInfo().then(result => HeroService.updateBanList(result.splice(0, 20).map(it => it.name))));
@@ -55,10 +51,6 @@ exports.ExternalDataService = {
                 dataThread.start().then(async () => this.updateHeroesData(HeroService.getAllHeroes()));
             }
         }
-    },
-
-    gatherNews: async function () {
-        await BlizzardIntegrationService.gatherNews();
     },
 
     updateHeroesData: async function (heroesInfos) {
@@ -122,26 +114,8 @@ exports.ExternalDataService = {
             if (icyData == null && profileData == null) {
                 await this.gatherHeroStats(heroId, heroName, heroIcyLink, heroesMap);
             } else if (profileData == null) {
-                profileData = await this.gatherWhenFail(null, heroId, heroName, 0);
-                heroesMap.set(heroId, { icyData, profileData });
-            }
-        }
-    },
-
-    gatherWhenFail: async function (profileData, heroId, heroName, remainingTries) {
-        remainingTries = remainingTries ?? 1;
-        profileData = await HeroesProfileIntegrationService.getBuildsFromAPI(heroName);
-
-        if (profileData != null) {
-            return profileData;
-        } else {
-            if (remainingTries > 0) {
-                remainingTries--;
-                await this.gatherWhenFail(profileData, heroId, heroName, remainingTries);
-            } else {
-                logger.warn(`no more tries remaining for ${heroName}`);
                 this.missingUpdateHeroes.push(heroId);
-                return null;
+                heroesMap.set(heroId, { icyData, profileData });
             }
         }
     },

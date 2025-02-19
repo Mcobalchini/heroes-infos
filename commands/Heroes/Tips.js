@@ -2,14 +2,11 @@ const { HeroService } = require('../../services/hero-service');
 const { StringUtils } = require('../../utils/string-utils');
 
 exports.run = async (heroName) => {
-    const hero = HeroService.findHero(heroName, true);
-    if (!hero) return StringUtils.get('hero.not.found', heroName);
-
+    const hero = HeroService.findHeroOrThrow(heroName, true);
     return {
         ...HeroService.assembleBaseObject(hero),
-        data: {
-            featureName: StringUtils.get('tips'),
-            featureDescription: hero.infos.tips,
+        featureDescription: hero.infos.tips,
+        data: {            
             strengthsWeaknesses: [
                 {
                     name: 'Hero Strengths',
@@ -43,6 +40,7 @@ exports.autoComplete = (heroName) => {
 
 exports.help = {
     name: 'Tips',
+    displayName: StringUtils.get('tips'),
     hint: 'Display useful tips for the hero',
     argumentName: 'Hero',
     argumentDescription: 'Enter the hero\'s full name or a partial match of its name.',

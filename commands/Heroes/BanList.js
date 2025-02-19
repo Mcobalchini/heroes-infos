@@ -3,9 +3,8 @@ const { StringUtils } = require('../../utils/string-utils');
 
 exports.run = async () => {
     return {
-        data: {
-            featureName: StringUtils.get('suggested.bans'),
-            featureDescription: StringUtils.get('banheroes.description'),
+        featureDescription: StringUtils.get('banheroes.description'),
+        data: {                        
             mustBanHeroes: HeroService.mustBanHeroes.map(ban => {
                 const hero = HeroService.findHero(ban.name);
                 return {
@@ -21,6 +20,7 @@ exports.run = async () => {
 exports.help = {
     name: 'Banlist',
     hint: 'Display suggested heroes to ban on ranked',
+    displayName: StringUtils.get('suggested.bans'),
     acceptParams: false,
     defaultPermission: true,
     category: 'HEROES',

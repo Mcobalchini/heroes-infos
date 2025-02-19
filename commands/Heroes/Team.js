@@ -107,10 +107,9 @@ exports.run = async (heroes) => {
                 }
             });
 
-            return {
-                data: {
-                    featureName: StringUtils.get('suggested.team'),
-                    featureDescription: StringUtils.get('current.team', currentHeroes.map(it => `*${it.name}*`)?.join(', ')),
+            return {                
+                featureDescription: StringUtils.get('current.team', currentHeroes.map(it => `*${it.name}*`)?.join(', ')),
+                data: {                    
                     suggestedHeroes: Array.from(missingRolesMap).map(([rolesArray, heroes]) => {
                         const missingHeroes = heroes.map(it => {
                             return `${it.name} - **${HeroService.findRoleById(it.role).name}**\n`
@@ -129,10 +128,9 @@ exports.run = async (heroes) => {
                 }
             };
         } else {
-            return {
+            return {                
+                featureDescription: `${StringUtils.get('current.team', Array.from(currentCompHeroes).map(([_, value]) => `${value.name}`).join(', '))}`,
                 data: {
-                    featureName: StringUtils.get('suggested.team'),
-                    featureDescription: `${StringUtils.get('current.team', Array.from(currentCompHeroes).map(([_, value]) => `${value.name}`).join(', '))}`,
                     suggestedHeroes: Array.from(heroesSorted.splice(0, remainingHeroes)).map(it => {
                         return {
                             name: it.name,
@@ -149,6 +147,7 @@ exports.run = async (heroes) => {
 
 exports.help = {
     name: 'Team',
+    displayName: StringUtils.get('team'),
     hint: 'Suggest a team based on the top competitive-tier composition.',
     argumentName: 'Heroes',
     argumentDescription: 'The names of at maximum 4 heroes in your current composition, separated by commas or spaces.',

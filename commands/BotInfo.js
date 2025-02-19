@@ -44,12 +44,12 @@ exports.run = () => {
     ]
 
     return {
+        featureName: StringUtils.get('bot.general.information'),
+        featureDescription: reply,
         data: {
-            featureName: StringUtils.get('bot.general.information'),
-            featureDescription: reply,
-            list: list,
+            list,
         },
-        authorImage: 'images/hots.png'
+        thumbnail: 'images/hots.png'
     }
 }
 

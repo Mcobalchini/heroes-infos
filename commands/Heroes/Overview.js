@@ -2,9 +2,7 @@ const { HeroService } = require('../../services/hero-service');
 const { StringUtils } = require('../../utils/string-utils');
 
 exports.run = async (heroName) => {
-    const hero = HeroService.findHero(heroName, true);
-    if (!hero) return StringUtils.get('hero.not.found', heroName);
-
+    const hero = HeroService.findHeroOrThrow(heroName, true);
     let overviewText = StringUtils.get('quick.overview.about.hero');
     if (hero.infos.overviewText) {
         overviewText = StringUtils.get('via.source', 'Icy Veins', hero.infos.overviewText);
@@ -12,9 +10,8 @@ exports.run = async (heroName) => {
     //TODO rewrite this using sources.json
     return {
         ...HeroService.assembleBaseObject(hero),
+        featureDescription: overviewText,
         data: {
-            featureName: StringUtils.get('overview'),
-            featureDescription: overviewText,
             overview: [
                 {
                     name: StringUtils.get('role'),
@@ -36,7 +33,7 @@ exports.run = async (heroName) => {
     }
 }
 
-exports.autoComplete = (heroName) => {    
+exports.autoComplete = (heroName) => {
     const heroes = HeroService.autoCompleteHeroes(heroName);
     return heroes.map(hero => (
         {
@@ -48,6 +45,7 @@ exports.autoComplete = (heroName) => {
 
 exports.help = {
     name: 'Overview',
+    displayName: StringUtils.get('overview'),
     hint: 'Display a simple overview for the specified hero!',
     argumentName: 'Hero',
     argumentDescription: 'Enter the hero\'s full name or a partial match of its name.',

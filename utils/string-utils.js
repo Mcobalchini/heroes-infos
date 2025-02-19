@@ -105,5 +105,10 @@ exports.StringUtils = {
                 configurable: true
             });
         }
-    }
+    },
+
+    isObject: function (object, key) {
+        return object[key].toString() === '[object Object]'
+            && !Array.isArray(object[key]) && key !== 'footer';
+    },
 };

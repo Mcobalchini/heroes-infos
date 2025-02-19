@@ -61,27 +61,18 @@ exports.run = (commandAsked, msg) => {
         commandInfos += StringUtils.get('version', config.version);
     }
 
-    const responseData = {
-        featureName: StringUtils.get('help'),
-        featureDescription: reply,
-        list: list
-    };
-
-    if (commandInfos?.length) {
-        responseData.commandInfos = {
-            featureName: StringUtils.get('help'),
-            featureDescription: commandInfos,
-        };
-    }
-
     return {
-        data: responseData,
-        authorImage: 'images/hots.png'
+        featureDescription: commandInfos?.length > 0 ? commandInfos : reply,
+        data: {            
+            list,
+        },
+        thumbnail: 'images/hots.png'
     }
 }
 
 exports.help = {
     name: "Help",
+    displayName: StringUtils.get('help'),
     hint: "Shows how to use all commands",
     argumentName: 'Command',
     argumentDescription: 'Command name',

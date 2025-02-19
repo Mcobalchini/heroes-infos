@@ -57,7 +57,7 @@ exports.run = async (feedback, msg) => {
                 featureName: 'Feedback',
                 description: reply,
             },
-            authorImage: 'images/hots.png'
+            thumbnail: 'images/hots.png'
         }
     }
 }

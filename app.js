@@ -33,48 +33,30 @@ function setBotStatus(name, type) {
 }
 
 function createResponse(reply) {
-    const embeds = [];
-
-    if (reply.authorImage != null || reply.data != null) {
-        let attachment = null;
-
-        if (reply.authorImage != null) {
-            attachment = 'attachment://' + reply.authorImage.replace('images/', '');
-        }
-
-        if (reply.data != null) {
-            embeds.push(...EmbedUtils.createEmbeds(reply.data, reply.authorName, reply.authorUrl, attachment));
-            embeds[0].setThumbnail(attachment);
-            EmbedUtils.fillFooter(attachment, embeds, reply.footer);
-        }
-    }
+    const embeds = [...EmbedUtils.createEmbeds(reply)];
 
     if (ExternalDataService.isUpdatingData) {
-        let updatingWarningEmbed = EmbedUtils.createEmbed({
+        let updatingWarningEmbed = EmbedUtils.createSingleEmbed({
             featureName: StringUtils.get('note'),
-            message: StringUtils.get('hold.still.updating.data')
-        }, null, null, null, 'attachment://download.png');
-
+            featureDescription: StringUtils.get('hold.still.updating.data'),
+            thumbnail: 'images/download.png'
+        });
         embeds.push(updatingWarningEmbed);
     }
     return embeds;
 }
 
 async function handleResponse(interaction) {
-    try {
-        if (interaction.isAutocomplete()) {
-            CommandService.handleAutocomplete(interaction);
-        } else {
-            const reply = await CommandService.handleCommand(interaction);
-            const embeds = createResponse(reply);
-            const replyObject = EmbedUtils.assembleEmbedObject(embeds);
-            replyObject.ephemeral = true;
-            interaction.editReply(replyObject).catch(e => {
-                logger.error(`error while responding`, e);
-            });
-        }
-    } catch (e) {
-        logger.error(`error while responding`, e);
+    if (interaction.isAutocomplete()) {
+        CommandService.handleAutocomplete(interaction);
+    } else {
+        const commandReply = await CommandService.handleCommand(interaction);
+        const embeds = createResponse(commandReply);
+        const response = EmbedUtils.assembleEmbedObject(embeds);
+        response.ephemeral = true;
+        interaction.editReply(response).catch(e => {
+            logger.error(`error while responding`, e);
+        });
     }
 }
 
@@ -120,11 +102,11 @@ async function handleInteraction(interaction) {
         }
         await handleResponse(interaction);
     } catch (error) {
-        logError('Error while handling response', error);
+        logger.error('Error while handling response', error);
     }
 }
 
-bot.once('ready', function () {    
+bot.once('ready', function () {
     logger.info(`application ready!`);
     bot.updatedAt = StringUtils.get('not.updated.yet');
     setBotStatus('Heroes of the Storm', 'PLAYING');
@@ -141,10 +123,13 @@ bot.once('ready', function () {
 bot.on('guildCreate', guild => {
     logger.info(`bot was added to server ${guild.name}`);
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.JOIN_SERVER_CHANNEL_ID);
-    const embed = EmbedUtils.createEmbed({
+    const embed = EmbedUtils.createSingleEmbed({
         featureName: StringUtils.get('joined.new.server'),
-        guildData: assembleGuildData(guild)
-    }, null, null, null, guild.iconURL());
+        data: {
+            guildData: assembleGuildData(guild),
+        },
+        thumbnail: guild.iconURL()
+    });
     channel?.send(EmbedUtils.assembleEmbedObject(embed));
 });
 
@@ -152,10 +137,13 @@ bot.on('guildDelete', guild => {
     logger.info(`bot was removed from server ${guild.name}`);
     const channel = bot.channels?.cache?.find(channel => channel.id === process.env.LEAVE_SERVER_CHANNEL_ID);
     if (guild?.name) {
-        const embed = EmbedUtils.createEmbed({
+        const embed = EmbedUtils.createSingleEmbed({
             featureName: StringUtils.get('left.server'),
-            guildData: assembleGuildData(guild)
-        }, null, null, null, guild.iconURL());
+            data: {
+                guildData: assembleGuildData(guild),
+            },
+            thumbnail: guild.iconURL()
+        });
         channel?.send(EmbedUtils.assembleEmbedObject(embed));
     }
 });
