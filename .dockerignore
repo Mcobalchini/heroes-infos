@@ -4,8 +4,9 @@ node_modules/
 **/freeweek.json
 **/compositions.json
 **/banlist.json
-package-lock.json
 data/variable/
 images/freeweek.png
 .idea
 .vscode
+Dockerfile
+.dockerignore

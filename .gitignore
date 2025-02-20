@@ -107,7 +107,7 @@ dist
 **/freeweek.json
 **/compositions.json
 **/banlist.json
-package-lock.json
+#package-lock.json
 data/variable/
 images/freeweek.png
 .idea
