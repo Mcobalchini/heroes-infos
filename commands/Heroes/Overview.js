@@ -1,8 +1,9 @@
+const { HeroRepository } = require('../../repositories/hero-repository');
 const { HeroService } = require('../../services/hero-service');
 const { StringUtils } = require('../../utils/string-utils');
 
 exports.run = async (heroName) => {
-    const hero = HeroService.findHeroOrThrow(heroName, true);
+    const hero = HeroRepository.findHeroOrThrow(heroName, true);
     let overviewText = StringUtils.get('quick.overview.about.hero');
     if (hero.infos.overviewText) {
         overviewText = StringUtils.get('via.source', 'Icy Veins', hero.infos.overviewText);

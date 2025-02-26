@@ -1,14 +1,15 @@
+const { HeroRepository } = require('../../repositories/hero-repository');
 const { HeroService } = require('../../services/hero-service');
 const { StringUtils } = require('../../utils/string-utils');
 
 exports.run = async (heroName) => {
-    const hero = HeroService.findHeroOrThrow(heroName, true);
+    const hero = HeroRepository.findHeroOrThrow(heroName, true);
     return {
         ...HeroService.assembleBaseObject(hero),
         featureDescription: hero.infos.counters.countersText + '\n' + StringUtils.get('hero.examples'),
         data: {            
             counter: hero.infos.counters.heroes.map(counter => {
-                const heroCounter = HeroService.findHero(counter);
+                const heroCounter = HeroRepository.findHero(counter);
                 return {
                     name: heroCounter.name,
                     value: HeroService.getHeroRole(heroCounter),

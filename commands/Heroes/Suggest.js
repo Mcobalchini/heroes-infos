@@ -1,10 +1,11 @@
+const { RoleRepository } = require('../../repositories/role-repository');
 const { HeroService } = require('../../services/hero-service');
 const { StringUtils } = require('../../utils/string-utils');
 //TODO fix me
 exports.run = async (roleName) => {
     let role = null;
     if (roleName != null && roleName !== '') {
-        role = HeroService.findRoleByName(roleName)
+        role = RoleRepository.findRoleByName(roleName)
         if (role == null) {
             return StringUtils.get('role.not.found', roleName);
         }
@@ -32,7 +33,7 @@ exports.help = {
     argumentName: 'Role',
     argumentDescription: 'A role name',
     acceptParams: true,
-    paramOptions: HeroService.getRoles()?.map(it => {
+    paramOptions: RoleRepository.getRoles()?.map(it => {
         return {
             name: it.name.toLowerCase(),
             description: it.name

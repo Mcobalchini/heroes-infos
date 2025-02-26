@@ -1,10 +1,11 @@
+const { HeroRepository } = require('../../repositories/hero-repository');
 const { HeroService } = require('../../services/hero-service');
 const { StringUtils } = require('../../utils/string-utils');
 
 exports.run = async (heroName) => {
-    const hero = HeroService.findHeroOrThrow(heroName, true);
+    const hero = HeroRepository.findHeroOrThrow(heroName, true);
     const synergies = hero.infos.synergies.heroes.map(synergy => {
-        const synergyHero = HeroService.findHero(synergy);
+        const synergyHero = HeroRepository.findHero(synergy);
         return {
             name: synergyHero.name,
             value: HeroService.getHeroRole(synergyHero),

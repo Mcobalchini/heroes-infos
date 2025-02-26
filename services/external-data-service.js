@@ -8,6 +8,7 @@ const { HeroesProfileIntegrationService } = require('./integration/heroes-profil
 const { IcyVeinsIntegrationService } = require('./integration/icy-veins-integration-service.js');
 const { logger } = require('./log-service.js');
 const { App } = require('../app.js');
+const { HeroRepository } = require('../repositories/hero-repository.js');
 const rest = new REST({ version: '9' }).setToken(process.env.HEROES_INFOS_TOKEN);
 const HOUR = 1000 * 60 * 60;
 const PERIOD = HOUR * 1;
@@ -24,7 +25,7 @@ exports.ExternalDataService = {
         this.isUpdatingData = true;
         const updateSteps = [];
         if (args === 'heroes') {
-            const missingHeroes = this.missingUpdateHeroes.map(it => HeroService.findHeroById(it));
+            const missingHeroes = this.missingUpdateHeroes.map(it => HeroRepository.findHeroById(it));
             this.missingUpdateHeroes = [];
             await this.updateHeroesData(missingHeroes);
             return;
@@ -48,7 +49,7 @@ exports.ExternalDataService = {
                 }
 
                 const dataThread = new PromisePool(dataPromiseProducer, this.numberOfWorkers);
-                dataThread.start().then(async () => this.updateHeroesData(HeroService.getAllHeroes()));
+                dataThread.start().then(async () => this.updateHeroesData(HeroRepository.listAllHeroes()));
             }
         }
     },
@@ -144,7 +145,7 @@ exports.ExternalDataService = {
     },
     
     isFirstLoad: function () {
-        return !HeroService.findHero('1', true)?.infos?.builds?.length > 0;
+        return !HeroRepository.findHero('1', true)?.infos?.builds?.length > 0;
     },
     
     periodicUpdateCheck: function (interval) {
@@ -171,6 +172,6 @@ exports.ExternalDataService = {
     isRotationUpdateNeeded: function () {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        return new Date(`${HeroService.getRotationData().endDate} `) < today;
+        return new Date(`${HeroRepository.listRotation().endDate} `) < today;
     },
 }

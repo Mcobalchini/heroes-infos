@@ -1,8 +1,9 @@
+const { HeroRepository } = require('../../repositories/hero-repository');
 const { HeroService } = require('../../services/hero-service');
 const { StringUtils } = require('../../utils/string-utils');
 
 exports.run = async () => {
-    const heroes = HeroService.getAllHeroes();
+    const heroes = HeroRepository.listAllHeroes();
     let randomIndex = Math.floor((Math.random() * heroes.length));
     const heroFromIndex = heroes[randomIndex];    
     return {

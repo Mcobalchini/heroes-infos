@@ -1,9 +1,10 @@
 const { Attachment } = require('discord.js');
 const { HeroService } = require('../../services/hero-service');
 const { StringUtils } = require('../../utils/string-utils');
+const { HeroRepository } = require('../../repositories/hero-repository');
 
 exports.run = () => {
-    const freeHeroesObject = HeroService.freeHeroes
+    const freeHeroesObject = HeroRepository.listRotation();
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 
     return {
@@ -12,7 +13,7 @@ exports.run = () => {
             new Date(`${freeHeroesObject?.endDate} `).toLocaleDateString(StringUtils.EN_US, options)),
         data: {
             freeHeroes: (freeHeroesObject?.heroes?.length <= 0 ? StringUtils.get('no.free.heroes') : freeHeroesObject?.heroes?.map(freeHero => {
-                const hero = HeroService.findHero(freeHero.name);
+                const hero = HeroRepository.findHero(freeHero.name);
                 return {
                     name: hero.name,
                     value: HeroService.getHeroRole(hero),

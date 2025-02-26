@@ -19,7 +19,7 @@ exports.IcyVeinsIntegrationService = {
             const overviewText = document.querySelector('.page_content > p').textContent.split('\n').join(' ');
             const strengths = Array.from(document.querySelectorAll('.strengths li')).map(it => it.textContent.trim());
             const weaknesses = Array.from(document.querySelectorAll('.weaknesses li')).map(it => it.textContent.trim());
-            const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.textContent);
+            const names = Array.from(document.querySelectorAll('.toc_no_parsing')).map(it => it.textContent.split('\n').join('').trim());
             const skills = Array.from(document.querySelectorAll('.talent_build_copy_button > input')).map(skillsElements => skillsElements.value);
             const counters = Array.from(document.querySelectorAll('.hero_portrait_bad')).map(nameElements => nameElements.title);
             const synergies = Array.from(document.querySelectorAll('.hero_portrait_good')).map(nameElements => nameElements.title);            

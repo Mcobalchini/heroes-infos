@@ -1,12 +1,14 @@
+const { HeroRepository } = require('../../repositories/hero-repository');
 const { HeroService } = require('../../services/hero-service');
 const { StringUtils } = require('../../utils/string-utils');
 
 exports.run = async () => {
     return {
         featureDescription: StringUtils.get('banheroes.description'),
-        data: {                        
-            mustBanHeroes: HeroService.mustBanHeroes.map(ban => {
-                const hero = HeroService.findHero(ban.name);
+        data: { 
+            //FIxme                       
+            mustBanHeroes: HeroRepository.listBanHeroes.map(ban => {
+                const hero = HeroRepository.findHero(ban.name);
                 return {
                     name: hero.name,
                     value: HeroService.getHeroRole(hero),

@@ -1,9 +1,11 @@
+const { HeroRepository } = require('../../repositories/hero-repository');
+const { RoleRepository } = require('../../repositories/role-repository');
 const { HeroService } = require('../../services/hero-service');
 const { StringUtils } = require('../../utils/string-utils');
 
 exports.run = async (heroes) => {
     heroes = heroes.replaceAll(',', ' ').replaceAll(';', ' ')
-    let heroesSorted = JSON.parse(JSON.stringify(HeroService.heroesInfos.sort(HeroService.sortByTierPosition)))
+    let heroesSorted = JSON.parse(JSON.stringify(HeroRepository.listHeroesInfos().sort(HeroService.sortByTierPosition)))
         .filter(it => it.name !== 'Gall' && it.name !== 'Cho');
 
     let currentCompRoles = [];
@@ -14,7 +16,7 @@ exports.run = async (heroes) => {
 
     for (let it of heroesArray) {
         if (it) {
-            let hero = HeroService.findHero(it, true);
+            let hero = HeroRepository.findHero(it, true);
             if (hero != null) {
                 if (currentCompHeroes.size >= 5) {
                     break;
@@ -34,12 +36,12 @@ exports.run = async (heroes) => {
 
         for (let currentCompHero of currentCompHeroes.values()) {
             heroesSorted = heroesSorted.filter(item => item.id !== currentCompHero.id);
-            currentCompRoles.push(HeroService.findRoleById(currentCompHero.role).name);
+            currentCompRoles.push(RoleRepository.findRoleById(currentCompHero.role).name);
         }
         currentCompRoles = currentCompRoles.sort();
 
         for (let currentCompHero of currentCompHeroes.values()) {
-            let synergies = currentCompHero.infos.synergies.heroes.map(it => HeroService.findHero(it));
+            let synergies = currentCompHero.infos.synergies.heroes.map(it => HeroRepository.findHero(it));
             synergies.forEach((synergy) => {
                 let hero = heroesSorted.find(it => it.id === synergy.id)
                 if (hero != null) {
@@ -57,7 +59,7 @@ exports.run = async (heroes) => {
         //sorted filtered heroes
         heroesSorted = heroesSorted.sort(HeroService.sortByTierPosition).reverse();
 
-        let metaCompsRoles = HeroService.compositions.map(it => it.roles.sort());
+        let metaCompsRoles = HeroRepository.listCompositions().map(it => it.roles.sort());
 
         for (let role of currentCompRoles) {
             let index = currentCompRoles.indexOf(role);
@@ -89,7 +91,7 @@ exports.run = async (heroes) => {
         //filter missing role heroes only
         for (let [key, value] of missingRolesMap.entries()) {
             for (let missingRole of value) {
-                let role = HeroService.findRoleByName(missingRole);
+                let role = RoleRepository.findRoleByName(missingRole);
                 let hero = heroesSorted.filter(heroToShift => heroToShift.role == role.id).shift();
                 heroesSorted = heroesSorted.filter(heroFiltered => heroFiltered.id != hero.id);
 
@@ -103,7 +105,7 @@ exports.run = async (heroes) => {
             const currentHeroes = Array.from(currentCompHeroes).map(([_, hero]) => {
                 return {
                     name: hero.name,
-                    role: HeroService.findRoleById(hero.role).name,
+                    role: RoleRepository.findRoleById(hero.role).name,
                 }
             });
 
@@ -112,15 +114,15 @@ exports.run = async (heroes) => {
                 data: {                    
                     suggestedHeroes: Array.from(missingRolesMap).map(([rolesArray, heroes]) => {
                         const missingHeroes = heroes.map(it => {
-                            return `${it.name} - **${HeroService.findRoleById(it.role).name}**\n`
+                            return `${it.name} - **${RoleRepository.findRoleById(it.role).name}**\n`
                         });
                         currentHeroes.forEach(it => {
                             missingHeroes.splice(rolesArray.indexOf(it.role),
                                 0,
-                                `~~${it.name} - ${HeroService.findRoleByName(it.role).name}~~\n`)
+                                `~~${it.name} - ${RoleRepository.findRoleByName(it.role).name}~~\n`)
                         });
                         return {
-                            name: `${rolesArray.map(it => HeroService.findRoleByName(it).name).join(', ')}`,
+                            name: `${rolesArray.map(it => RoleRepository.findRoleByName(it).name).join(', ')}`,
                             value: missingHeroes.join(''),
                             inline: false,
                         }
@@ -134,7 +136,7 @@ exports.run = async (heroes) => {
                     suggestedHeroes: Array.from(heroesSorted.splice(0, remainingHeroes)).map(it => {
                         return {
                             name: it.name,
-                            value: HeroService.findRoleById(it.role).name,
+                            value: RoleRepository.findRoleById(it.role).name,
                             inline: false,
                         }
                     })
