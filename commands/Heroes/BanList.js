@@ -5,9 +5,8 @@ const { StringUtils } = require('../../utils/string-utils');
 exports.run = async () => {
     return {
         featureDescription: StringUtils.get('banheroes.description'),
-        data: { 
-            //FIxme                       
-            mustBanHeroes: HeroRepository.listBanHeroes.map(ban => {
+        data: {             
+            mustBanHeroes: HeroRepository.listBanHeroes().map(ban => {
                 const hero = HeroRepository.findHero(ban.name);
                 return {
                     name: hero.name,
