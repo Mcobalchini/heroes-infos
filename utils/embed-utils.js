@@ -25,12 +25,13 @@ exports.EmbedUtils = {
             thumbnail = 'attachment://' + response.thumbnail.replace('images/', '');
         }
 
+        let featureName = response.featureName ?? '_ _';
         let featureDesc = response.featureDescription ?? '_ _';
         let bottomImage = response.bottomImage?.replace('images/', 'attachment://') ?? 'attachment://footer.png';
 
         const embed = new EmbedBuilder()
             .setColor('#0099ff')
-            .setTitle(response.featureName)
+            .setTitle(featureName)
             .setDescription(featureDesc)
             .setAuthor(author)
             .setImage(bottomImage)

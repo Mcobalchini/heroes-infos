@@ -151,8 +151,8 @@ exports.CommandService = {
                     sourceImage: command.help?.sourceImage
                 }
             }
-        } else {
-            response = StringUtils.get('command.not.exists', interaction.commandName.toString());
+        } else {    
+            response.featureDescription = StringUtils.get('command.not.exists', interaction.commandName.toString());
         }
 
         return response;
