@@ -1,5 +1,6 @@
 const { FileUtils } = require('../utils/file-utils.js');
 const { logger } = require('../services/log-service.js');
+const { HeroNotFoundException } = require('../utils/exception-utils.js');
 const heroesBase = FileUtils.openJsonSync('./data/constant/heroes-base.json').sort((a, b) => a.name.localeCompare(b.name));
 const heroesPropertiesDir = './data/constant/heroes-names/';
 
