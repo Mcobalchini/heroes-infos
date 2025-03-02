@@ -77,7 +77,7 @@ exports.HeroRepository = {
         if (hero == null) {
             hero = heroesBase.find(hero =>
                 hero.accessLink.unaccentClean() === search ||
-                hero.id.unaccentClean() === search);
+                hero.id === search);
         }
 
         if (hero != null && searchInfos)
@@ -148,7 +148,7 @@ exports.HeroRepository = {
     },
 
     findHeroInfosById: function (idParam) {
-        return this.heroesInfos.find(hero => (hero.id === idParam));
+        return this.heroesInfos?.find(hero => (hero.id === idParam));
     },
 
     listHeroesInfos: function () {

@@ -145,7 +145,7 @@ exports.ExternalDataService = {
     },
     
     isFirstLoad: function () {
-        return !HeroRepository.findHero('1', true)?.infos?.builds?.length > 0;
+        return !HeroRepository.findHeroInfosById(1)?.infos?.builds?.length > 0;
     },
     
     periodicUpdateCheck: function (interval) {

@@ -1,37 +1,30 @@
-## Welcome to GitHub Pages
+## Heroes of the Storm Infos Bot
 
-You can use the [editor on GitHub](https://github.com/Mcobalchini/heroes-infos/edit/master/docs/index.md) to maintain and preview the content for your website in Markdown files.
+Welcome to the Heroes of the Storm Infos Bot repository!
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+This bot provides detailed information about the game [Heroes of the Storm](https://heroesofthestorm.blizzard.com/), including heroes, team compositions, ban lists, and much more.
 
-### Markdown
+### Features
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+- **Hero Information**: Get details about the game's heroes, including abilities, talents, and stats.
+- **Team Compositions**: View recommended team compositions for different game modes.
+- **Ban Lists**: Access updated ban lists to help with your game strategy.
+- **Weekly Updates**: Receive information about the weekly rotation of free heroes.
 
-```markdown
-Syntax highlighted code block
+### Available Commands
 
-# Header 1
-## Header 2
-### Header 3
+All the commands below support only English language, but the arguments can be passed in Spanish, Portuguese, Korean, French, German, Polish, and Taiwanese Mandarin.
 
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-Test here 
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/Mcobalchini/heroes-infos/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+- `/hero`: Get detailed information about a specific hero.
+- `/banlist`: Access the current ban list.
+- `/freeweek`: Get information about the current week's free hero rotation.
+- `/help`: Display the list of available commands.
+- `/builds`: Get recommended builds for a specific hero.
+- `/counters`: View counters for a specific hero.
+- `/overview`: Get an overview of a specific hero.
+- `/random`: Get a random hero suggestion.
+- `/suggest`: Get a hero suggestion based on his **influence**.
+- `/synergies`: View hero synergies for a specific hero.
+- `/team`: View team compositions.
+- `/tips`: Get tips for playing a specific hero.
+- `/news`: Get the latest news about Heroes of the Storm.

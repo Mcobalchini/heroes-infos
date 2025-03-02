@@ -59,9 +59,9 @@ exports.StringUtils = {
             Object.defineProperty(String.prototype, 'cleanVal', {
                 value: function cleanVal() {
                     return this.split('\'').join('')
-                        .split('.').join('').toLowerCase()
+                        .split('.').join('')
                         .split('-').join('')
-                        .split(' ').join('');
+                        .split(' ').join('').toLowerCase();
                 },
                 writable: true,
                 configurable: true

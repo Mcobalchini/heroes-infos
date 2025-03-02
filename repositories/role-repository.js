@@ -8,16 +8,10 @@ exports.RoleRepository = {
     },
 
     findRoleById: function (roleId) {
-        let role = roles.find(role => (role.id.toString().cleanVal() === roleId.toString().cleanVal()));
-        if (role) {
-            return role;
-        }
+        return roles.find(role => (role.id === roleId));    
     },
 
     findRoleByName: function (roleName) {
-        let role = roles.find(role => role.name.cleanVal() === roleName.cleanVal());
-        if (role) {
-            return role;
-        }
+        return roles.find(role => role.name.cleanVal() === roleName.cleanVal());    
     }
 }

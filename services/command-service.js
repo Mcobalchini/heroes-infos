@@ -131,11 +131,8 @@ exports.CommandService = {
             try {
                 response = await command.run(arguments, interaction);
             } catch (e) {
-                if (!response.data) {
-                    response.data = {};
-                }
                 if (e instanceof HeroNotFoundException) {
-                    response.data.message = StringUtils.get('hero.not.found', e.message);
+                    response.featureDescription = StringUtils.get('hero.not.found', e.message);
                 } else {
                     throw e;
                 }

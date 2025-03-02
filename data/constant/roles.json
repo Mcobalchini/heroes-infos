@@ -1,26 +1,26 @@
 [
   {
     "name": "Ranged Assassin",
-    "id": "1"
+    "id": 1
   },
   {
     "name": "Healer",
-    "id": "2"
+    "id": 2
   },
   {
     "name": "Melee Assassin",
-    "id": "3"
+    "id": 3
   },
   {
     "name": "Tank",
-    "id": "4"
+    "id": 4
   },
   {
     "name": "Support",
-    "id": "5"
+    "id": 5
   },
   {
     "name": "Bruiser",
-    "id": "6"
+    "id": 6
   }
 ]
