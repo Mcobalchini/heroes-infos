@@ -20,8 +20,9 @@ exports.ExternalDataService = {
     missingUpdateHeroes: [],
     numberOfWorkers: process.env.THREAD_WORKERS ? Number(process.env.THREAD_WORKERS) : 5,
 
-    updateData: async function (args) {        
+    updateData: async function (args) {
         logger.info(`started updating data process`);
+        App.setStatus(`Updating ${args}`);
         this.isUpdatingData = true;
         const updateSteps = [];
         if (args === 'heroes') {
@@ -121,17 +122,17 @@ exports.ExternalDataService = {
         }
     },
 
-    afterUpdate: async function () {    
+    afterUpdate: async function () {
         logger.info(`finished update process`);
         this.isUpdatingData = false;
         App.bot.updatedAt = new Date().toLocaleString('pt-BR');
-        App.setBotStatus('Heroes of the Storm', 'PLAYING');
+        App.setStatus('Use /help to see commands');
     },
 
     postSlashCommandsToAPI: async function (commandObj) {
         await rest.post(
             Routes.applicationCommands(process.env.CLIENT_ID), { body: commandObj },
-        );
+        )
     },
 
     getApiCommandsSize: async function () {
@@ -143,11 +144,11 @@ exports.ExternalDataService = {
     isUpdateNeeded: function () {
         return this.isFirstLoad() || this.missingUpdateHeroes.length > 0;
     },
-    
+
     isFirstLoad: function () {
         return !HeroRepository.findHeroInfosById(1)?.infos?.builds?.length > 0;
     },
-    
+
     periodicUpdateCheck: function (interval) {
         logger.info('checking if update needed');
         let arg = null;
@@ -161,8 +162,7 @@ exports.ExternalDataService = {
         }
 
         if (arg) {
-            App.setBotStatus(`Updating ${arg}`, 'WATCHING');
-            this.updateData(arg).then(() => App.setBotStatus('Heroes of the Storm', 'PLAYING'));
+            this.updateData(arg).then();
         }
 
         if (interval)
@@ -172,6 +172,6 @@ exports.ExternalDataService = {
     isRotationUpdateNeeded: function () {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        return new Date(`${HeroRepository.listRotation().endDate} `) < today;
+        return new Date(`${HeroRepository.getRotationObject().endDate} `) < today;
     },
 }

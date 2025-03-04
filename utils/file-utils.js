@@ -23,5 +23,16 @@ exports.FileUtils = {
                 throw e;
             }
         });
+    },
+
+    listAllJsFilesInFolder: function (folderPath) {
+        return this.openDir(folderPath).map(path => {
+            if (path.endsWith('.js')) {
+                return path
+            } else {
+                const dir = this.openDir(`${folderPath}/${path}`)
+                return dir.filter(filter => filter.endsWith('.js')).map(file => `${path}/${file}`)
+            }
+        }).flat();
     }
-};
+}

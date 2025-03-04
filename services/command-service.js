@@ -12,14 +12,7 @@ exports.CommandService = {
     commandsMap: null,
 
     assembleCommands: function (ignoreHelp) {
-        const commands = FileUtils.openDir(COMMAND_FOLDER).map(it => {
-            if (it.endsWith('.js')) {
-                return it
-            } else {
-                const dir = FileUtils.openDir(`${COMMAND_FOLDER}/${it}`)
-                return dir.filter(filter => filter.endsWith('.js')).map(cmd => `${it}/${cmd}`)
-            }
-        }).flat()
+        const commands = FileUtils.listAllJsFilesInFolder(COMMAND_FOLDER);
 
         const commandsMap = new Collection();
         for (const file of commands) {

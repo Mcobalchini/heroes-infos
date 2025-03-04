@@ -22,7 +22,10 @@ exports.EmbedUtils = {
         }
 
         if (response.thumbnail != null) {
-            thumbnail = 'attachment://' + response.thumbnail.replace('images/', '');
+            thumbnail = response.thumbnail;
+            if (response.thumbnail?.includes('images/')) {
+                thumbnail = 'attachment://' + thumbnail.replace('images/', '');
+            }
         }
 
         let featureName = response.featureName ?? '_ _';
@@ -62,8 +65,8 @@ exports.EmbedUtils = {
         return embed;
     },
 
-    addEmbedRecursively: function (response, attachment, embeds) {
-        const embed = this.createSingleEmbed(response, attachment);
+    addEmbedRecursively: function (response, embeds) {
+        const embed = this.createSingleEmbed(response);
         embeds.push(embed);
 
         if (this.remainingItems.length > 0) {
@@ -71,13 +74,13 @@ exports.EmbedUtils = {
             responseAux.data = this.remainingItems.shift();
             responseAux.featureDescription = null;
             responseAux.thumbnail = null;
-            this.addEmbedRecursively(responseAux, attachment, embeds);
+            this.addEmbedRecursively(responseAux, embeds);
         }
     },
 
-    createEmbeds: function (response, attachment) {
+    createEmbeds: function (response) {
         const embeds = [];
-        this.addEmbedRecursively(response, attachment, embeds);
+        this.addEmbedRecursively(response, embeds);
         return embeds;
     },
 

@@ -205,6 +205,7 @@ exports.HeroService = {
             thumbnail: `images/${hero.name.unaccentClean()}.png`,
             authorName: hero.name,
             authorUrl: `https://heroesofthestorm.blizzard.com/en-us/heroes/${hero.accessLink}`,
+            avatar: `attachment://${hero.name.unaccentClean()}.png`,
         }
     },
 

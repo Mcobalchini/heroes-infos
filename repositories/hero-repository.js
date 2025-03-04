@@ -159,7 +159,7 @@ exports.HeroRepository = {
         return heroesBase;
     },
 
-    listRotation: function () {
+    getRotationObject: function () {
         return this.freeHeroes;
     },
 

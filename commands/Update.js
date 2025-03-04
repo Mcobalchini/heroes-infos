@@ -4,8 +4,7 @@ const { StringUtils } = require('../utils/string-utils');
 
 exports.run = (args) => {
     let message = StringUtils.get('hold.still.updating');
-    if (!ExternalDataService.isUpdatingData) {
-        App.setBotStatus('Updating', 'WATCHING');
+    if (!ExternalDataService.isUpdatingData) {        
         ExternalDataService.updateData(args);
         message = StringUtils.get('update.process.started');
     }

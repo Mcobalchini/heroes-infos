@@ -1,10 +1,9 @@
-const { Attachment } = require('discord.js');
 const { HeroService } = require('../../services/hero-service');
 const { StringUtils } = require('../../utils/string-utils');
 const { HeroRepository } = require('../../repositories/hero-repository');
 
 exports.run = () => {
-    const freeHeroesObject = HeroRepository.listRotation();
+    const freeHeroesObject = HeroRepository.getRotationObject();
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 
     return {
@@ -19,7 +18,7 @@ exports.run = () => {
                     value: HeroService.getHeroRole(hero),
                     inline: true
                 }
-            }))            
+            }))
         },
         bottomImage: 'images/freeweek.png'
     }
