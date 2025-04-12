@@ -12,13 +12,13 @@
     "available.commands.are": "My available commands are:"
   },
   {
-    "all.commands.supported.both.languages": "\nAll the commands above supports only english language, but the arguments can be passed in spanish, portuguese, korean, french, deutsch, polski and taiwanese mandarin"
+    "all.commands.supported.both.languages": "\nAll the commands below supports only english language, but the arguments can be passed in spanish, portuguese, korean, french, deutsch, polski and taiwanese mandarin"
   },
   {
     "all.data.gathered.from": "All the data shown here by me is gathered from"
   },
   {
-    "if.want.to.know.more.about.specific.command": "If you want to know more about an specific command, type /help [command_name]"
+    "if.want.to.know.more.about.specific.command": "If you want to know more about an specific command, type `/help [command_name]`"
   },
   {
     "version": "Version {0}"
@@ -72,7 +72,7 @@
     "some.name": "Some name"
   },
   {
-    "command.example": "{0}{1} {2}"
+    "command.example": "`{0}{1} {2}`"
   },
   {
     "no.free.heroes": "There are no free heroes yet ¯\\_(ツ)_/¯"
@@ -286,5 +286,26 @@
   },
   {
     "via.source": "**Via {0}**: {1}"
+  },
+  {
+    "damage.per.attack": "Dmg per attack"
+  },
+  {
+    "mana.points": "Mana points"
+  },
+  {
+    "health.points": "Health points"
+  },
+  {
+    "attack.range": "Attack range"
+  },
+  {
+    "attack.speed": "Attack speed"
+  },
+  {
+    "dps": "Dmg per second"
+  },
+  {
+    "hero.basic.stats": "Basic Stats"
   }
 ]

@@ -47,8 +47,9 @@ exports.HeroService = {
 
         for (let [heroKey, heroData] of heroesMap) {
             let hero = heroesToUpdate.find(it => it.id === heroKey);
-            let icyData = heroData.icyData
-            let profileBuilds = heroData.profileData
+            const icyData = heroData.icyData;
+            const psionicData = heroData.psionicData;
+            const profileBuilds = heroData.profileData;
 
             if (hero == null) {
                 hero = {};
@@ -65,6 +66,15 @@ exports.HeroService = {
             hero.infos.synergies = icyData.synergies;
             hero.infos.counters = icyData.counters;
             hero.infos.strongerMaps = icyData.strongerMaps;
+            hero.infos.hpBase = psionicData?.hp_base;
+            hero.infos.hpScaling = psionicData?.hp_scaling;
+            hero.infos.hpRegenBase = psionicData?.hp_regen_base;
+            hero.infos.manaBase = psionicData?.mana_base;
+            hero.infos.manaRegenBase = psionicData?.mana_regen_base;
+            hero.infos.aaDmgBase = psionicData?.aa_dmg_base;
+            hero.infos.aaDmgScaling = psionicData?.aa_dmg_scaling;
+            hero.infos.aaSpeed = psionicData?.aa_speed;
+            hero.infos.aaRange = psionicData?.aa_range;
             hero.infos.tips = icyData.tips.map(tip => `${tip}\n`).join('');
 
             let heroInfluence = popularityWinRate?.find(it => it.name.cleanVal() === hero.name.cleanVal());

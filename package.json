@@ -9,15 +9,15 @@
   "author": "Matheus Cobalchini",
   "dependencies": {
     "@discordjs/builders": "^1.9.0",
-    "@discordjs/rest": "^2.4.0",
+    "@discordjs/rest": "^2.4.3",
     "discord-api-types": "^0.37.102",
     "discord.js": "^14.17.3",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "es6-promise-pool": "^2.5.0",
     "fs": "^0.0.1-security",
-    "jsdom": "^25.0.1",
+    "jsdom": "^26.0.0",
     "log4js": "^6.9.1",
-    "puppeteer": "^23.6.0"
+    "puppeteer": "^24.6.0"
   },
   "engines": {
     "node": ">=18.17.0"

@@ -2,6 +2,7 @@ const config = require("../config.json");
 const { CommandService } = require("../services/command-service");
 const { App } = require('../app');
 const { StringUtils } = require('../utils/string-utils');
+const { SourceRepository } = require("../repositories/source-repository");
 
 exports.run = (commandAsked, msg) => {
     let reply = '';
@@ -51,12 +52,12 @@ exports.run = (commandAsked, msg) => {
                 inline: true
             };
         })
-        //TODO rewrite this using sources.json
+        
         commandInfos = StringUtils.get('all.commands.supported.both.languages');
         commandInfos += StringUtils.get('all.data.gathered.from');
-        commandInfos += 'https://www.icy-veins.com/heroes/\n';
-        commandInfos += 'https://www.heroesprofile.com\n';
-        commandInfos += 'https://nexuscompendium.com\n';
+        SourceRepository.listSources().forEach(source => {
+            commandInfos += `[${source.name}](${source.site})\n`;
+        });        
         commandInfos += StringUtils.get('if.want.to.know.more.about.specific.command');
         commandInfos += StringUtils.get('version', config.version);
     }

@@ -1,5 +1,4 @@
 const { ExternalDataService } = require('../services/external-data-service');
-const { App } = require('../app');
 const { StringUtils } = require('../utils/string-utils');
 
 exports.run = (args) => {

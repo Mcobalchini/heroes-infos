@@ -1,4 +1,5 @@
 const { HeroRepository } = require('../../repositories/hero-repository');
+const { SourceRepository } = require('../../repositories/source-repository');
 const { HeroService } = require('../../services/hero-service');
 const { StringUtils } = require('../../utils/string-utils');
 
@@ -25,6 +26,5 @@ exports.help = {
     acceptParams: false,
     defaultPermission: true,
     category: 'HEROES',
-    source: 'Icy Veins',
-    sourceImage: 'https://static.icy-veins.com/images/common/favicon-high-resolution.png'
+    source: SourceRepository.findSourceById('ICY_VEINS')
 };

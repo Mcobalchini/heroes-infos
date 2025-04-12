@@ -1,6 +1,8 @@
 const { HeroService } = require('../../services/hero-service');
 const { StringUtils } = require('../../utils/string-utils');
 const { HeroRepository } = require('../../repositories/hero-repository');
+const { SourceRepository } = require('../../repositories/source-repository');
+const { EmojiRepository } = require('../../repositories/emoji-repository');
 
 exports.run = () => {
     const freeHeroesObject = HeroRepository.getRotationObject();
@@ -14,7 +16,7 @@ exports.run = () => {
             freeHeroes: (freeHeroesObject?.heroes?.length <= 0 ? StringUtils.get('no.free.heroes') : freeHeroesObject?.heroes?.map(freeHero => {
                 const hero = HeroRepository.findHero(freeHero.name);
                 return {
-                    name: hero.name,
+                    name: `${EmojiRepository.getEmojiByName(hero.name.unaccentClean())} ${hero.name}`,
                     value: HeroService.getHeroRole(hero),
                     inline: true
                 }
@@ -31,6 +33,5 @@ exports.help = {
     acceptParams: false,
     defaultPermission: true,
     category: 'HEROES',
-    source: 'The Nexus Compendium',
-    sourceImage: 'https://nexuscompendium.com/images/logoes/site-logo.png'
+    source: SourceRepository.findSourceById('NEXUS_COMPENDIUM'),
 };

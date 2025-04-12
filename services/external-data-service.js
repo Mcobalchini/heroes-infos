@@ -9,6 +9,7 @@ const { IcyVeinsIntegrationService } = require('./integration/icy-veins-integrat
 const { logger } = require('./log-service.js');
 const { App } = require('../app.js');
 const { HeroRepository } = require('../repositories/hero-repository.js');
+const { PsionicStormIntegrationService } = require('./integration/psionic-storm-integration-service.js');
 const rest = new REST({ version: '9' }).setToken(process.env.HEROES_INFOS_TOKEN);
 const HOUR = 1000 * 60 * 60;
 const PERIOD = HOUR * 1;
@@ -104,14 +105,16 @@ exports.ExternalDataService = {
     gatherHeroStats: async function (heroId, heroName, heroIcyLink, heroesMap) {
         let [
             icyData,
-            profileData
+            profileData,
+            psionicData
         ] = await Promise.all([
             IcyVeinsIntegrationService.getIcyVeinsData(heroIcyLink),
-            HeroesProfileIntegrationService.getBuildsFromAPI(heroName)
+            HeroesProfileIntegrationService.getBuildsFromAPI(heroName),
+            PsionicStormIntegrationService.getHeroBasicInfo(heroIcyLink),
         ]);
 
-        if (icyData && profileData) {
-            heroesMap.set(heroId, { icyData, profileData });
+        if (icyData && profileData && psionicData) {
+            heroesMap.set(heroId, { icyData, profileData, psionicData });
         } else {
             if (icyData == null && profileData == null) {
                 await this.gatherHeroStats(heroId, heroName, heroIcyLink, heroesMap);
@@ -133,6 +136,10 @@ exports.ExternalDataService = {
         await rest.post(
             Routes.applicationCommands(process.env.CLIENT_ID), { body: commandObj },
         )
+    },
+
+    getEmojisFromApi: async function () {
+        return await rest.get(Routes.applicationEmojis(process.env.CLIENT_ID));
     },
 
     getApiCommandsSize: async function () {

@@ -1,3 +1,4 @@
+const { EmojiRepository } = require('../../repositories/emoji-repository');
 const { HeroRepository } = require('../../repositories/hero-repository');
 const { RoleRepository } = require('../../repositories/role-repository');
 const { HeroService } = require('../../services/hero-service');
@@ -114,12 +115,12 @@ exports.run = async (heroes) => {
                 data: {                    
                     suggestedHeroes: Array.from(missingRolesMap).map(([rolesArray, heroes]) => {
                         const missingHeroes = heroes.map(it => {
-                            return `${it.name} - **${RoleRepository.findRoleById(it.role).name}**\n`
+                            return `${EmojiRepository.getEmojiByName(it.name.unaccentClean())} ${it.name} - **${RoleRepository.findRoleById(it.role).name}**\n`
                         });
                         currentHeroes.forEach(it => {
                             missingHeroes.splice(rolesArray.indexOf(it.role),
                                 0,
-                                `~~${it.name} - ${RoleRepository.findRoleByName(it.role).name}~~\n`)
+                                `~~${EmojiRepository.getEmojiByName(it.name.unaccentClean())} ${it.name} - ${RoleRepository.findRoleByName(it.role).name}~~\n`)
                         });
                         return {
                             name: `${rolesArray.map(it => RoleRepository.findRoleByName(it).name).join(', ')}`,
@@ -135,7 +136,7 @@ exports.run = async (heroes) => {
                 data: {
                     suggestedHeroes: Array.from(heroesSorted.splice(0, remainingHeroes)).map(it => {
                         return {
-                            name: it.name,
+                            name: `${EmojiRepository.getEmojiByName(it.name.unaccentClean())} ${it.name}`,
                             value: RoleRepository.findRoleById(it.role).name,
                             inline: false,
                         }

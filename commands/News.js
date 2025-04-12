@@ -1,3 +1,4 @@
+const { SourceRepository } = require('../repositories/source-repository');
 const { BlizzardIntegrationService } = require('../services/integration/blizzard-integration-service');
 const { StringUtils } = require('../utils/string-utils');
 
@@ -27,7 +28,6 @@ exports.help = {
     requiredParam: false,
     defaultPermission: true,
     category: 'GENERAL',
-    source: 'Blizzard',
-    sourceImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Blizzard_Entertainment_Logo_2015.svg/800px-Blizzard_Entertainment_Logo_2015.svg.png'
+    source: SourceRepository.findSourceById('BLIZZARD')
 }
 

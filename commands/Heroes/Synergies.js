@@ -1,4 +1,6 @@
+const { EmojiRepository } = require('../../repositories/emoji-repository');
 const { HeroRepository } = require('../../repositories/hero-repository');
+const { SourceRepository } = require('../../repositories/source-repository');
 const { HeroService } = require('../../services/hero-service');
 const { StringUtils } = require('../../utils/string-utils');
 
@@ -7,7 +9,7 @@ exports.run = async (heroName) => {
     const synergies = hero.infos.synergies.heroes.map(synergy => {
         const synergyHero = HeroRepository.findHero(synergy);
         return {
-            name: synergyHero.name,
+            name: `${EmojiRepository.getEmojiByName(synergyHero.name.unaccentClean())} ${synergyHero.name}`,
             value: HeroService.getHeroRole(synergyHero),
             inline: true
         }
@@ -42,6 +44,5 @@ exports.help = {
     requiredParam: true,
     defaultPermission: true,
     category: 'HEROES',
-    source: 'Icy Veins',
-    sourceImage: 'https://static.icy-veins.com/images/common/favicon-high-resolution.png'
+    source: SourceRepository.findSourceById('ICY_VEINS')
 };

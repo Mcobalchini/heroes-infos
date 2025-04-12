@@ -1,9 +1,9 @@
-const { FileUtils } = require('../utils/file-utils');
+const { FileUtils } = require('../utils/file-utils.js');
 const maps = FileUtils.openJsonSync('./data/constant/maps.json');
 
-exports.MapService = {
+exports.MapRepository = {
 
-    findMap: function (mapName) {
+    findMapByName: function (mapName) {
         let mapLowerCase = mapName.unaccentClean();
         return maps.find(map =>
             mapLowerCase.length > 2 &&

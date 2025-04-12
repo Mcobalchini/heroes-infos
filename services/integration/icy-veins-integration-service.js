@@ -5,7 +5,7 @@ exports.IcyVeinsIntegrationService = {
     baseUrl: 'https://www.icy-veins.com/heroes/{0}-build-guide',
 
     getIcyVeinsData: async function (heroName) {
-        const icyUrl = this.getUrl(heroName);     
+        const icyUrl = this.getUrl(heroName);
         try {                   
             const response = await fetch(icyUrl);
             if (!response.ok) {

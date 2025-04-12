@@ -5,21 +5,19 @@ const { ExternalDataService } = require('../services/external-data-service.js');
 const { StringUtils } = require('../utils/string-utils.js');
 
 exports.run = async (app, interaction) => {
-    try {
-        if (interaction.isCommand() || interaction.isAutocomplete()) {
-            if (interaction.isCommand()) {
-                await interaction.deferReply();
-                const commandReply = await CommandService.handleCommand(interaction);
-                const embeds = createResponse(commandReply);
-                const response = EmbedUtils.assembleEmbedObject(embeds);
-                response.ephemeral = true;
-                interaction.editReply(response).catch(e => {
-                    logger.error(`error while responding`, e);
-                });
-            } else if (interaction.isAutocomplete()) {
-                await CommandService.handleAutocomplete(interaction);
-            }
-        }
+    try {        
+        if (interaction.isCommand()) {
+            await interaction.deferReply();
+            const commandReply = await CommandService.handleCommand(interaction);
+            const embeds = createResponse(commandReply);
+            const response = EmbedUtils.assembleEmbedObject(embeds);
+            response.ephemeral = true;
+            interaction.editReply(response).catch(e => {
+                logger.error(`error while responding`, e);
+            });
+        } else if (interaction.isAutocomplete()) {
+            await CommandService.handleAutocomplete(interaction);
+        }    
     } catch (error) {
         logger.error(`error while handling interaction`, error);
     }

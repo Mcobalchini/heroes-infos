@@ -137,8 +137,8 @@ exports.CommandService = {
             
             if (command.help?.source) {
                 response.footer = {
-                    source: command.help?.source,
-                    sourceImage: command.help?.sourceImage
+                    source: command.help?.source?.name,
+                    sourceImage: command.help?.source?.image
                 }
             }
         } else {    

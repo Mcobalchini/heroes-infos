@@ -16,5 +16,17 @@
         "name": "The Nexus Compendium",
         "image": "https://nexuscompendium.com/images/logoes/site-logo.png",
         "site": "https://nexuscompendium.com/"
+    },
+    {
+        "id": "PSIONIC_STORM",
+        "name": "Psionic Storm",
+        "image": "https://psionic-storm.com/wp-content/themes/psionicstorm/img/logo.png",
+        "site": "https://psionic-storm.com/"
+    },
+    {
+        "id": "BLIZZARD",
+        "name": "Blizzard Entertainment",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Blizzard_Entertainment_Logo_2015.svg/800px-Blizzard_Entertainment_Logo_2015.svg.png",
+        "site": "https://blizzard.com/"
     }
 ]
