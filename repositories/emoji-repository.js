@@ -1,4 +1,5 @@
 const { FileUtils } = require('../utils/file-utils.js');
+const { logger } = require('../services/log-service.js');
 let emojis = [];
 
 try {
