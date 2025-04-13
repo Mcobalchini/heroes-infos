@@ -48,7 +48,7 @@ exports.run = async (heroName) => {
                 },
                 {
                     name: StringUtils.get('mana.points'),
-                    value: `${hero.infos.manaBase.toString()} (+10%/lvl)`,
+                    value: `${hero.infos.manaBase.toString()} (+10/lvl)`,
                     inline: true
                 },
                 {

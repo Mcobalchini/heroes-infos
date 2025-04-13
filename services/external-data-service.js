@@ -116,11 +116,11 @@ exports.ExternalDataService = {
         if (icyData && profileData && psionicData) {
             heroesMap.set(heroId, { icyData, profileData, psionicData });
         } else {
-            if (icyData == null && profileData == null) {
+            if (icyData == null && profileData == null && psionicData == null) {
                 await this.gatherHeroStats(heroId, heroName, heroIcyLink, heroesMap);
-            } else if (profileData == null) {
+            } else if (profileData == null || psionicData == null) {
                 this.missingUpdateHeroes.push(heroId);
-                heroesMap.set(heroId, { icyData, profileData });
+                heroesMap.set(heroId, { icyData, profileData, psionicData });
             }
         }
     },

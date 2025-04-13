@@ -1,3 +1,4 @@
+const { SourceRepository } = require("../../repositories/source-repository");
 const { logger } = require("../log-service");
 const { JSDOM } = require('jsdom');
 
@@ -31,7 +32,7 @@ exports.IcyVeinsIntegrationService = {
             const builds = [];
             for (let i in buildNames) {
                 builds.push({
-                    name: buildNames[i],
+                    name: `${buildNames[i]} ${SourceRepository.findSourceById('ICY_VEINS').icon}`,
                     link: icyUrl,
                     skills: buildSkills[i]
                 });

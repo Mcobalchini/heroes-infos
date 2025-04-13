@@ -10,8 +10,8 @@ exports.PsionicStormIntegrationService = {
             let result = null;
             if (!response.ok) {                
                 logger.error(`error while psionic data`, response.statusText);
-                heroName = heroName.replace('-', '');
-                return getHeroBasicInfo = await this.getUrl(psionicUrl);
+                heroName = heroName.replaceAll('-', '');
+                return await getHeroBasicInfo(heroName, true);
             } else {
                 result = await response.json();
                 if (result) {                   
@@ -35,7 +35,7 @@ exports.PsionicStormIntegrationService = {
             }
             logger.error(`error while fetching psionic data ${psionicUrl}`, ex);
             heroName = heroName.replaceAll('-', '');
-            return getHeroBasicInfo = await this.getHeroBasicInfo(heroName, true);        
+            return await this.getHeroBasicInfo(heroName, true);        
         }
     },
     
