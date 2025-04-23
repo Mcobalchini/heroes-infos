@@ -1,3 +1,4 @@
+const { EmojiRepository } = require('../../repositories/emoji-repository');
 const { RoleRepository } = require('../../repositories/role-repository');
 const { HeroService } = require('../../services/hero-service');
 const { StringUtils } = require('../../utils/string-utils');
@@ -18,7 +19,7 @@ exports.run = async (roleName) => {
         data: {            
             suggestions: HeroService.listHeroesSortedByScore(parseInt(role?.id)).map(it => {
                 return {
-                    name: it.name,
+                    name: `${EmojiRepository.getEmojiByName(it.name.unaccentClean())} ${it.name}`,
                     value: it.score,
                     inline: true
                 };

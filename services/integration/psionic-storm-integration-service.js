@@ -1,15 +1,15 @@
 const { logger } = require("../log-service");
 
 exports.PsionicStormIntegrationService = {
-    baseUrl: `https://psionic-storm.com/pt/wp-json/psionic/v0/units/{0}`,
+    baseUrl: `https://psionic-storm.com/pt/wp-json/psionic/v0/`,    
 
     getHeroBasicInfo: async function (heroName, skip = false) {
-        const psionicUrl = this.getUrl(heroName.toLowerCase());
+        const psionicUrl = this.getUrl(`units/${heroName.toLowerCase()}`);
         try {                   
             const response = await fetch(psionicUrl);
             let result = null;
             if (!response.ok) {                
-                logger.error(`error while psionic data`, response.statusText);
+                logger.error(`error while gathering psionic data`, response.statusText);
                 heroName = heroName.replaceAll('-', '');
                 return await getHeroBasicInfo(heroName, true);
             } else {
@@ -36,6 +36,31 @@ exports.PsionicStormIntegrationService = {
             logger.error(`error while fetching psionic data ${psionicUrl}`, ex);
             heroName = heroName.replaceAll('-', '');
             return await this.getHeroBasicInfo(heroName, true);        
+        }
+    },
+
+    getHeroesBanRates: async function (heroName, skip = false) {
+        const psionicUrl = this.getUrl(``);
+        try {                   
+            const response = await fetch(`${this.baseUrl}wp-json/psionic/v0/stats/?post_id=None&source=HP&mode=SL`);
+            let result = null;
+            if (!response.ok) {                
+                logger.error(`error while psionic ban data`, response.statusText);                
+                return [];
+            } else {
+                result = await response.json();
+                if (result) {                   
+                    return result.dataStats.map((stat) => {
+                        return {
+                            heroName: stat.slug,                        
+                            banrate: stat.banrate,                            
+                        };
+                    });                    
+                }
+            }            
+        } catch (ex) {
+            logger.error(`error while fetching psionic data ${psionicUrl}`, ex);
+            return [];
         }
     },
     

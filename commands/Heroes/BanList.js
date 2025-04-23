@@ -1,3 +1,4 @@
+const { EmojiRepository } = require('../../repositories/emoji-repository');
 const { HeroRepository } = require('../../repositories/hero-repository');
 const { SourceRepository } = require('../../repositories/source-repository');
 const { HeroService } = require('../../services/hero-service');
@@ -10,9 +11,9 @@ exports.run = async () => {
             mustBanHeroes: HeroRepository.listBanHeroes().map(ban => {
                 const hero = HeroRepository.findHero(ban.name);
                 return {
-                    name: hero.name,
+                    name: `${EmojiRepository.getEmojiByName(hero.name.unaccentClean())} ${hero.name}`,
                     value: HeroService.getHeroRole(hero),
-                    inline: false
+                    inline: true
                 }
             })
         }
