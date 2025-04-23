@@ -4,7 +4,7 @@ exports.PsionicStormIntegrationService = {
     baseUrl: `https://psionic-storm.com/pt/wp-json/psionic/v0/`,    
 
     getHeroBasicInfo: async function (heroName, skip = false) {
-        const psionicUrl = this.getUrl(`units/${heroName.toLowerCase()}`);
+        const psionicUrl = `${this.baseUrl}units/${heroName.toLowerCase()}`;
         try {                   
             const response = await fetch(psionicUrl);
             let result = null;
@@ -42,7 +42,7 @@ exports.PsionicStormIntegrationService = {
     getHeroesBanRates: async function (heroName, skip = false) {
         const psionicUrl = this.getUrl(``);
         try {                   
-            const response = await fetch(`${this.baseUrl}wp-json/psionic/v0/stats/?post_id=None&source=HP&mode=SL`);
+            const response = await fetch(`${this.baseUrl}/stats/?post_id=None&source=HP&mode=SL`);
             let result = null;
             if (!response.ok) {                
                 logger.error(`error while psionic ban data`, response.statusText);                
