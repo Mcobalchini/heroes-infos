@@ -1,4 +1,3 @@
-const config = require("../config.json");
 const { CommandService } = require("../services/command-service");
 const { App } = require('../app');
 const { StringUtils } = require('../utils/string-utils');
@@ -58,8 +57,7 @@ exports.run = (commandAsked, msg) => {
         SourceRepository.listSources().forEach(source => {
             commandInfos += `[${source.name}](${source.site})\n`;
         });        
-        commandInfos += StringUtils.get('if.want.to.know.more.about.specific.command');
-        commandInfos += StringUtils.get('version', config.version);
+        commandInfos += StringUtils.get('if.want.to.know.more.about.specific.command');        
     }
 
     return {

@@ -1,17 +1,16 @@
 const { EmbedBuilder } = require('discord.js');
-const config = require('../config.json');
 const { logger } = require('../services/log-service');
 const { App } = require('../app');
 const { StringUtils } = require('../utils/string-utils');
 
 exports.run = async (feedback, msg) => {
-    const owners = Array.from(App.bot.guilds._cache.map(it => it.ownerId)).filter(a => a !== config.adminId);
+    const owners = Array.from(App.bot.guilds._cache.map(it => it.ownerId)).filter(a => a !== process.env.ADMIN_ROLE_ID);
 
     if (msg.author || msg.user) {
         const id = (msg.author?.id != null ? msg.author?.id : (msg.user?.id ?? 0));
         let reply = StringUtils.get('command.not.exists', 'Feedback');
         let count = 0;
-        if (id === config.adminId) {
+        if (id === process.env.ADMIN_ROLE_ID) {
             owners.forEach(element => {
                 App.bot.users.fetch(element, false)
                     .then(async (user) => {
@@ -30,7 +29,7 @@ exports.run = async (feedback, msg) => {
         } else {
             if (owners.includes(msg.user.id)) {
                 reply = StringUtils.get('thanks.for.feedback')
-                App.bot.users.fetch(config.adminId, false).then((user) => {
+                App.bot.users.fetch(process.env.ADMIN_ROLE_ID, false).then((user) => {
                     if (msg.user?.id && msg.user?.avatar) {
                         iconURL = `https://cdn.discordapp.com/avatars/${msg.user.id}/${msg.user.avatar}.png`;
                     } else {

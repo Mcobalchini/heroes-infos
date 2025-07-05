@@ -14,7 +14,7 @@ function configure(config, layouts) {
 function discordLogAppender(config, layout) {
     const appender = (loggingEvent) => {
         config.webhook?.send(layout(loggingEvent)).catch((err) => {
-            console.error(`Error sending log4js discord webhook message: ${JSON.stringify(embedContent)}\n` + err);
+            console.error(`Error sending log4js discord webhook message: ${JSON.stringify(loggingEvent)}\n` + err);
         });
 
     };

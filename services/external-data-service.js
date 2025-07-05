@@ -51,7 +51,7 @@ exports.ExternalDataService = {
                 }
 
                 const dataThread = new PromisePool(dataPromiseProducer, this.numberOfWorkers);
-                dataThread.start().then(async () => this.updateHeroesData(HeroRepository.listAllHeroes()));
+                dataThread.start().then(async () => this.updateHeroesData(HeroRepository.listHeroesBase()));
             }
         }
     },

@@ -151,7 +151,7 @@ exports.HeroesProfileIntegrationService = {
             }
 
         } catch (e) {
-            logger.error(`error while gathering ${heroName} profile builds, with data ${heroes}`, e);
+            logger.error(`error while gathering influence builds, with data ${heroes}`, e);
             heroes = null;
         }
     },
@@ -174,9 +174,12 @@ exports.HeroesProfileIntegrationService = {
 
             return {
                 builds: data.map((build) => {
+                    if (!build.level_one || !build.level_four || !build.level_seven || !build.level_ten || !build.level_thirteen || !build.level_sixteen || !build.level_twenty) {                        
+                        return null;
+                    }
                     const name = `Popular Build ${SourceRepository.findSourceById('HEROES_PROFILE').icon}`;
                     const winRate = build.win_rate;
-                    const link = `${this.buildsTitleUrl}${heroName.replaceAll(' ', '%20')}`;
+                    const link = `${this.buildsTitleUrl}${heroName.replaceAll(' ', '%20')}`;                
                     buildString = `[T${build.level_one.sort}${build.level_four.sort}${build.level_seven.sort}${build.level_ten.sort}${build.level_thirteen.sort}${build.level_sixteen.sort}${build.level_twenty.sort},${heroName.replaceAll(' ', '').replaceAll('.', '')}]`;
                     return {
                         name,
@@ -185,6 +188,7 @@ exports.HeroesProfileIntegrationService = {
                         skills: buildString
                     }
                 })
+                .filter(it => it != null)
             }
         } catch (e) {
             logger.error(`error while gathering ${heroName} profile builds`, e);

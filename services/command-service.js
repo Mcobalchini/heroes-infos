@@ -1,4 +1,3 @@
-const config = require('../config.json');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { Collection, InteractionContextType } = require('discord.js');
 const { ExternalDataService } = require('./external-data-service.js');
@@ -173,7 +172,7 @@ exports.CommandService = {
         } else {
             if (msg.author != null || msg.user != null) {
                 const id = (msg.author != null ? msg.author.id : (msg.user != null ? msg.user.id : 0));
-                return (id === config.adminId) ||
+                return (id === process.env.ADMIN_ROLE_ID) ||
                     msg.member?._roles?.includes(
                         msg.member?.guild?.roles?._cache.find(it => it.name.toLowerCase() === 'hots-bot-admin')?.id
                     );

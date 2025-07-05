@@ -62,13 +62,6 @@ exports.HeroRepository = {
         return heroProperty ? heroesBase.find(hero => hero.propertyName === heroProperty) : null;
     },
 
-    listAllHeroes: function (searchInfos) {
-        if (searchInfos) {
-            return heroesBase.map(hero => this.findHeroInfosById(hero.id));
-        }
-        return heroesBase;
-    },
-
     findHero: function (searchTerm, searchInfos) {
         const search = searchTerm.unaccentClean();
 
@@ -94,7 +87,8 @@ exports.HeroRepository = {
         return hero;
     },
 
-    findHeroByName: function (search) {
+    findHeroByName: function (heroName) {
+        const search = heroName.unaccentClean();
         const hero = heroesBase.find(heroInfo =>
             heroInfo.name.unaccentClean() === search ||
             heroInfo.name.unaccentClean().includes(search)
@@ -102,21 +96,8 @@ exports.HeroRepository = {
         return hero ? hero : this.findHeroByPropertyName(search);
     },
 
-    findHeroByPropertyName: function (search) {
-        if (this.heroesNamesMap.size === 0) {
-            this.assembleHeroesNames();
-        }
-        let heroProperty = null;
-        for (let [heroProp, heroNames] of this.heroesNamesMap.entries()) {
-            if (heroNames.split(',').find(it => it.unaccentClean() === search || it.unaccentClean().includes(search))) {
-                heroProperty = heroProp;
-                break;
-            }
-        }
-        return heroProperty ? heroesBase.find(hero => hero.propertyName === heroProperty) : null;
-    },
-
-    listHeroesByName: function (search) {
+    listHeroesByName: function (heroName) {
+        const search = heroName.unaccentClean();
         return heroesBase.filter(heroInfo =>
             heroInfo.name.unaccentClean() === search ||
             heroInfo.name.unaccentClean().startsWith(search)

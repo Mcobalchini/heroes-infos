@@ -1,7 +1,7 @@
 const { logger } = require("../log-service");
 
 exports.PsionicStormIntegrationService = {
-    baseUrl: `https://psionic-storm.com/pt/wp-json/psionic/v0/`,    
+    baseUrl: `https://psionic-storm.com/en/wp-json/psionic/v0/`,    
 
     getHeroBasicInfo: async function (heroName, skip = false) {
         const psionicUrl = `${this.baseUrl}units/${heroName.toLowerCase()}`;
