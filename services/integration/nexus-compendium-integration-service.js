@@ -52,4 +52,22 @@ exports.NexusCompendiumIntegrationService = {
             };
         }
     },
+    
+    gatherCurrentBrawl: async function () {
+        logger.info(`gathering heroes rotation`);
+        const response = await fetch(`${this.baseUrl}/api/currently/brawlrotation`);
+        let result = null;
+        if (!response.ok) {
+            logger.error(`error while gathering rotation data`, response.statusText);
+        }
+        result = await response.json();
+        if (result) {
+            base = result.RotationHero;
+            return {
+                startDate: base.StartDate,
+                endDate: base.EndDate,
+                heroes: base.Heroes.map(it => it.ID)
+            };
+        }
+    },
 }
