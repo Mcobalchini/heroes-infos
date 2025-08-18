@@ -1,6 +1,6 @@
 {
   "name": "heroes-infos",
-  "version": "3.14.4",
+  "version": "3.15.1",
   "description": "Heroes of the Storm infos bot",
   "main": "app.js",
   "scripts": {
