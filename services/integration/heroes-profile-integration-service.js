@@ -180,7 +180,7 @@ exports.HeroesProfileIntegrationService = {
                     const name = `Popular Build ${SourceRepository.findSourceById('HEROES_PROFILE').icon}`;
                     const winRate = build.win_rate;
                     const link = `${this.buildsTitleUrl}${heroName.replaceAll(' ', '%20')}`;
-                    const heroBuildName = build?.hero?.alt_name ?? heroName.replaceAll(' ', '').replaceAll('.', '');                                     
+                    const heroBuildName = build?.hero?.build_copy_name ?? heroName.replaceAll(' ', '').replaceAll('.', '');                                     
                     const buildString = `[T${build.level_one.sort}${build.level_four.sort}${build.level_seven.sort}${build.level_ten.sort}${build.level_thirteen.sort}${build.level_sixteen.sort}${build.level_twenty.sort},${heroBuildName}]`;
                     return {
                         name,
